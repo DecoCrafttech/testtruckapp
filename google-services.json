@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "829402776184",
+    "project_id": "push-notification-c6f57",
+    "storage_bucket": "push-notification-c6f57.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:829402776184:android:f65b934f56cfac9955e38d",
+        "android_client_info": {
+          "package_name": "com.mrdesigner.truckmessage"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAq6q7e4dYVj2ifFFUV6OSLvz01djqWWtE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

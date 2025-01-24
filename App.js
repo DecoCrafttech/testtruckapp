@@ -1,20 +1,14 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { LoadNeedsProvider } from "./hooks/LoadNeedsContext";
+import AppNavigation from "./navigations/AppNavigation";
+import registerNNPushToken from 'native-notify';
+
 
 export default function App() {
+  registerNNPushToken(24234, 'cdRv8YPtH70BLWHy8pwHkS');
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <LoadNeedsProvider>
+      <AppNavigation />
+    </LoadNeedsProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
