@@ -151,7 +151,6 @@ const AvailableDrivers = ({ navigation }) => {
         setPageLoading(true)
 
         const response = await axiosInstance.get("/all_driver_details");
-        console.log("response.data.data",response.data.data[0])
         if (response.data.error_code === 0) {
           const transformedData = response.data.data.map((item) => ({
             companyName: item.company_name,

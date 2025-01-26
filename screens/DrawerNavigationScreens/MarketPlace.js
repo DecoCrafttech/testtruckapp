@@ -445,7 +445,6 @@ const MarketPlace = ({ allData, fetchData }) => {
                 />
               </View>
 
-
               <View style={{ borderColor: "#ccc", borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
                 <RNPickerSelect
                   onValueChange={(value) => setEditedData({ ...editedData, bodyType: value })}
@@ -488,11 +487,7 @@ const MarketPlace = ({ allData, fetchData }) => {
                 onChangeText={(text) => setEditedData({ ...editedData, description: text })}
               />
 
-
-
-
-
-              <View style={styles.multipleImageContainer}>
+             <View style={styles.multipleImageContainer}>
                 {
                   editedData.images.map((image, index) => {
                     return (
@@ -509,7 +504,6 @@ const MarketPlace = ({ allData, fetchData }) => {
                 }
 
               </View>
-
 
 
               <View style={styles.imageContainer}>

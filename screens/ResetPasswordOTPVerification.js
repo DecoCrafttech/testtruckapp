@@ -28,14 +28,17 @@ const ResetPasswordOTPVerification = () => {
         }
         try {
 
+
             setResendEnabled(false)
 
             const response = await axiosInstance.post("/send_forgot_pwd_otp", resendParams)
 
             if (response.data.error_code === 0) {
+                await AsyncStorage.setItem("user_id", `${response.data.data.user_id}`)
                 setTimeout(() => {
                     setResendEnabled(true)
                 }, 30000);
+
                 Toast.success(response.data.message)
             } else {
                 Toast.error(response.data.message)
@@ -55,11 +58,12 @@ const ResetPasswordOTPVerification = () => {
 
         try {
 
+            
 
             const response = await axiosInstance.post("/validate_forgot_otp", verifyParams)
 
             if (response.data.message === "Forgot OTP verfied success") {
-                await AsyncStorage.removeItem("user_id")
+                // await AsyncStorage.removeItem("user_id")
                 Toast.success(response.data.message)
                 navigation.navigate("ResetPassword")
             } else {

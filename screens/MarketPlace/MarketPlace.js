@@ -148,7 +148,8 @@ const MarketPlace = ({ navigation }) => {
 
   const filteredProducts = marketPlaceProducts.filter((product) =>
     product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.location.toLowerCase().includes(searchQuery.toLowerCase())
+    product.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.kms_driven.includes(searchQuery) 
   );
 
 

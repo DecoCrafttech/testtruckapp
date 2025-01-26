@@ -55,6 +55,7 @@ const TruckDetail = ({ route }) => {
         );
 
         if (response.data.error_code === 0) {
+
           setFullProductDetails(response.data.data[0]);
 
           if (response.data.data[0].updt) {
@@ -71,11 +72,11 @@ const TruckDetail = ({ route }) => {
             const formattedTime = dateObject.toLocaleTimeString('en-US', {
               hour: '2-digit',
               minute: '2-digit',
-              hour12: true
+              hour12: true,
+              timeZone: 'UTC' // Ensure the time is shown in GMT/UTC
             });
 
             const finalResult = `${formattedDate} ${formattedTime}`;
-
             setFormattedTime(finalResult)
           }
         }

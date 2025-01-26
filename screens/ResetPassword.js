@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, BackHandler, Alert } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable } from 'react-native';
@@ -106,6 +106,8 @@ const ResetPassword = () => {
             "pwd_type" : "forgot_pwd",
             "new_pwd" : `${inputs.password}`
         }
+
+
         try {
             const response = await axiosInstance.post("/update_user_password", resetPasswordParams)
             if (response.data.error_code === 0) {
@@ -116,6 +118,7 @@ const ResetPassword = () => {
                 })
                 Toast.success(response.data.message)
                 alert('reset success')
+                await AsyncStorage.removeItem("user_id")
 
                 navigation.navigate('Login')
             } else {

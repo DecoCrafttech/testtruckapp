@@ -330,6 +330,7 @@ const Refer = () => {
       if (response.data.error_code === 0) {
         switch (selectedValue) {
           case "user_load_details":
+
             const transformedData = response.data.data.map((item) => ({
               companyName: item.company_name,
               contactNumber: item.contact_number,
@@ -338,11 +339,13 @@ const Refer = () => {
               title: item.company_name,
               fromLocation: item.from_location,
               toLocation: item.to_location,
+              ownerName : item.profile_name,
               labels: [
                 { icon: "table-view", text: item.material },
                 { icon: "attractions", text: `${item.no_of_tyres} wheels` },
                 { icon: "monitor-weight", text: `${item.tone} tons` },
                 { icon: "local-shipping", text: item.truck_body_type },
+                { icon: "person", text: item.profile_name },
               ],
               description: item.description,
               onButton1Press: () => handleEdit(item),

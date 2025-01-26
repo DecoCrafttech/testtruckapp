@@ -37,14 +37,11 @@ const ForgotPassword = () => {
 
 
         try {
-
             await AsyncStorage.setItem("mobileNumber", `${mobileNumber}`)
-
-
             const response = await axiosInstance.post("/send_forgot_pwd_otp", OTPParams)
 
-
             if (response.data.error_code === 0) {
+
                 Toast.success(response.data.message)
                 await AsyncStorage.setItem("user_id", `${response.data.data.user_id}`)
                 navigation.navigate('ResetPasswordOTPVerification')

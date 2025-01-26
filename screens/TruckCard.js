@@ -84,13 +84,16 @@ const TruckCard = ({
       }
 
 
+      {/* My posts Title */}
       <View style={styles.titleContainer}>
         {
           selectedValue === "user_load_details" ||
             selectedValue === "user_driver_details" ||
             selectedValue === "user_truck_details" ||
             selectedValue === "user_buy_sell_details" ?
-            <Text style={styles.title}>{companyName}</Text>
+            <Text style={styles.title}>
+               {selectedValue === "user_truck_details" ? transportName : companyName}
+            </Text>
             :
             <>
               <Text style={styles.title}>
@@ -122,10 +125,7 @@ const TruckCard = ({
                 </Text>
               </View>
             </>
-
-
         }
-
 
       </View>
       <View style={styles.locationContainer}>
@@ -152,7 +152,7 @@ const TruckCard = ({
 
             <Text style={styles.label}>
               {
-                index === 5 ? transportName || truckSize  : label.text
+                index === 5 ? companyName || truckSize  : label.text
               }
             </Text>
           </View>

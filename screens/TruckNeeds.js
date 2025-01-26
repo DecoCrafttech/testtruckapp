@@ -171,8 +171,6 @@ const TruckNeeds = () => {
 
     try {
 
-      console.log("postData",postData)
-
       // Send POST request to your API endpoint
       const response = await axiosInstance.post("/truck_entry", postData);
       if (response.data.error_code === 0) {

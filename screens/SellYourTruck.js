@@ -23,6 +23,8 @@ import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplet
 import { useNavigation } from "@react-navigation/native";
 import RNPickerSelect from 'react-native-picker-select';
 import Constants from 'expo-constants'
+import AntDesign from '@expo/vector-icons/AntDesign';
+
 
 
 
@@ -134,12 +136,8 @@ const SellYourTruck = () => {
         },
       });
 
-      console.log("response.data", response.data)
-
-
       if (response.data.error_code === 0) {
         setLoading(false)
-
         setOwnerName("");
         setContactNumber("");
         setVehicleNumber("");
@@ -180,6 +178,13 @@ const SellYourTruck = () => {
       setImages((prevImages) => [...prevImages, ...newImages]);
     }
   };
+
+  const handleDeleteSelectedImage = (fileName) => {
+      const result = images.filter((v,i) =>  {
+        return v.fileName !== fileName;
+      })
+      setImages(result)
+  }
 
 
 
@@ -264,11 +269,6 @@ const SellYourTruck = () => {
     const sanitizedValue = value.replace(/[^0-9]/g, ""); // Allow only numbers
     setContactNumber(sanitizedValue); // Update state with the sanitized value
   };
-
-
-
-
-
 
 
   return (
@@ -420,11 +420,16 @@ const SellYourTruck = () => {
             <Button title="Upload Images" onPress={pickImage} />
             <View style={styles.imageContainer}>
               {images.map((image, index) => (
-                <Image
-                  key={index}
-                  source={{ uri: image.uri }}
-                  style={styles.image}
-                />
+                <View style={styles.selectedImageDeleteBtnContainer}>
+                  <Image
+                    key={index}
+                    source={{ uri: image.uri }}
+                    style={styles.image}
+                  />
+                <TouchableOpacity style={styles.selectedImageDeleteBtn} onPress={() => handleDeleteSelectedImage(image.fileName)}>
+                 <AntDesign name="close" size={15} color="white" />
+                </TouchableOpacity>
+                </View>
               ))}
             </View>
           </View>
@@ -525,6 +530,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     marginVertical: 10,
+    gap:5,
+    
+  },
+  selectedImageDeleteBtnContainer: {
+    position:'relative',
+    alignItems:'center',
+    justifyContent:'center',
+    flexDirection:'row'
+  },
+  selectedImageDeleteBtn : {
+    position:'absolute',
+    padding : 2,
+    top : 0,
+    right:10,
+    backgroundColor:'red',
+    borderRadius:5,
+    borderTopRightRadius:0
   },
   image: {
     width: 100,

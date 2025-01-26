@@ -157,6 +157,7 @@ const AvailableTruck = ({ navigation }) => {
         setPageLoading(true)
 
         const response = await axiosInstance.get("/all_truck_details");
+
         if (response.data.error_code === 0) {
           const transformedData = response.data.data.map((item) => ({
             companyName: item.company_name,
@@ -166,7 +167,7 @@ const AvailableTruck = ({ navigation }) => {
             profileName: item.profile_name,
             title: item.company_name,
             fromLocation: item.from_location,
-            toLocation: item.to_location,
+            toLocation: Array.isArray(item.to_location) ? item.to_location.map(v => v) : [], // Safe mapping
             isAadhaarVerified: item.aadhaar_verified,
             truckSize: item.truck_size,
 
@@ -218,7 +219,7 @@ const AvailableTruck = ({ navigation }) => {
     (truck) =>
       truck.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       truck.fromLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.toLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (Array.isArray(truck.toLocation) && truck.toLocation.join(' ').toLowerCase().includes(searchQuery.toLowerCase())) || // Check if it's an array
       truck.nameOfTheTransport.toLowerCase().includes(searchQuery.toLowerCase()) ||
       truck.labels[0].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
       truck.labels[1].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -432,7 +433,7 @@ const AvailableTruck = ({ navigation }) => {
           profileName: item.profile_name,
           title: item.company_name,
           fromLocation: item.from_location,
-          toLocation: item.to_location,
+          toLocation: Array.isArray(item.to_location) ? item.to_location.map(v => v) : [], // Safe mapping
           isAadhaarVerified: item.aadhaar_verified,
           truckSize: item.truck_size,
 

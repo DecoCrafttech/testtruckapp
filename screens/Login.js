@@ -38,6 +38,12 @@ const Login = () => {
     const [pushToken, setPushToken] = useState(null)
 
     useEffect(() => {
+
+        setInputs({
+            mobileNumber: "",
+            password: "",
+        })
+
         const getLoginStatus = async () => {
             const userId = await AsyncStorage.getItem("user_id");
             if (userId) {
@@ -176,9 +182,7 @@ const Login = () => {
             const res = await axiosInstance.post("/get_user_state_list", updateProfileParams)
             if (res.data.error_code === 0) {
                 setUserStatesFromProfile(res.data.data[0].state_list)
-            } else {
-                console.log(res.data.message)
-            }
+            } 
         } catch (err) {
             console.log(err)
         }
@@ -208,12 +212,16 @@ const Login = () => {
                 await AsyncStorage.setItem("mobileNumber", `${inputs.mobileNumber}`)
 
                 const response = await axiosInstance.post("/login", LogInParams)
+
                 if (response.data.error_code === 0) {
                     setLoginClick(false)
                     setInputs({
                         mobileNumber: "",
                         password: "",
                     })
+
+                    
+
                     // Toast.success(response.data.message)
                     await AsyncStorage.setItem("userName", `${response.data.data[0].first_name}`)
                     await AsyncStorage.setItem("user_id", `${response.data.data[0].id}`)
@@ -224,7 +232,7 @@ const Login = () => {
 
                 } else {
                     setLoginClick(false)
-                    Toast.error(response.data.message)
+                    alert(response.data.message)
                 }
             } catch (err) {
                 setLoginClick(false)

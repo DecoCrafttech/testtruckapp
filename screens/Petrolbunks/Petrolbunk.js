@@ -576,7 +576,7 @@ const Petrolbunks = () => {
               <AntDesign name="close" size={25} color="black" onPress={() => setFilterBunksModal(false)} />
             </View>
 
-            <View style={styles.locationContainer}>
+            <ScrollView style={styles.locationContainer}>
 
 
               <Text style={[styles.label, { marginBottom: 20, fontWeight: 600 }]}>Amenities :</Text>
@@ -604,7 +604,7 @@ const Petrolbunks = () => {
                 value={discount}
               />
 
-            </View>
+            </ScrollView>
 
             <TouchableOpacity style={styles.closeButton} onPress={handleFilterBunks}>
               <Text style={styles.applyButtonText}>Filter</Text>
