@@ -29,6 +29,9 @@ const TruckCard = ({
 }) => {
 
 
+  console.log("truckSize",truckSize)
+
+
   const [formattedTime, setFormattedTime] = useState("")
 
   useEffect(() => {
@@ -155,7 +158,7 @@ const TruckCard = ({
 
             <Text style={styles.label}>
               {
-                index === 5 ? companyName || truckSize  : label.text
+                index === 5 ? availableTruckPage === 'true' ? truckSize : companyName || truckSize  : label.text
               }
             </Text>
           </View>

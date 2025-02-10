@@ -18,8 +18,9 @@ import { LoadNeedsContext } from "../../hooks/LoadNeedsContext";
 import { useNavigation } from "@react-navigation/native";
 import Constants from 'expo-constants'
 
-import MapView, { Marker} from "react-native-maps";
+import MapView, { Marker } from "react-native-maps";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 const GOOGLE_API_KEY = "AIzaSyCLT-nqnS-13nBpe-mqzJVsRK7RZIl3I5s";
@@ -86,9 +87,9 @@ const PetrolBunkAdd = () => {
         labels.map(label => [
             label,
             amenities[
-                Object.keys(amenities).find(key =>
-                    key.toLowerCase() === label.toLowerCase().replace(/\s+/g, "")
-                )
+            Object.keys(amenities).find(key =>
+                key.toLowerCase() === label.toLowerCase().replace(/\s+/g, "")
+            )
             ]
         ])
     );
@@ -120,26 +121,47 @@ const PetrolBunkAdd = () => {
             return;
         }
 
+        const capitalizedAmenities = Object.fromEntries(
+            labels.map(label => [
+                label,
+                amenities[
+                Object.keys(amenities).find(key =>
+                    key.toLowerCase() === label.toLowerCase().replace(/\s+/g, "")
+                )
+                ]
+            ])
+        );
+
+
+        const activeAmenities = Object.entries(capitalizedAmenities)
+            .filter(([key, value]) => value === true)
+            .map(([key]) => key);
+        console.log("Active Amenities:", activeAmenities);
+
 
         // Prepare data to send
         const postData = {
+            "user_id": await AsyncStorage.getItem("user_id"),
             "petrol_bunk_name": bunkName,
             "owner_name": ownerName,
             "location": location,
             "latitude": `${region.latitude}`,
             "longitude": `${region.longitude}`,
             "discount": `${discount}`,
-            "amenities": capitalizedAmenities
+            "amenities": activeAmenities
         };
 
         try {
 
-            console.log("postData",postData)
+            console.log("postData", postData)
 
             setSpinner(true);
 
             // Send POST request to your API endpoint
             const response = await axiosInstance.post("/petrol_bunk_entry", postData);
+
+            console.log("response", response.data)
+
             if (response.data.error_code === 0) {
                 console.log("response.data", response.data)
 
@@ -202,7 +224,7 @@ const PetrolBunkAdd = () => {
 
         const { lat, lng } = details.geometry.location;
 
-        console.log("lat,lon",lat,lng)
+        console.log("lat,lon", lat, lng)
 
         setRegion({
             ...region,

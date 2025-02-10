@@ -43,6 +43,7 @@ const PetrolBunkMyPosts = ({ allData, fetchData }) => {
     });
 
 
+
     const [amenities, setAmenities] = useState({
         wifi: false,
         drinkingWater: false,
@@ -108,20 +109,13 @@ const PetrolBunkMyPosts = ({ allData, fetchData }) => {
             const deleteParameters = {
                 "bunk_id": deleteItem.bunk_id
             };
-
-            console.log("deleteParameters", deleteParameters)
-
-
             const response = await axiosInstance.post(
                 `/delete_petrol_bunk`,
                 deleteParameters
             );
-
-            console.log("response.data",response.data)
-
             if (response.data.error_code === 0) {
                 fetchData("petrol_bunks");
-            }else{
+            } else {
 
             }
         } catch (error) {
@@ -135,6 +129,25 @@ const PetrolBunkMyPosts = ({ allData, fetchData }) => {
 
 
     const saveChanges = async () => {
+
+        const capitalizedAmenities = Object.fromEntries(
+            labels.map(label => [
+                label,
+                amenities[
+                Object.keys(amenities).find(key =>
+                    key.toLowerCase() === label.toLowerCase().replace(/\s+/g, "")
+                )
+                ]
+            ])
+        );
+
+
+        const activeAmenities = Object.entries(capitalizedAmenities)
+            .filter(([key, value]) => value === true)
+            .map(([key]) => key);
+        console.log("Active Amenities:", activeAmenities);
+
+
         try {
             const postData = {
                 "user_id": await AsyncStorage.getItem("user_id"),
@@ -145,12 +158,12 @@ const PetrolBunkMyPosts = ({ allData, fetchData }) => {
                 "latitude": `${region.latitude}`,
                 "longitude": `${region.longitude}`,
                 "discount": `${editedData.discount}`,
-                "amenities": capitalizedAmenities
+                "amenities": activeAmenities
             };
 
-            console.log("amenties",amenities)
-            console.log("capitalizedAmenities",capitalizedAmenities)
-            console.log("postData",postData)
+            console.log("amenties", amenities)
+            console.log("capitalizedAmenities", capitalizedAmenities)
+            console.log("postData", postData)
 
             setSaveChangesLoading(true)
             setSpinner(true);
@@ -177,9 +190,6 @@ const PetrolBunkMyPosts = ({ allData, fetchData }) => {
     };
 
     const handleEditPress = async (item) => {
-
-        console.log("item",item)
-
         const updatedAmenities = Object.fromEntries(
             Object.keys(amenities).map((key) => [
                 key,
@@ -233,8 +243,8 @@ const PetrolBunkMyPosts = ({ allData, fetchData }) => {
             mapRef.current.animateToRegion({
                 latitude: lat,
                 longitude: lng,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
+                latitudeDelta: 0.05,
+                longitudeDelta: 0.05,
             });
         }
     };
@@ -298,12 +308,47 @@ const PetrolBunkMyPosts = ({ allData, fetchData }) => {
     );
 
 
+    const handleMapPress = (e) => {
+        const { coordinate } = e.nativeEvent;
+    
+        // Set a smaller delta for zooming in
+        const zoomedRegion = {
+            latitude: coordinate.latitude,
+            longitude: coordinate.longitude,
+            latitudeDelta: 0.01, // Adjust this value for zoom level
+            longitudeDelta: 0.01, // Adjust this value for zoom level
+        };
+    
+        // Update the region state with the new coordinates and zoom level
+        setRegion(zoomedRegion);
+    
+        // Reverse geocode the selected location to get the address
+        reverseGeocode(coordinate.latitude, coordinate.longitude);
+    };
+
+    const reverseGeocode = async (latitude, longitude) => {
+        try {
+            const response = await axiosInstance.get(
+                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${googleApiKey}`
+            );
+            if (response.data.status === 'OK') {
+                const address = response.data.results[0].formatted_address;
+                setEditedData({ ...editedData, location: address }); // Update editedData.location
+            }
+        } catch (error) {
+            console.error('Error fetching address:', error);
+        }
+    };
+
+
+
+
     return (
         <View style={styles.container}>
             <FlatList
-                data={allData.reverse()}
+                data={[...allData].reverse()} // Create a new array to avoid mutating state
                 renderItem={renderItem}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item, index) => item.id ? item.id.toString() : index.toString()}
             />
             <Modal
                 animationType="slide"
@@ -335,13 +380,24 @@ const PetrolBunkMyPosts = ({ allData, fetchData }) => {
                                 onPress={() => setLocationModal(true)}
                             />
 
+
                             <MapView
+                                ref={mapRef}
+                                style={styles.map}
+                                region={region}
+                                onPress={handleMapPress} // Add onPress event here
+                            >
+                                <Marker coordinate={{ latitude: region.latitude, longitude: region.longitude }} />
+                            </MapView>
+
+
+                            {/* <MapView
                                 ref={mapRef}
                                 style={styles.map}
                                 region={region}
                             >
                                 <Marker coordinate={{ latitude: region.latitude, longitude: region.longitude }} />
-                            </MapView>
+                            </MapView> */}
 
                             {Object.entries(amenities).map(([key, value], index) => (
                                 <TouchableOpacity

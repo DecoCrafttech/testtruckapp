@@ -4,10 +4,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS } from "../../constants";
 import HeaderWithoutNotifications from "../../components/HeaderWithoutNotifications";
 
-const AboutUs = () => {
+const DrawerRefer = () => {
   return (
     <SafeAreaView style={styles.container}>
-      <HeaderWithoutNotifications title="About Us" />
+      <HeaderWithoutNotifications title="Refer" />
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.contentContainer}>
           <Text style={styles.headline}>
@@ -56,4 +56,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AboutUs;
+export default DrawerRefer;

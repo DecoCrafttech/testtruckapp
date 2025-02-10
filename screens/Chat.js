@@ -40,8 +40,9 @@ const Chat = () => {
 
   const [chatMessagesRefresh, setChatMessagesRefresh] = useState(false)
   const [chatMessageLoading, setChatMessageLoading] = useState(false)
-  
- 
+  const [sendClickLoading, setSendClickLoading] = useState(false)
+
+
 
 
   useEffect(() => {
@@ -94,9 +95,9 @@ const Chat = () => {
         const userId = await AsyncStorage.getItem("user_id");
         const response = await axiosInstance.post("/get_user_chat_message_list", requiredParams);
 
-        if(response.data.data[0].chat_id === 1){
+        if (response.data.data[0].chat_id === 1) {
           setLastMessageSent(true)
-        }else{
+        } else {
           setLastMessageSent(false)
         }
 
@@ -165,6 +166,7 @@ const Chat = () => {
 
   const handleSendClick = async () => {
     try {
+      setSendClickLoading(true)
       const userId = await AsyncStorage.getItem("user_id");
       const currentTime = new Date().getTime();
 
@@ -184,9 +186,10 @@ const Chat = () => {
       setPageRefresh(!pageRefresh)
       setMessages((prevMessages) => GiftedChat.append(prevMessages, [newMessage]));
       setInputMessage("");
-      // await sendPushNotification(messageReceiver.person_id)
+      setSendClickLoading(false)
 
     } catch (err) {
+      setSendClickLoading(false)
       console.error(err);
     }
   };
@@ -302,7 +305,7 @@ const Chat = () => {
             <ActivityIndicator size={"large"} />
           </View>
           :
-          
+
           <GiftedChat
             messages={messages}
             renderInputToolbar={() => (
@@ -318,6 +321,7 @@ const Chat = () => {
                       numberOfLines={3}
                       value={inputMessage}
                       onChangeText={handleInputText}
+                      editable={sendClickLoading === false ? true : false}
                     />
                     <View style={styles.inputIcons}>
                       <TouchableOpacity style={styles.iconBtn}>
@@ -334,9 +338,14 @@ const Chat = () => {
                           <FontAwesome name="send" size={24} color={COLORS.gray} />
                         </TouchableOpacity>
                         :
-                        <TouchableOpacity style={styles.sendBtn} onPress={handleSendClick}>
-                          <FontAwesome name="send" size={24} color={COLORS.primary} />
-                        </TouchableOpacity>
+                        sendClickLoading === true ?
+                          <TouchableOpacity disabled style={[styles.buttonContainer, { opacity: 1,marginRight:10}]} >
+                            <ActivityIndicator size="small" color={COLORS.primary} />
+                          </TouchableOpacity>
+                          :
+                          <TouchableOpacity style={styles.sendBtn} onPress={handleSendClick}>
+                            <FontAwesome name="send" size={24} color={COLORS.primary} />
+                          </TouchableOpacity>
 
                     }
                   </View>
@@ -348,9 +357,6 @@ const Chat = () => {
             renderMessage={renderMessage}
           />
       }
-
-
-
 
 
     </SafeAreaView>

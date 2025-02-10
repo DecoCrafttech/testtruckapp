@@ -6,7 +6,7 @@ import {
   createDrawerNavigator,
 } from "@react-navigation/drawer";
 import { COLORS } from "../constants";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { AntDesign, Feather, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import BottomTabNavigation from "./BottomTabNavigation";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Refer from "../screens/DrawerNavigationScreens/Refer";
@@ -21,6 +21,9 @@ import PushNotification from "../screens/PushNotification";
 import axiosInstance from "../services/axiosInstance";
 import Container, { Toast } from 'toastify-react-native';
 import FeedbackAndComplaintForm from "../screens/DrawerNavigationScreens/FeedbackAndComplaintForm";
+import DrawerRefer from "../screens/DrawerNavigationScreens/DrawerRefer";
+import { Share } from 'react-native';
+
 
 const Drawer = createDrawerNavigator();
 const DrawerNavigation = () => {
@@ -97,6 +100,24 @@ const DrawerNavigation = () => {
     )
   }
 
+  const handleReferPress = () => {
+    const shareOptions = {
+      message: 'Check out this Truck Message app! https://play.google.com/store/apps/details?id=com.mrdesigner.truckmessage', // Message to share
+      title: 'Share via', // Title for the share dialog
+    };
+
+    // Open the share dialog
+    Share.share(shareOptions)
+      .then((result) => {
+        if (result.action === Share.sharedAction) {
+          console.log('Shared successfully');
+        } else if (result.action === Share.dismissedAction) {
+          console.log('Share dismissed');
+        }
+      })
+      .catch((error) => console.error('Error sharing:', error));
+  };
+
   return (
     <>
       <Container
@@ -155,6 +176,7 @@ const DrawerNavigation = () => {
                 </Text>
               </View>
               <DrawerItemList {...props} />
+
               <DrawerItem
                 label="Logout"
                 labelStyle={{ color: COLORS.black, padding: 0, marginLeft: -6 }}
@@ -207,18 +229,6 @@ const DrawerNavigation = () => {
           }}
           component={Refer}
         />
-        {/* <Drawer.Screen
-          name="DrawerNotifications"
-          options={{
-            drawerLabel: "Notifications",
-            title: "Notifications",
-            headerShadowVisible: false,
-            drawerIcon: () => (
-              <Ionicons name="notifications-outline" size={24} color={COLORS.brand} />
-            ),
-          }}
-          component={PushNotification}
-        /> */}
         <Drawer.Screen
           name="DrawerAboutUs"
           options={{
@@ -246,12 +256,32 @@ const DrawerNavigation = () => {
             title: "Blogs",
             headerShadowVisible: false,
             drawerIcon: () => (
-              <MaterialIcons name="computer" size={24} color={COLORS.brand}  />
-              // <Ionicons name="chatbox-ellipses-outline" size={24} color={COLORS.brand} />
+              <MaterialIcons name="computer" size={24} color={COLORS.brand} />
             ),
           }}
           component={Blogs}
         />
+
+        <Drawer.Screen
+          name="Refer"
+          listeners={{
+            drawerItemPress: (e) => {
+              e.preventDefault();
+              handleReferPress()
+            }
+          }}
+          options={{
+            drawerLabel: "Refer",
+            title: "Refer",
+            headerShadowVisible: false,
+            drawerIcon: () => (
+              <AntDesign name="sharealt" size={24} color={COLORS.brand} />
+            ),
+          }}
+          component={DrawerRefer}
+        />
+
+
         <Drawer.Screen
           name="FeedbackAndComplaintForm"
           options={{
@@ -265,14 +295,42 @@ const DrawerNavigation = () => {
           component={FeedbackAndComplaintForm}
         />
 
+
         <Drawer.Screen
           name="DrawerTermsAndCondition"
+          listeners={{
+            drawerItemPress: (e) => {
+              e.preventDefault();
+              Linking.openURL('https://webapp.truckmessage.com/terms-conditions/') // Open the external URL
+                .catch((err) => console.error('Failed to open URL:', err));
+            }
+          }}
           options={{
-            drawerLabel: "Terms",
+            drawerLabel: "Terms and Condition ",
             title: "TermsAndCondition",
             headerShadowVisible: false,
             drawerIcon: () => (
               <Ionicons name="alert-circle-outline" size={24} color={COLORS.brand} />
+            ),
+          }}
+          component={TermsAndCondition}
+        />
+
+        <Drawer.Screen
+          name="PrivacyPolicy"
+          listeners={{
+            drawerItemPress: (e) => {
+              e.preventDefault();
+              Linking.openURL('https://webapp.truckmessage.com/privacy-policy/') // Open the external URL
+                .catch((err) => console.error('Failed to open URL:', err));
+            }
+          }}
+          options={{
+            drawerLabel: "Privacy policy",
+            title: "Privacy policy",
+            headerShadowVisible: false,
+            drawerIcon: () => (
+              <Feather name="shield" size={24} color={COLORS.brand} />
             ),
           }}
           component={TermsAndCondition}

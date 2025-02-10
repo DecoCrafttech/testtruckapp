@@ -19,10 +19,10 @@ const messageOutline = require("../assets/icons/messageOutline.png")
 
 
 const fastag = require("../assets/icons/fastag.jpeg")
-const insurance = require("../assets/icons/insurance.jpeg")
+const insurance = require("../assets/icons/insurance.png")
 const toll = require("../assets/icons/toll.jpeg")
 const mileage = require("../assets/icons/mileage.jpeg")
-const fuel = require("../assets/icons/fuel.jpeg")
+const petrolBunk = require("../assets/icons/gas-station.png")
 const vaughan = require("../assets/icons/vaughan.jpeg")
 const buy = require("../assets/icons/buy.jpeg")
 const load = require("../assets/icons/load.jpeg")
@@ -36,7 +36,7 @@ export default {
     fastag,
     toll,
     insurance,
-    fuel,
+    petrolBunk,
     mileage,
     vaughan,
     buy,
