@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList, ScrollView }
 import { icons } from "../constants";
 import { useNavigation } from '@react-navigation/native';
 import Constants from 'expo-constants';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 
 export default ServiceCategory = () => {
@@ -30,7 +31,7 @@ export default ServiceCategory = () => {
     { id: 7, title: "Mileage Calculator", image: { source: icons.mileage }, screen: "MileageCalculator" },
     { id: 8, title: "Fastag", image: { source: icons.fastag }, screen: "Fastag" },
     { id: 9, title: "Insurance", image: { source: icons.insurance }, screen: "Insurance" },
-    { id: 10, title: "Petrol Bunks", image: { source: icons.insurance }, screen: "PetrolBunk" },
+    { id: 10, title: "Petrol Bunks", image: {source : icons.fuel}, screen: "PetrolBunk" },
 
   ];
   const [options, setOptions] = useState(data);

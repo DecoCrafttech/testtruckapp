@@ -66,7 +66,8 @@ const TruckCard = ({
         selectedValue === "user_load_details" ||
           selectedValue === "user_driver_details" ||
           selectedValue === "user_truck_details" ||
-          selectedValue === "user_buy_sell_details" ?
+          selectedValue === "user_buy_sell_details" ||
+          selectedValue === "petrol_bunks" ?
           null :
           <View style={[styles.ratingsContainer]}>
             {/* <View style={styles.starsContainer}>
@@ -90,7 +91,8 @@ const TruckCard = ({
           selectedValue === "user_load_details" ||
             selectedValue === "user_driver_details" ||
             selectedValue === "user_truck_details" ||
-            selectedValue === "user_buy_sell_details" ?
+            selectedValue === "user_buy_sell_details" ||
+            selectedValue === "petrol_bunks" ?
             <Text style={styles.title}>
                {selectedValue === "user_truck_details" ? transportName : companyName}
             </Text>
@@ -110,7 +112,8 @@ const TruckCard = ({
           selectedValue === "user_load_details" ||
             selectedValue === "user_driver_details" ||
             selectedValue === "user_truck_details" ||
-            selectedValue === "user_buy_sell_details" ?
+            selectedValue === "user_buy_sell_details" ||
+            selectedValue === "petrol_bunks" ?
             null :
             <>
               <View style={[styles.labelsContainer, { justifyContent: 'center' }]}>

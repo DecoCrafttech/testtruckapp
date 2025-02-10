@@ -133,6 +133,9 @@ const PetrolBunkAdd = () => {
         };
 
         try {
+
+            console.log("postData",postData)
+
             setSpinner(true);
 
             // Send POST request to your API endpoint
@@ -140,7 +143,7 @@ const PetrolBunkAdd = () => {
             if (response.data.error_code === 0) {
                 console.log("response.data", response.data)
 
-                Alert.alert("Post added successfully!");
+                Alert.alert("Petrol bunk added successfully!");
                 navigation.navigate("PetrolBunk")
             } else {
                 Alert.alert("Failed to add post. Please try again later.");

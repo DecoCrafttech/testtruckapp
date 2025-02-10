@@ -24,6 +24,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 
 const MarketPlace = ({ allData, fetchData }) => {
+
+
   const [editItem, setEditItem] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [pageRefresh, setPageRefresh] = useState(false)
@@ -157,8 +159,6 @@ const MarketPlace = ({ allData, fetchData }) => {
   };
 
   const handleDelete = async (item, type, selected) => {
-
-
 
     const deleteParameters = {
       buy_sell_id: `${item.buy_sell_id}`,
@@ -552,6 +552,7 @@ const MarketPlace = ({ allData, fetchData }) => {
           </View>
         </View>
       </Modal>
+
 
 
       <Modal

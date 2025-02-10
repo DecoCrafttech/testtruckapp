@@ -21,6 +21,7 @@ import EditModal from "./EditModal";
 import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import PetrolBunkMyPosts from "../Petrolbunks/PetrolBunkMyPosts";
 
 
 const Refer = () => {
@@ -41,6 +42,7 @@ const Refer = () => {
     { label: "Driver Posts", value: "user_driver_details" },
     { label: "Truck Posts", value: "user_truck_details" },
     { label: "Buy and Sell Posts", value: "user_buy_sell_details" },
+    { label: "Petrol Bunks", value: "petrol_bunks" },
   ]);
 
   useFocusEffect(
@@ -52,7 +54,6 @@ const Refer = () => {
       }
     })
   )
-
 
   const handleBackPress = () => {
     Alert.alert('Exit App', 'Are you sure want to exit?',
@@ -86,8 +87,6 @@ const Refer = () => {
       console.log("Error updating load details:", error);
     }
   };
-
-
 
 
   const saveEditedDetails = async () => {
@@ -127,7 +126,6 @@ const Refer = () => {
       } catch (error) {
         console.error("Error:", error);
       }
-
 
 
     } else if (selectedValue === "user_driver_details") {
@@ -314,6 +312,8 @@ const Refer = () => {
 
 
   const fetchData = async (selectedValue) => {
+
+    console.log("selectedValue",selectedValue)
     setLoading(true);
 
     const userPostParameters = {
@@ -321,12 +321,17 @@ const Refer = () => {
     };
 
     try {
-      const response = await axiosInstance.post(
-        `/${selectedValue}`,
-        userPostParameters
-      );
 
-
+      let response;
+      if(selectedValue === "petrol_bunks"){
+        response = await axiosInstance.post(`https://truck.truckmessage.com/get_petrol_bunk_details`,{});
+      }else{
+        response = await axiosInstance.post(
+          `/${selectedValue}`,
+          userPostParameters
+        );
+      }
+      
       if (response.data.error_code === 0) {
         switch (selectedValue) {
           case "user_load_details":
@@ -407,6 +412,9 @@ const Refer = () => {
           case "user_buy_sell_details":
             setAllLoadData(response.data.data.reverse());
             break;
+          case "petrol_bunks":
+            setAllLoadData(response.data.data.reverse());
+            break;
           default:
             break;
         }
@@ -458,6 +466,8 @@ const Refer = () => {
             </View>
           ) : selectedValue === "user_buy_sell_details" ? (
             <MarketPlace allData={allLoadData} editedDetails={editedDetails} fetchData={fetchData} />
+          ) :  selectedValue === "petrol_bunks" ? (
+            <PetrolBunkMyPosts allData={allLoadData} editedDetails={editedDetails} fetchData={fetchData} />
           ) : (
             <LoadDetails
               filteredTrucks={allLoadData}
