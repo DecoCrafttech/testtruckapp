@@ -104,7 +104,7 @@ const TollInfo = () => {
     const tollCosts = {
       'car': 110,
       'lcv': 170,
-      'Upto 3 Axle Vehicle': 370,
+      'upto-3-axle': 350,
       '4-to-6-axle': 580,
       '7-or-more-axle': 650,
       'hcm-eme': 750
@@ -160,37 +160,37 @@ const TollInfo = () => {
         color={COLORS.primary}
         onPress={handleCalculate} />
 
-{routeDetails && (
-  <>
-    <Text style={styles.routeHeader}>Route Details</Text>
-    <ScrollView style={styles.detailsContainer}>
-      <View style={styles.statsContainer}>
-        <View style={styles.statContainer}>
-          <Text style={styles.statCount}>Distance</Text>
-          <Text style={styles.statLabel}>{routeDetails.distance}</Text>
-        </View>
-      </View>
-      <View style={styles.statsContainer}>
-        <View style={styles.statContainer}>
-          <Text style={styles.statCount}>Duration</Text>
-          <Text style={styles.statLabel}>{routeDetails.duration}</Text>
-        </View>
-      </View>
-      <View style={styles.statsContainer}>
-        <View style={styles.statContainer}>
-          <Text style={styles.statCount}>Number of Tolls</Text>
-          <Text style={styles.statLabel}>{routeDetails.tollCount}</Text>
-        </View>
-      </View>
-      <View style={styles.statsContainer}>
-        <View style={styles.statContainer}>
-          <Text style={styles.statCount}>Total Toll Cost</Text>
-          <Text style={styles.statLabel}>
-            {routeDetails.totalCost} INR (Approximate value)
-          </Text>
-        </View>
-      </View>
-      {/* <View style={styles.statsContainer}>
+      {routeDetails && (
+        <>
+          <Text style={styles.routeHeader}>Route Details</Text>
+          <ScrollView style={styles.detailsContainer}>
+            <View style={styles.statsContainer}>
+              <View style={styles.statContainer}>
+                <Text style={styles.statCount}>Distance</Text>
+                <Text style={styles.statLabel}>{routeDetails.distance}</Text>
+              </View>
+            </View>
+            <View style={styles.statsContainer}>
+              <View style={styles.statContainer}>
+                <Text style={styles.statCount}>Duration</Text>
+                <Text style={styles.statLabel}>{routeDetails.duration}</Text>
+              </View>
+            </View>
+            <View style={styles.statsContainer}>
+              <View style={styles.statContainer}>
+                <Text style={styles.statCount}>Number of Tolls</Text>
+                <Text style={styles.statLabel}>{routeDetails.tollCount}</Text>
+              </View>
+            </View>
+            <View style={styles.statsContainer}>
+              <View style={styles.statContainer}>
+                <Text style={styles.statCount}>Total Toll Cost</Text>
+                <Text style={styles.statLabel}>
+                  {routeDetails.totalCost} INR (Approximate value)
+                </Text>
+              </View>
+            </View>
+            {/* <View style={styles.statsContainer}>
         <View style={styles.statContainer}>
           <Text style={styles.statCount}>Route</Text>
           {steps.length > 0
@@ -202,10 +202,10 @@ const TollInfo = () => {
             : null}
         </View>
       </View> */}
-    </ScrollView>
-  </>
-)}
-     
+          </ScrollView>
+        </>
+      )}
+
 
 
 
@@ -409,13 +409,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   detailsContainer: {
-    minHeight: 200, // Adjust as needed to limit the scrollable area
+    minHeight: 200, 
     marginBottom: 16,
     padding: 8,
-    // borderWidth: 1,
-    // borderColor: "#ccc",
     borderRadius: 4,
-    // backgroundColor: "#f9f9f9",
   },
   stepText: {
     fontSize: 14,

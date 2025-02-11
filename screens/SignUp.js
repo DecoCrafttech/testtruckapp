@@ -215,7 +215,6 @@ const SignUp = () => {
 
             try {
 
-                console.log("signupParams", signupParams)
                 const response = await axiosInstance.post("/registration", signupParams)
                 if (response.data.error_code === 0) {
                     if (response.data.message === "Phone Number already registered!") {

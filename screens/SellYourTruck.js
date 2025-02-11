@@ -68,8 +68,6 @@ const SellYourTruck = () => {
   const [locationModal, setLocationModal] = useState(false)
 
   const handlePostAdd = async () => {
-
-
     if (
       ownerName.trim() === "" ||
       contactNumber.trim() === "" ||
@@ -93,7 +91,6 @@ const SellYourTruck = () => {
       setLocationValid(location.trim() !== "");
       // setDescriptionValid(description.trim() !== "");
       setTonValid(ton.trim() !== "");
-
       return;
     }
 
@@ -123,13 +120,8 @@ const SellYourTruck = () => {
       });
     });
 
-
-
-
     try {
-
       setLoading(true)
-
       const response = await axiosInstance.post("/truck_buy_sell", formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -161,8 +153,8 @@ const SellYourTruck = () => {
 
 
   const pickImage = async () => {
-    if (images.length >= 3) {
-      Alert.alert("Maximum of 3 images can be uploaded.");
+    if (images.length >= 10) {
+      Alert.alert("Maximum of 10 images can be uploaded.");
       return;
     }
 
@@ -174,7 +166,7 @@ const SellYourTruck = () => {
 
     if (!result.canceled) {
       // Filter out already selected images and limit to 3
-      const newImages = result.assets.slice(0, 3 - images.length);
+      const newImages = result.assets.slice(0, 10 - images.length);
       setImages((prevImages) => [...prevImages, ...newImages]);
     }
   };
@@ -420,9 +412,8 @@ const SellYourTruck = () => {
             <Button title="Upload Images" onPress={pickImage} />
             <View style={styles.imageContainer}>
               {images.map((image, index) => (
-                <View style={styles.selectedImageDeleteBtnContainer}>
+                <View style={styles.selectedImageDeleteBtnContainer} key={index}>
                   <Image
-                    key={index}
                     source={{ uri: image.uri }}
                     style={styles.image}
                   />
@@ -433,8 +424,6 @@ const SellYourTruck = () => {
               ))}
             </View>
           </View>
-
-
 
           <TouchableOpacity style={styles.postButton} onPress={handlePostAdd} disabled={loading ? true : false}>
             {
@@ -458,7 +447,6 @@ const SellYourTruck = () => {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Location</Text>
 
-
             <View style={styles.locationContainer}>
               <GooglePlacesAutocomplete
                 placeholder="Search location"
@@ -467,11 +455,11 @@ const SellYourTruck = () => {
                   autoFocus: true,
                 }}
                 query={{
-                  key: googleApiKey, // Use your hardcoded key if Config is not working
+                  key: googleApiKey, 
                   language: 'en',
                   components: 'country:in',
                 }}
-                fetchDetails={true} // This ensures that you get more detailed information about the selected location
+                fetchDetails={true} 
                 styles={{
                   textInputContainer: styles.locationTextInputContainer,
                   textInput: styles.locationTextInput
@@ -479,14 +467,12 @@ const SellYourTruck = () => {
               />
             </View>
 
-
             <TouchableOpacity style={styles.closeButton} onPress={() => setLocationModal(false)}>
               <Text style={styles.applyButtonText}>Close</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
-
     </SafeAreaView>
   );
 };
@@ -531,7 +517,6 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     marginVertical: 10,
     gap:5,
-    
   },
   selectedImageDeleteBtnContainer: {
     position:'relative',

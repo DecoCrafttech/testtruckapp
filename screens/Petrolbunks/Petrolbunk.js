@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { StyleSheet, View, Button, Alert, Text, ScrollView, TextInput, Modal, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MapView, { Marker, Polyline } from "react-native-maps";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import HeaderWithOutBS from "../../components/HeaderWithOutBS";
 import RBSheet from 'react-native-raw-bottom-sheet'
 import { COLORS } from "../../constants";
@@ -21,8 +21,8 @@ const Petrolbunks = () => {
   const [fromLocation, setFromLocation] = useState(null);
   const [toLocation, setToLocation] = useState(null);
 
-  const [fromLocationPlace, setFromLocationPlace] = useState(null);
-  const [toLocationPlace, setToLocationPlace] = useState(null);
+  const [fromLocationPlace, setFromLocationPlace] = useState("");
+  const [toLocationPlace, setToLocationPlace] = useState("");
   const [routeCoordinates, setRouteCoordinates] = useState([]);
   const [petrolBunks, setPetrolBunks] = useState([]);
   const [petrolBunksCopy, setPetrolBunksCopy] = useState([]);
@@ -41,41 +41,44 @@ const Petrolbunks = () => {
 
   const [discount, setDiscount] = useState("");
 
-    const [amenities, setAmenities] = useState({
-        wifi: false,
-        drinkingWater: false,
-        toilet: false,
-        parking: false,
-        atm: false,
-        freeAir: false,
-        oilChangeService: false,
-        foodCourt: false,
-        evCharging: false,
-        lodging: false,
-        restArea: false,
-        firstAidFacility: false,
-    });
+  const [amenities, setAmenities] = useState({
+    wifi: false,
+    drinkingWater: false,
+    toilet: false,
+    parking: false,
+    atm: false,
+    freeAir: false,
+    oilChangeService: false,
+    foodCourt: false,
+    evCharging: false,
+    lodging: false,
+    restArea: false,
+    firstAidFacility: false,
+  });
 
-    const labels = [
-        "Wifi",
-        "Drinking Water",
-        "Toilet",
-        "Parking",
-        "ATM",
-        "Free Air",
-        "Oil Change Service",
-        "Food Court",
-        "EV Charging",
-        "Lodging",
-        "Rest Area",
-        "First Aid Facility",
-    ];
+  const labels = [
+    "Wifi",
+    "Drinking Water",
+    "Toilet",
+    "Parking",
+    "ATM",
+    "Free Air",
+    "Oil Change Service",
+    "Food Court",
+    "EV Charging",
+    "Lodging",
+    "Rest Area",
+    "First Aid Facility",
+  ];
 
 
+  useFocusEffect(
+    useCallback(() => {
+      fetchPetrolBunks();
+    }, [])
+  )
 
-  useEffect(() => {
-    fetchPetrolBunks();
-  }, []);
+
 
   const fetchPetrolBunks = async () => {
     try {
@@ -94,7 +97,6 @@ const Petrolbunks = () => {
       const data = await response.json();
       if (data.success && data.data) {
         setAllPetrolBunks(data.data); // Save petrol bunk details
-        // console.log("Petrol bunks fetched successfully:", data.data);
       } else {
         Alert.alert("Error", "Failed to fetch petrol bunk details.");
       }
@@ -116,14 +118,13 @@ const Petrolbunks = () => {
           parseFloat(bunk.latitude),
           parseFloat(bunk.longitude)
         );
-        return distance <= 500; // Bunks within 50 km
+        return distance <= 5;
       })
     );
 
     setPetrolBunks(nearbyBunks);
     setPetrolBunksCopy(nearbyBunks)
     setNearByBunks(nearbyBunks)
-    console.log("Nearby petrol bunks:", nearbyBunks);
   };
 
   const getDistanceFromLatLonInKm = (lat1, lon1, lat2, lon2) => {
@@ -150,7 +151,6 @@ const Petrolbunks = () => {
 
     try {
       const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${fromLocation.lat},${fromLocation.lng}&destination=${toLocation.lat},${toLocation.lng}&key=${GOOGLE_API_KEY}`;
-      console.log("url", url)
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -235,15 +235,11 @@ const Petrolbunks = () => {
       });
     }
 
-
     setFromLocationPlace(`${city}, ${state}`)
     setFromLocationModal(false)
-
-
-
   }
-  const handleToLocation = (data, details) => {
 
+  const handleToLocation = (data, details) => {
     const location = details.geometry.location;
     setToLocation({ lat: location.lat, lng: location.lng });
 
@@ -264,12 +260,8 @@ const Petrolbunks = () => {
         }
       });
     }
-
-
     setToLocationPlace(`${city}, ${state}`)
     setToLocationModal(false)
-
-
   }
 
 
@@ -282,31 +274,27 @@ const Petrolbunks = () => {
   };
 
 
-
   const handleFilterBunksModal = () => {
     setFilterBunksModal(true)
   }
 
 
   const handleFilterBunks = () => {
-
     const capitalizedAmenities = Object.fromEntries(
       labels.map(label => [
-          label,
-          amenities[
-              Object.keys(amenities).find(key =>
-                  key.toLowerCase() === label.toLowerCase().replace(/\s+/g, "")
-              )
-          ]
+        label,
+        amenities[
+        Object.keys(amenities).find(key =>
+          key.toLowerCase() === label.toLowerCase().replace(/\s+/g, "")
+        )
+        ]
       ])
-  );
+    );
 
 
     const activeAmenities = Object.entries(capitalizedAmenities)
       .filter(([key, value]) => value === true)
       .map(([key]) => key);
-    console.log("Active Amenities:", activeAmenities);
-
     const filteredBunks = petrolBunksCopy.filter(bunk =>
       activeAmenities.every(amenity => bunk.amenities.map(a => a.toLowerCase()).includes(amenity.toLowerCase()))
     );
@@ -390,34 +378,6 @@ const Petrolbunks = () => {
           onPress={() => setToLocationModal(true)}
         />
 
-        {/* <GooglePlacesAutocomplete
-          placeholder="From"
-          onPress={(data, details = null) => {
-            const location = details.geometry.location;
-            setFromLocation({ lat: location.lat, lng: location.lng });
-          }}
-          fetchDetails
-          query={{
-            key: GOOGLE_API_KEY,
-            language: "en",
-            components: "country:in",
-          }}
-          styles={styles.autoCompleteStyles}
-        />
-        <GooglePlacesAutocomplete
-          placeholder="To"
-          onPress={(data, details = null) => {
-            const location = details.geometry.location;
-            setToLocation({ lat: location.lat, lng: location.lng });
-          }}
-          fetchDetails
-          query={{
-            key: GOOGLE_API_KEY,
-            language: "en",
-            components: "country:in",
-          }}
-          styles={styles.autoCompleteStyles}
-        /> */}
         <View style={{ marginBottom: 20 }}>
           <Button title="Submit" color="green" onPress={fetchRoute} />
         </View>
@@ -459,7 +419,7 @@ const Petrolbunks = () => {
             <View>
 
               <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginRight: 10 }}>
-                <Text onPress={() => handleFilterBunksModal()} style={{ color: COLORS.white, fontWeight: '700', backgroundColor: COLORS.primary, paddingVertical: 6, paddingHorizontal: 10, borderRadius: 5, textAlign: 'right', width: '',marginBottom:10 }}>Filter bunks</Text>
+                <Text onPress={() => handleFilterBunksModal()} style={{ color: COLORS.white, fontWeight: '700', backgroundColor: COLORS.primary, paddingVertical: 6, paddingHorizontal: 10, borderRadius: 5, textAlign: 'right', width: '', marginBottom: 10 }}>Filter bunks</Text>
               </View>
               <ScrollView style={styles.tableContainer}>
 
@@ -515,8 +475,6 @@ const Petrolbunks = () => {
           </View>
         </View>
       </Modal>
-
-
 
 
       {/* To Location Modal */}

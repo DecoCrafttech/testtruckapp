@@ -18,9 +18,10 @@ import { LoadNeedsContext } from "../../hooks/LoadNeedsContext";
 import { useNavigation } from "@react-navigation/native";
 import Constants from 'expo-constants'
 
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
 
 const GOOGLE_API_KEY = "AIzaSyCLT-nqnS-13nBpe-mqzJVsRK7RZIl3I5s";
@@ -39,6 +40,12 @@ const PetrolBunkAdd = () => {
     const [spinner, setSpinner] = useState(false);
 
     const textInputRef = useRef(null); // Create a reference for the TextInput
+
+    const mapRef = useRef(null);
+    const [coordinates, setCoordinates] = useState({ lat: 12.9716, lng: 77.5946 }); // Default: Bangalore
+    const [address, setAddress] = useState("");
+    const [loading, setLoading] = useState(false);
+    const autoCompleteRef = useRef(null);
 
     const [bunkName, setBunkName] = useState("");
     const [ownerName, setOwnerName] = useState("");
@@ -136,7 +143,6 @@ const PetrolBunkAdd = () => {
         const activeAmenities = Object.entries(capitalizedAmenities)
             .filter(([key, value]) => value === true)
             .map(([key]) => key);
-        console.log("Active Amenities:", activeAmenities);
 
 
         // Prepare data to send
@@ -153,17 +159,12 @@ const PetrolBunkAdd = () => {
 
         try {
 
-            console.log("postData", postData)
-
             setSpinner(true);
 
             // Send POST request to your API endpoint
             const response = await axiosInstance.post("/petrol_bunk_entry", postData);
 
-            console.log("response", response.data)
-
             if (response.data.error_code === 0) {
-                console.log("response.data", response.data)
 
                 Alert.alert("Petrol bunk added successfully!");
                 navigation.navigate("PetrolBunk")
@@ -195,7 +196,6 @@ const PetrolBunkAdd = () => {
 
     });
 
-    const mapRef = useRef(null);
 
     const handleLocationSelect = (data, details) => {
 
@@ -224,8 +224,6 @@ const PetrolBunkAdd = () => {
 
         const { lat, lng } = details.geometry.location;
 
-        console.log("lat,lon", lat, lng)
-
         setRegion({
             ...region,
             latitude: lat,
@@ -242,6 +240,38 @@ const PetrolBunkAdd = () => {
         }
     };
 
+
+    // Fetch Address from Lat & Lng
+    const fetchAddressFromLatLng = async (lat, lng) => {
+
+        setLoading(true);
+        try {
+            const response = await axios.get(
+                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_API_KEY}`
+            );
+            if (response.data.results.length > 0) {
+                setAddress(response.data.results[0].formatted_address);
+            } else {
+                setRegion({
+                    ...region,
+                    latitude: lat,
+                    longitude: lng,
+                });
+                setAddress(`Lat: ${lat}, Lng: ${lng}`);
+            }
+        } catch (error) {
+            console.error("Reverse Geocoding failed", error);
+            setAddress(`Lat: ${lat}, Lng: ${lng}`);
+        }
+        setLoading(false);
+    };
+
+    // When the user moves the map
+    const handleRegionChangeComplete = (region) => {
+        const { latitude, longitude } = region;
+        setCoordinates({ lat: latitude, lng: longitude });
+        fetchAddressFromLatLng(latitude, longitude);
+    };
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
@@ -309,25 +339,61 @@ const PetrolBunkAdd = () => {
                             onPress={() => setLocationModal(true)}
                         />
 
-                        <MapView
+                        {/* <MapView
                             ref={mapRef}
                             style={styles.map}
                             region={region}
                         >
                             <Marker coordinate={{ latitude: region.latitude, longitude: region.longitude }} />
-                        </MapView>
+                        </MapView> */}
+
+                        <View>
+                            <Text style={[styles.label,{fontStyle:'italic',marginBottom:15,marginTop:20,fontWeight:'500'}]}>(Drag map to point your location)</Text>
+                        </View>
+
+                        {/* MapView with draggable functionality */}
+                        <View style={styles.mapContainer}>
+                            <MapView
+                                ref={mapRef}
+                                provider={PROVIDER_GOOGLE}
+                                style={styles.map}
+                                initialRegion={{
+                                    latitude: coordinates.lat,
+                                    longitude: coordinates.lng,
+                                    latitudeDelta: 0.01,
+                                    longitudeDelta: 0.01,
+                                }}
+                                onRegionChangeComplete={handleRegionChangeComplete} // Detect movement
+                            />
+
+                            {/* Pin Icon in the center of the screen */}
+                            <View style={styles.markerFixed}>
+                                <Text style={styles.pin}>📍</Text>
+                            </View>
+                        </View>
 
                     </View>
 
-                    {spinner ? (
-                        <TouchableOpacity style={styles.postButton}>
-                            <ActivityIndicator color={COLORS.white} size="small" />
-                        </TouchableOpacity>
-                    ) : (
-                        <TouchableOpacity style={styles.postButton} onPress={handleAddBunk}>
-                            <Text style={styles.postButtonText}>Add Bunk</Text>
-                        </TouchableOpacity>
-                    )}
+                    {/* Location Info Box */}
+                    <View style={styles.infoBox}>
+                        <Text style={styles.infoText}>Selected Location:</Text>
+                        {loading ? (
+                            <ActivityIndicator size="small" color="#007BFF" />
+                        ) : (
+                            <Text style={styles.infoAddress}>{address || "Move the map to pick a location"}</Text>
+                        )}
+                    </View>
+
+                    {
+                        spinner ? (
+                            <TouchableOpacity style={styles.postButton} >
+                                <ActivityIndicator color={COLORS.white} size="small" />
+                            </TouchableOpacity>
+                        ) : (
+                            <TouchableOpacity style={styles.postButton} onPress={handleAddBunk}>
+                                <Text style={styles.postButtonText}>Add Bunk</Text>
+                            </TouchableOpacity>
+                        )}
                 </ScrollView>
             </View>
 
@@ -532,13 +598,21 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "bold",
     },
-    map: {
+    mapContainer: {
         flex: 1,
+        height: 250, // Adjust this as needed
     },
     map: {
         width: '100%',
-        height: 250, // Adjust this as needed
+        height: 250,
     },
+    markerFixed: {
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        transform: [{ translateX: -10 }, { translateY: -35 }],
+    },
+    pin: { fontSize: 40 },
     title: {
         fontSize: 18,
         fontWeight: "bold",

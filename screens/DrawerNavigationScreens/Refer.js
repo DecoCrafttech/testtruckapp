@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -145,8 +145,6 @@ const Refer = () => {
       }
 
       try {
-
-
         const response = await axiosInstance.post(
           "/driver_entry",
           editingParams
@@ -181,11 +179,10 @@ const Refer = () => {
         "user_id": editedDetails.userId,
         "user_post": editedDetails.userPost,
         "vehicle_number": editedDetails.vehicleNumber,
+        "truck_size": editedDetails.truckSize
       }
 
       try {
-
-
         const response = await axiosInstance.post(
           "/truck_entry",
           editingParams
@@ -197,13 +194,7 @@ const Refer = () => {
       } catch (error) {
         console.error("Error:", error);
       }
-
     }
-
-
-
-
-
   };
 
 
@@ -303,19 +294,16 @@ const Refer = () => {
   };
 
 
-  useEffect(() => {
-    setSelectedValue("user_load_details")
-    fetchData("user_load_details"); // Trigger fetchData when selectedValue changes
-  }, []);
-
-
+  useFocusEffect(
+    useCallback(() => {
+      setSelectedValue("user_load_details");
+      fetchData("user_load_details"); // Fetch data when screen is focused
+    }, [])
+  );
 
 
   const fetchData = async (selectedValue) => {
-
-    console.log("selectedValue",selectedValue)
     setLoading(true);
-
     const userPostParameters = {
       user_id: await AsyncStorage.getItem("user_id"),
     };
@@ -323,15 +311,15 @@ const Refer = () => {
     try {
 
       let response;
-      if(selectedValue === "petrol_bunks"){
-        response = await axiosInstance.post(`https://truck.truckmessage.com/get_petrol_bunk_details`,{});
-      }else{
+      if (selectedValue === "petrol_bunks") {
+        response = await axiosInstance.post(`https://truck.truckmessage.com/get_petrol_bunk_details`, {});
+      } else {
         response = await axiosInstance.post(
           `/${selectedValue}`,
           userPostParameters
         );
       }
-      
+
       if (response.data.error_code === 0) {
         switch (selectedValue) {
           case "user_load_details":
@@ -344,7 +332,7 @@ const Refer = () => {
               title: item.company_name,
               fromLocation: item.from_location,
               toLocation: item.to_location,
-              ownerName : item.profile_name,
+              ownerName: item.profile_name,
               labels: [
                 { icon: "table-view", text: item.material },
                 { icon: "attractions", text: `${item.no_of_tyres} wheels` },
@@ -393,8 +381,9 @@ const Refer = () => {
               fromLocation: item.from_location,
               toLocation: item.to_location,
               transportName: item.name_of_the_transport,
+              truckSize: item.truck_size,
               labels: [
-                { icon: "table-view", text: item.truck_name },
+                { icon: "table-view", text: `${item.truck_size} ft` },
                 { icon: "directions-bus", text: item.vehicle_number },
                 { icon: "attractions", text: `${item.no_of_tyres} wheels` },
                 { icon: "local-shipping", text: item.truck_body_type },
@@ -466,7 +455,7 @@ const Refer = () => {
             </View>
           ) : selectedValue === "user_buy_sell_details" ? (
             <MarketPlace allData={allLoadData} editedDetails={editedDetails} fetchData={fetchData} />
-          ) :  selectedValue === "petrol_bunks" ? (
+          ) : selectedValue === "petrol_bunks" ? (
             <PetrolBunkMyPosts allData={allLoadData} editedDetails={editedDetails} fetchData={fetchData} />
           ) : (
             <LoadDetails

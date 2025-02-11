@@ -38,8 +38,8 @@ const PetrolBunkMyPosts = ({ allData, fetchData }) => {
     const [region, setRegion] = useState({
         latitude: 20.5937,
         longitude: 78.9629,
-        latitudeDelta: 10,
-        longitudeDelta: 10,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
     });
 
 
@@ -99,6 +99,8 @@ const PetrolBunkMyPosts = ({ allData, fetchData }) => {
         ownerName: "",
         location: "",
         discount: "",
+        latitude: "",
+        longitude: "",
         amenities: []
     });
 
@@ -145,7 +147,6 @@ const PetrolBunkMyPosts = ({ allData, fetchData }) => {
         const activeAmenities = Object.entries(capitalizedAmenities)
             .filter(([key, value]) => value === true)
             .map(([key]) => key);
-        console.log("Active Amenities:", activeAmenities);
 
 
         try {
@@ -155,16 +156,11 @@ const PetrolBunkMyPosts = ({ allData, fetchData }) => {
                 "petrol_bunk_name": editedData.bunkName,
                 "owner_name": editedData.ownerName,
                 "location": editedData.location,
-                "latitude": `${region.latitude}`,
-                "longitude": `${region.longitude}`,
+                "latitude": `${editedData.latitude}`,
+                "longitude": `${editedData.longitude}`,
                 "discount": `${editedData.discount}`,
                 "amenities": activeAmenities
             };
-
-            console.log("amenties", amenities)
-            console.log("capitalizedAmenities", capitalizedAmenities)
-            console.log("postData", postData)
-
             setSaveChangesLoading(true)
             setSpinner(true);
 
@@ -204,8 +200,15 @@ const PetrolBunkMyPosts = ({ allData, fetchData }) => {
             bunkName: item.petrol_bunk_name,
             ownerName: item.owner_name,
             location: item.location,
+            latitude: item.latitude,
+            longitude: item.longitude,
             discount: item.discount[0],
             amenities: item.amenities, // Store the array of amenities
+        });
+        setRegion({
+            ...region,
+            latitude: Number(item.latitude),
+            longitude: Number(item.longitude),
         });
         setModalVisible(true);
     };
@@ -243,8 +246,8 @@ const PetrolBunkMyPosts = ({ allData, fetchData }) => {
             mapRef.current.animateToRegion({
                 latitude: lat,
                 longitude: lng,
-                latitudeDelta: 0.05,
-                longitudeDelta: 0.05,
+                latitudeDelta: 0.001,
+                longitudeDelta: 0.001,
             });
         }
     };
@@ -307,42 +310,6 @@ const PetrolBunkMyPosts = ({ allData, fetchData }) => {
         </View>
     );
 
-
-    const handleMapPress = (e) => {
-        const { coordinate } = e.nativeEvent;
-    
-        // Set a smaller delta for zooming in
-        const zoomedRegion = {
-            latitude: coordinate.latitude,
-            longitude: coordinate.longitude,
-            latitudeDelta: 0.01, // Adjust this value for zoom level
-            longitudeDelta: 0.01, // Adjust this value for zoom level
-        };
-    
-        // Update the region state with the new coordinates and zoom level
-        setRegion(zoomedRegion);
-    
-        // Reverse geocode the selected location to get the address
-        reverseGeocode(coordinate.latitude, coordinate.longitude);
-    };
-
-    const reverseGeocode = async (latitude, longitude) => {
-        try {
-            const response = await axiosInstance.get(
-                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${googleApiKey}`
-            );
-            if (response.data.status === 'OK') {
-                const address = response.data.results[0].formatted_address;
-                setEditedData({ ...editedData, location: address }); // Update editedData.location
-            }
-        } catch (error) {
-            console.error('Error fetching address:', error);
-        }
-    };
-
-
-
-
     return (
         <View style={styles.container}>
             <FlatList
@@ -379,16 +346,29 @@ const PetrolBunkMyPosts = ({ allData, fetchData }) => {
                                 value={editedData.location}
                                 onPress={() => setLocationModal(true)}
                             />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Latitude"
+                                value={editedData.latitude}
+                                onChangeText={(text) => setEditedData({ ...editedData, latitude: text })}
+                                keyboardType="number-pad"
+                            />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Longitude"
+                                value={editedData.longitude}
+                                onChangeText={(text) => setEditedData({ ...editedData, longitude: text })}
+                                keyboardType="number-pad"
+                            />
 
-
+                            {/* 
                             <MapView
                                 ref={mapRef}
                                 style={styles.map}
                                 region={region}
-                                onPress={handleMapPress} // Add onPress event here
                             >
                                 <Marker coordinate={{ latitude: region.latitude, longitude: region.longitude }} />
-                            </MapView>
+                            </MapView> */}
 
 
                             {/* <MapView

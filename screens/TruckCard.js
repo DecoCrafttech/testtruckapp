@@ -28,10 +28,6 @@ const TruckCard = ({
 
 }) => {
 
-
-  console.log("truckSize",truckSize)
-
-
   const [formattedTime, setFormattedTime] = useState("")
 
   useEffect(() => {
@@ -140,15 +136,20 @@ const TruckCard = ({
       </View>
       <View style={styles.locationContainer}>
         <Icon name="place" size={24} color={COLORS.iconDrop} />
-        <Text style={styles.location}>{toLocation}</Text>
+        <Text style={styles.location}>
+          {selectedValue === "user_truck_details" ? toLocation.join(", ") : toLocation }
+          </Text>
       </View>
       <View style={styles.locationContainer}>
         <Icon name="calendar-month" size={24} color={COLORS.secondary} />
         <Text style={styles.location}>{formattedTime}</Text>
       </View>
 
+
+{/* MY post labels */}
       <View style={styles.labelsContainer}>
-        {labels.slice(0, 6).map((label, index) => (
+        {labels.slice(0, 6).map((label, index) => 
+        (
           <View key={index} style={styles.labelRow}>
             {label.icon !== "weight" ?
               <Icon name={label.icon} size={20} color={COLORS.black} />

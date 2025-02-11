@@ -514,10 +514,6 @@ const MarketPlace = ({ navigation }) => {
   ]);
 
 
-  console.log(statelist)
-
-
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
       <View style={{ flex: 1, backgroundColor: COLORS.white }}>

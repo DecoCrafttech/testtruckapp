@@ -12,6 +12,10 @@ import { COLORS } from "../../constants";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import RNPickerSelect from 'react-native-picker-select';
 import Constants from 'expo-constants'
+import SectionedMultiSelect from "react-native-sectioned-multi-select";
+import { MaterialIcons as Icon } from '@expo/vector-icons';
+import { statesData } from "../../constants/cityAndState";
+
 
 
 
@@ -27,7 +31,16 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
   const [toLocationModal, setToLocationModal] = useState(false)
 
 
+  const [editSelectedStates, setEditSelectedStates] = useState([])
+  const [updateSelectedStates, setUpdateSelectedStates] = useState([])
+
+
+
+
+
+
   useEffect(() => {
+
     if (loadDetails) {
       setEditedDetails({
         companyName: loadDetails.company_name || "",
@@ -59,6 +72,7 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
         profileName: loadDetails.profile_name || "",
         truckId: loadDetails.truck_id || "",
         truckName: loadDetails.truck_name || "",
+        truckSize: loadDetails.truck_size || "",
         labels: [
           { icon: "table-view", text: loadDetails.text || "" },
           { icon: "attractions", text: loadDetails.text || "" },
@@ -78,12 +92,9 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
 
   const handleLabelChange = (text, index) => {
     const updatedLabels = [...editedDetails.labels];
-
-    // Set default text if 'text' is empty
     if (text === "") {
-      text = " "; // Or any other default text you prefer
+      text = " "; 
     }
-
     updatedLabels[index].text = text;
     setEditedDetails({ ...editedDetails, labels: updatedLabels });
   };
@@ -168,6 +179,28 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
       setEditedDetails({ ...editedDetails, toLocation: (`${city}, ${state}`) })
 
       setToLocationModal(false)
+    };
+
+
+
+    const handleEditStatesChange = async (selectedItemIds) => {
+      // Log previously selected states
+      const prevSelectedStateNames = editSelectedStates.map(id => {
+        const state = statesData.find(state => state.id === id);
+        return state ? state.name : null;
+      }).filter(name => name !== null);
+
+
+      // Update selected states
+      setEditSelectedStates(selectedItemIds);
+
+      // Log currently selected states
+      const selectedStateNames = selectedItemIds.map(id => {
+        const state = statesData.find(state => state.id === id);
+        return state ? state.name : null;
+      }).filter(name => name !== null);
+      setUpdateSelectedStates(selectedStateNames)
+      setEditedDetails({ ...editedDetails, toLocation:selectedStateNames })
     };
 
 
@@ -488,14 +521,6 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
 
               />
 
-              {/* <TextInput
-                style={styles.input}
-                value={editedDetails.truckBrandName}
-                onChangeText={(text) =>
-                  setEditedDetails({ ...editedDetails, truckBrandName: text })
-                }
-                placeholder="Truck name"
-              /> */}
 
               <View style={{ borderColor: COLORS.gray, borderWidth: 1, width: "100%", padding: 0, borderRadius: 5, marginVertical: 8 }}>
                 <RNPickerSelect
@@ -517,10 +542,41 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
                 onPress={() => setFromLocationModal(true)}
               />
 
-              <TextInput
+              {/* <TextInput
                 style={styles.input}
                 placeholder="To Location"
                 value={editedDetails.toLocation}
+                onPress={() => setToLocationModal(true)}
+              /> */}
+
+              <View style={{ width: "auto", marginBottom: 5 }}>
+                <SectionedMultiSelect
+                  items={statesData}
+                  IconRenderer={Icon}
+                  uniqueKey="id"
+                  searchPlaceholderText="Search state"
+                  selectedText="selected"
+                  selectText="Select"
+                  confirmText="Done"
+                  onSelectedItemsChange={handleEditStatesChange} 
+                  selectedItems={editSelectedStates}  
+                  styles={{
+                    backdrop: styles.multiSelectBackdrop,
+                    selectToggle: styles.multiSelectBox,
+                    chipContainer: styles.multiSelectChipContainer,
+                    chipText: styles.multiSelectChipText,
+                    selectToggleText: styles.selectToggleText,
+                    selectedItemText: styles.selectedItemText,
+                    selectText: styles.selectText,
+                    button: { backgroundColor: '#CE093A' },
+                  }}
+                />
+              </View>
+
+                <TextInput
+                style={styles.input}
+                placeholder="Truck size"
+                value={editedDetails.truckSize}
                 onPress={() => setToLocationModal(true)}
               />
 
@@ -932,6 +988,41 @@ const styles = StyleSheet.create({
   locationTextInput: {
     borderWidth: 1,
     borderColor: COLORS.gray,
+  },
+
+  multiSelectBackdrop: {
+    backgroundColor: 'rgba(0, 0, 0, 0.01)',
+  },
+  multiSelectBox: {
+    borderWidth: 1,
+    borderRadius: 5,
+    borderColor: 'grey',
+    padding: 10,
+    paddingLeft: 15,
+    marginBottom: 4,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 12
+
+  },
+  selectToggleText: {
+    color: '#000',
+    fontSize: 14
+  },
+  selectText: {
+    color: 'red'
+  },
+  selectedItemText: {
+    color: COLORS.primary,
+  },
+  multiSelectChipContainer: {
+    borderWidth: 0,
+    backgroundColor: '#ddd',
+    borderRadius: 8,
+  },
+  multiSelectChipText: {
+    color: '#222',
+    fontSize: 12,
   },
 });
 

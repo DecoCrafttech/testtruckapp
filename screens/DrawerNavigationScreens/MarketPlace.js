@@ -12,19 +12,19 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Button
 } from "react-native";
 import axiosInstance from "../../services/axiosInstance";
 import RNPickerSelect from 'react-native-picker-select';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Ionicons from 'react-native-vector-icons/Ionicons';
-
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 
 
 
 const MarketPlace = ({ allData, fetchData }) => {
-
 
   const [editItem, setEditItem] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -32,7 +32,7 @@ const MarketPlace = ({ allData, fetchData }) => {
 
   const [updateImage, setUpdatedImage] = useState(null)
 
-  const [images, setImages] = useState([]);
+  const [newImages, setNewImages] = useState([]);
 
   const [saveChangesLoading, setSaveChangesLoading] = useState(false)
   const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
@@ -113,7 +113,7 @@ const MarketPlace = ({ allData, fetchData }) => {
   const yearsData = years
 
   useEffect(() => {
-    
+
   }, [pageRefresh])
 
 
@@ -143,7 +143,6 @@ const MarketPlace = ({ allData, fetchData }) => {
   };
 
 
-
   const handleYes = () => {
     setShowFeedbackInput(false);
   };
@@ -168,7 +167,7 @@ const MarketPlace = ({ allData, fetchData }) => {
       const response = await axiosInstance.post(
         `/remove_truck_buy_sell`,
         deleteParameters
-      ); 
+      );
 
       if (response.data.error_code === 0) {
         fetchData("user_buy_sell_details");
@@ -216,7 +215,59 @@ const MarketPlace = ({ allData, fetchData }) => {
     setRating(star);
   };
 
+  const handleDeleteOldImage = async (fileName) => {
+    const result = editedData.images.filter((v, i) => {
+      return v !== fileName;
+    })
+    setEditedData((prevState) => ({
+      ...prevState, images: result
+    }))
 
+    const removeImageParams = {
+      user_id: editedData.userId,
+      buy_sell_id: editedData.buySellId,
+      image_url: fileName
+    }
+
+    try {
+      const response = await axiosInstance.post("/remove_buy_and_sell_image", removeImageParams)
+      setPageRefresh(!pageRefresh)
+    } catch (error) {
+      console.log(error)
+    }
+
+
+
+  }
+
+  const handleDeleteNewImage = (fileName) => {
+    const result = newImages.filter((v, i) => {
+      return v.fileName !== fileName;
+    })
+    setNewImages(result)
+  }
+
+
+
+
+  const pickImage = async () => {
+    if (newImages.length >= 10) {
+      Alert.alert("Maximum of 10 images can be uploaded.");
+      return;
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      // Filter out already selected images and limit to 3
+      const selectedImages = result.assets.slice(0, 10 - newImages.length);
+      setNewImages((prevImages) => [...prevImages, ...selectedImages]);
+    }
+  };
 
 
 
@@ -251,43 +302,55 @@ const MarketPlace = ({ allData, fetchData }) => {
 
 
   const saveChanges = async () => {
-
-    const formData = new FormData();
-
-    // Append images to FormData
-    editedData.images.forEach((image, index) => {
-      formData.append(`truck_image${index + 1}`, {
-        uri: image,
-        type: 'image/jpeg', // Adjust accordingly if different image types
-        name: `truck_image_${index + 1}.jpg`, // Use a unique name for the image
-      });
-    });
-
-
-    formData.append("user_id", editedData.userId)
-    formData.append("brand", editedData.brand)
-    formData.append("buy_sell_id", editedData.buySellId)
-    formData.append("contact_no", editedData.contact_no)
-    formData.append("description", editedData.description)
-    formData.append("id", editedData.id)
-    formData.append("kms_driven", editedData.kms_driven)
-    formData.append("location", editedData.location)
-    formData.append("model", editedData.model)
-    formData.append("owner_name", editedData.owner_name)
-    formData.append("price", editedData.price)
-    formData.append("tonnage", editedData.ton)
-    formData.append("vehicle_number", editedData.vehicleNumber)
-    formData.append("truck_body_type", editedData.bodyType)
-    formData.append("no_of_tyres", editedData.noOfTyres)
     try {
-
       setSaveChangesLoading(true)
+
+      const formData = new FormData();
+
+      // Append existing images (editedData.images) to FormData
+      editedData.images.forEach((image, index) => {
+        const url = image;
+        const filename = url.split('/').pop();
+
+        formData.append(`truck_image${index + 1}`, {
+          uri: image,
+          type: 'image/jpeg',
+          name: filename,
+        });
+      });
+
+      // Append new images (newImages) to FormData
+      newImages.forEach((image, index) => {
+        const newIndex = editedData.images.length + index + 1; // Avoid duplicate indexes
+        formData.append(`truck_image${newIndex}`, {
+          uri: image.uri,
+          type: 'image/jpeg',
+          name: image.fileName,
+        });
+      });
+
+      formData.append("user_id", editedData.userId)
+      formData.append("brand", editedData.brand)
+      formData.append("buy_sell_id", editedData.buySellId)
+      formData.append("contact_no", editedData.contact_no)
+      formData.append("description", editedData.description)
+      formData.append("id", editedData.id)
+      formData.append("kms_driven", editedData.kms_driven)
+      formData.append("location", editedData.location)
+      formData.append("model", editedData.model)
+      formData.append("owner_name", editedData.owner_name)
+      formData.append("price", editedData.price)
+      formData.append("tonnage", editedData.ton)
+      formData.append("vehicle_number", editedData.vehicleNumber)
+      formData.append("truck_body_type", editedData.bodyType)
+      formData.append("no_of_tyres", editedData.noOfTyres)
 
       const response = await axiosInstance.post("/truck_buy_sell", formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       })
+
       setSaveChangesLoading(false)
 
       setPageRefresh(!pageRefresh)
@@ -358,7 +421,7 @@ const MarketPlace = ({ allData, fetchData }) => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.deleteButton}
-          onPress={() =>handleFeedBackModal(item, "truck_buy_sell", "remove_truck_buy_sell")}
+          onPress={() => handleFeedBackModal(item, "truck_buy_sell", "remove_truck_buy_sell")}
         >
           <Text style={styles.buttonText}>Delete</Text>
         </TouchableOpacity>
@@ -487,23 +550,53 @@ const MarketPlace = ({ allData, fetchData }) => {
                 onChangeText={(text) => setEditedData({ ...editedData, description: text })}
               />
 
-             <View style={styles.multipleImageContainer}>
+              <Text style={{ fontSize: 17, fontWeight: '600', marginVertical: 15 }}>Existing images</Text>
+              <View style={styles.multipleImageContainer}>
                 {
                   editedData.images.map((image, index) => {
                     return (
-                      <View key={index}>
+                      <View key={index} style={styles.selectedImageDeleteBtnContainer}>
                         <Image
                           source={{ uri: `${image}` }}
                           style={styles.image}
-                          width={80}
-                          height={80}
+                          width={40}
+                          height={40}
                         />
+                        <TouchableOpacity style={styles.selectedImageDeleteBtn} onPress={() => handleDeleteOldImage(image)}>
+                          <AntDesign name="close" size={15} color="white" />
+                        </TouchableOpacity>
                       </View>
                     )
                   })
                 }
+                {
+                  editedData.images.length == 0 &&
+                  (
+                    <Text style={{ fontSize: 12, fontWeight: '600', marginVertical: 0 }}>0 images</Text>
+                  )
 
+                }
               </View>
+
+              <View style={{ backgroundColor: 'grey', height: 1, width: "100%", marginBottom: 20 }}></View>
+
+
+              <Button title="Upload New Images" onPress={pickImage} />
+              <View style={styles.newImagesContainer}>
+                {newImages.map((image, index) => (
+                  <View style={styles.selectedNewImagesDeleteBtnContainer} key={index}>
+                    <Image
+                      source={{ uri: image.uri }}
+                      style={styles.newImage}
+                    />
+                    <TouchableOpacity style={styles.selectedNewImageDeleteBtn} onPress={() => handleDeleteNewImage(image.fileName)}>
+                      <AntDesign name="close" size={15} color="white" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+
+
 
 
               <View style={styles.imageContainer}>
@@ -524,7 +617,7 @@ const MarketPlace = ({ allData, fetchData }) => {
               {
                 saveChangesLoading ?
                   <TouchableOpacity
-                    style={[styles.saveButton,{opacity : saveChangesLoading ? 0.5 : 1}]}
+                    style={[styles.saveButton, { opacity: saveChangesLoading ? 0.5 : 1 }]}
                     disabled
                   >
                     <Text style={styles.saveButtonText}>
@@ -556,106 +649,106 @@ const MarketPlace = ({ allData, fetchData }) => {
 
 
       <Modal
-          visible={feedbackModalVisible}
-          onClose={() => {
-            setFeedbackModalVisible(false);
-          }}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => {
-            setFeedbackModalVisible(false);
-          }}
-        >
-          <View style={styles.feedbackModalContainer}>
-            <View style={styles.feedbackModalContent}>
-              <Text style={styles.feedbackHeader}>
-                {/* Did you post the {feedbackType} details using this platform? */}
-                Did you get leads using this platform?
-              </Text>
+        visible={feedbackModalVisible}
+        onClose={() => {
+          setFeedbackModalVisible(false);
+        }}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => {
+          setFeedbackModalVisible(false);
+        }}
+      >
+        <View style={styles.feedbackModalContainer}>
+          <View style={styles.feedbackModalContent}>
+            <Text style={styles.feedbackHeader}>
+              {/* Did you post the {feedbackType} details using this platform? */}
+              Did you get leads using this platform?
+            </Text>
 
-              <View style={styles.feedbackButtonContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.feedbackButton,
-                    showFeedbackInput && styles.feedbackSelectedButton,
-                  ]}
-                  onPress={handleNo}
-                >
-                  <Text style={styles.feedbackButtonText}>Yes</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.feedbackButton,
-                    !showFeedbackInput && styles.feedbackSelectedButton,
-                  ]}
-                  onPress={handleYes}
-                >
-                  <Text style={styles.feedbackButtonText}>No</Text>
-                </TouchableOpacity>
-              </View>
-
-              {showFeedbackInput ? (
-                <>
-                  <View style={styles.feedbackInputContainer}>
-                    <Text style={styles.feedbackLabel}>Mobile Number:</Text>
-                    <TextInput
-                      style={styles.feedbackInput}
-                      keyboardType="phone-pad"
-                      value={mobileNumber}
-                      onChangeText={(text) => setMobileNumber(text)}
-                      placeholder="Enter your mobile number"
-                    />
-                  </View>
-                  <View style={styles.feedbackInputContainer}>
-                    <Text style={styles.feedbackLabel}>Ratings</Text>
-                    <View style={styles.starContainer}>
-                      {/* Render 5 stars */}
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <TouchableOpacity
-                          key={star}
-                          onPress={() => handleStarPress(star)}
-                        >
-                          <Ionicons
-                            name={star <= rating ? "star" : "star-outline"} // Filled or outlined star
-                            size={32}
-                            color="#ffd700" // Gold color for stars
-                            style={styles.star}
-                          />
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  </View>
-                </>
-              ) : (
-                <View style={styles.feedbackInputContainer}>
-                  <Text style={styles.feedbackLabel}>Feedback:</Text>
-                  <TextInput
-                    style={styles.feedbackInput}
-                    multiline
-                    numberOfLines={6}
-                    value={feedback}
-                    onChangeText={(text) => setFeedback(text)}
-                    placeholder="Type your feedback here"
-                  />
-                </View>
-              )}
-
+            <View style={styles.feedbackButtonContainer}>
               <TouchableOpacity
-                style={styles.feedbackSubmitButton}
-                onPress={handleSubmit}
+                style={[
+                  styles.feedbackButton,
+                  showFeedbackInput && styles.feedbackSelectedButton,
+                ]}
+                onPress={handleNo}
               >
-                <Text style={styles.feedbackSubmitButtonText}>Submit</Text>
+                <Text style={styles.feedbackButtonText}>Yes</Text>
               </TouchableOpacity>
-
               <TouchableOpacity
-                style={styles.feedbackCloseButton}
-                onPress={handleFeedBackModalClose}
+                style={[
+                  styles.feedbackButton,
+                  !showFeedbackInput && styles.feedbackSelectedButton,
+                ]}
+                onPress={handleYes}
               >
-                <Text style={styles.feedbackCloseButtonText}>Close</Text>
+                <Text style={styles.feedbackButtonText}>No</Text>
               </TouchableOpacity>
             </View>
+
+            {showFeedbackInput ? (
+              <>
+                <View style={styles.feedbackInputContainer}>
+                  <Text style={styles.feedbackLabel}>Mobile Number:</Text>
+                  <TextInput
+                    style={styles.feedbackInput}
+                    keyboardType="phone-pad"
+                    value={mobileNumber}
+                    onChangeText={(text) => setMobileNumber(text)}
+                    placeholder="Enter your mobile number"
+                  />
+                </View>
+                <View style={styles.feedbackInputContainer}>
+                  <Text style={styles.feedbackLabel}>Ratings</Text>
+                  <View style={styles.starContainer}>
+                    {/* Render 5 stars */}
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <TouchableOpacity
+                        key={star}
+                        onPress={() => handleStarPress(star)}
+                      >
+                        <Ionicons
+                          name={star <= rating ? "star" : "star-outline"} // Filled or outlined star
+                          size={32}
+                          color="#ffd700" // Gold color for stars
+                          style={styles.star}
+                        />
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              </>
+            ) : (
+              <View style={styles.feedbackInputContainer}>
+                <Text style={styles.feedbackLabel}>Feedback:</Text>
+                <TextInput
+                  style={styles.feedbackInput}
+                  multiline
+                  numberOfLines={6}
+                  value={feedback}
+                  onChangeText={(text) => setFeedback(text)}
+                  placeholder="Type your feedback here"
+                />
+              </View>
+            )}
+
+            <TouchableOpacity
+              style={styles.feedbackSubmitButton}
+              onPress={handleSubmit}
+            >
+              <Text style={styles.feedbackSubmitButtonText}>Submit</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.feedbackCloseButton}
+              onPress={handleFeedBackModalClose}
+            >
+              <Text style={styles.feedbackCloseButtonText}>Close</Text>
+            </TouchableOpacity>
           </View>
-        </Modal>
+        </View>
+      </Modal>
 
     </View>
   );
@@ -804,9 +897,25 @@ const styles = StyleSheet.create({
     gap: 5,
     flexWrap: 'wrap',
     justifyContent: 'flex-start',
-    marginHorizontal: 10
+    marginHorizontal: 10,
+    marginBottom: 30,
   },
-  
+  selectedImageDeleteBtnContainer: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row'
+  },
+  selectedImageDeleteBtn: {
+    position: 'absolute',
+    padding: 2,
+    top: 0,
+    right: 10,
+    backgroundColor: 'red',
+    borderRadius: 5,
+    borderTopRightRadius: 0
+  },
+
   // Feedbackmodal
   feedbackModalContainer: {
     flex: 1,
@@ -893,8 +1002,34 @@ const styles = StyleSheet.create({
   star: {
     marginHorizontal: 5,
   },
-  
-  
+  newImagesContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginVertical: 15,
+    gap: 5,
+  },
+  selectedNewImagesDeleteBtnContainer: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row'
+  },
+  selectedNewImageDeleteBtn: {
+    position: 'absolute',
+    padding: 2,
+    top: 0,
+    right: 10,
+    backgroundColor: 'red',
+    borderRadius: 5,
+    borderTopRightRadius: 0
+  },
+  newImage: {
+    width: 100,
+    height: 100,
+    marginRight: 10,
+    marginBottom: 10,
+  },
+
 });
 
 export default MarketPlace;

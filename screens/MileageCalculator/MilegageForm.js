@@ -110,7 +110,7 @@ const MileageForm = () => {
         <Text style={styles.label}>Distance</Text>
         <TextInput
           style={[styles.textInput, !distanceValid && { borderColor: "red" }]}
-          placeholder="Distance"
+          placeholder="Enter the total trip distance in km"
           onChangeText={setDistance}
           value={distance}
           keyboardType="number-pad"
@@ -118,7 +118,7 @@ const MileageForm = () => {
         <Text style={styles.label}>Fuel</Text>
         <TextInput
           style={[styles.textInput, !fuelValid && { borderColor: "red" }]}
-          placeholder="Fuel"
+          placeholder="The total trip diesel consumption in liters"
           onChangeText={setFuel}
           value={fuel}
           keyboardType="number-pad"
@@ -127,7 +127,7 @@ const MileageForm = () => {
         <Text style={styles.label}>Price</Text>
         <TextInput
           style={[styles.textInput, !priceValid && { borderColor: "red" }]}
-          placeholder="Price"
+          placeholder="Fuel price per liter"
           onChangeText={setPrice}
           value={price}
           keyboardType="number-pad"

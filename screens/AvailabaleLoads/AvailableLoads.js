@@ -18,7 +18,6 @@ import { MaterialIcons as Icon } from '@expo/vector-icons';
 import SendMessageModal from "../SendMessageModal";
 import Constants from 'expo-constants'
 import AntDesign from '@expo/vector-icons/AntDesign';
-import Checkbox from 'expo-checkbox';
 import CustomButtonWithLoading from "../../components/CustomButtonWithLoading";
 
 
