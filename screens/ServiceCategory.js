@@ -14,7 +14,7 @@ export default ServiceCategory = () => {
 
 
   const images = [
-    { id: '1', uri: `${cdnLink}/load.png`, screen: "AvailableLoads" },
+    { id: '1', uri: `${cdnLink}/load (1).png`, screen: "AvailableLoads" },
     { id: '2', uri: `${cdnLink}/truck.png`, screen: "AvailableTrucks" },
     { id: '3', uri: `${cdnLink}/driver.png`, screen: "AvailableDrivers" },
     { id: '4', uri: `${cdnLink}/buy&sell.png`, screen: "MarketPlace" },
@@ -24,14 +24,14 @@ export default ServiceCategory = () => {
   const data = [
     { id: 1, title: "Find Loads", image: { source: icons.load }, screen: "AvailableLoads" },
     { id: 2, title: "Book a Truck", image: { source: icons.truck }, screen: "AvailableTrucks" },
-    { id: 3, title: "Driver Needs", image: { source: icons.driver }, screen: "AvailableDrivers" },
-    { id: 4, title: "Truck Buy & Sell", image: { source: icons.buy }, screen: "MarketPlace" },
-    { id: 5, title: "Expense Calculator", image: { source: icons.vaughan }, screen: "VaughanInfo" },
-    { id: 6, title: "Toll Calculator", image: { source: icons.toll }, screen: "TollCalculator" },
-    { id: 7, title: "Mileage Calculator", image: { source: icons.mileage }, screen: "MileageCalculator" },
+    { id: 10, title: "Prime Petrol Bunks", image: {source : icons.petrolBunk}, screen: "PetrolBunk" },
     { id: 8, title: "Fastag Recharge", image: { source: icons.fastag }, screen: "Fastag" },
     { id: 9, title: "Insurance Renewal", image: { source: icons.insurance }, screen: "Insurance" },
-    { id: 10, title: "Prime Petrol Bunks", image: {source : icons.petrolBunk}, screen: "PetrolBunk" },
+    { id: 3, title: "Driver Needs", image: { source: icons.driver }, screen: "AvailableDrivers" },
+    { id: 4, title: "Truck Buy & Sell", image: { source: icons.buy }, screen: "MarketPlace" },
+    { id: 5, title: "Trip Accounts Book", image: { source: icons.vaughan }, screen: "VaughanInfo" },
+    { id: 6, title: "Toll Calculator", image: { source: icons.toll }, screen: "TollCalculator" },
+    { id: 7, title: "Mileage Calculator", image: { source: icons.mileage }, screen: "MileageCalculator" },
 
   ];
   const [options, setOptions] = useState(data);

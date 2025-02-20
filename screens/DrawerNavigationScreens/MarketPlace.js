@@ -72,6 +72,18 @@ const MarketPlace = ({ allData, fetchData }) => {
 
   });
 
+  const numberOfTyresData = [
+    { label: '4', value: '4' },
+    { label: '6', value: '6' },
+    { label: '10', value: '10' },
+    { label: '12', value: '12' },
+    { label: '14', value: '14' },
+    { label: '16', value: '16' },
+    { label: '18', value: '18' },
+    { label: '20', value: '20' },
+    { label: '22', value: '22' },
+  ];
+
   const brandData = [
     { label: 'Ashok Leyland', value: 'Ashok Leyland' },
     { label: 'Tata', value: 'Tata' },
@@ -386,6 +398,10 @@ const MarketPlace = ({ allData, fetchData }) => {
               <Text style={styles.tableValue}>{item.truck_body_type}</Text>
             </View>
             <View style={styles.tableRow}>
+              <Text style={styles.tableLabel}>Number of tyres:</Text>
+              <Text style={styles.tableValue}>{item.no_of_tyres}</Text>
+            </View>
+            <View style={styles.tableRow}>
               <Text style={styles.tableLabel}>Kms Driven:</Text>
               <Text style={styles.tableValue}>{item.kms_driven}</Text>
             </View>
@@ -484,6 +500,18 @@ const MarketPlace = ({ allData, fetchData }) => {
                 value={editedData.kms_driven}
                 onChangeText={(text) => setEditedData({ ...editedData, kms_driven: text })}
               />
+
+              <View style={{ borderColor: "#ccc", borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
+                <RNPickerSelect
+                  onValueChange={(value) => setEditedData({ ...editedData, noOfTyres: value })}
+                  items={numberOfTyresData}
+                  value={editedData.noOfTyres}
+                  placeholder={{
+                    label: 'Select number of tyres',
+                    color: 'grey',
+                  }}
+                />
+              </View>
               <View style={{ borderColor: "#ccc", borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
                 <RNPickerSelect
                   onValueChange={(value) => setEditedData({ ...editedData, brand: value })}

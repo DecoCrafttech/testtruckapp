@@ -4,10 +4,10 @@
     "slug": "truckmessage",
     "version": "5.0.7",
     "orientation": "portrait",
-    "icon": "https://ddyz8ollngqwo.cloudfront.net/splash_screen.png",
+    "icon": "https://dmq79vlehx2uk.cloudfront.net/splash_screen (1).png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "https://ddyz8ollngqwo.cloudfront.net/splash_screen.png",
+      "image": "https://dmq79vlehx2uk.cloudfront.net/splash_screen (1).png",
       "resizeMode": "contain",
       "backgroundColor": "#ce0a3a"
     },
@@ -20,7 +20,7 @@
       "versionCode": 8,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "foregroundImage": "https://ddyz8ollngqwo.cloudfront.net/splash_screen.png",
+        "foregroundImage": "https://dmq79vlehx2uk.cloudfront.net/splash_screen (1).png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
@@ -46,7 +46,7 @@
       ]
     ],
     "extra": {
-      "REACT_APP_CDN_LINK": "https://ddyz8ollngqwo.cloudfront.net",
+      "REACT_APP_CDN_LINK": "https://dmq79vlehx2uk.cloudfront.net",
       "REACT_NATIVE_APP_API_URL": "https://truck.truckmessage.com",
       "REACT_APP_GOOGLE_PLACES_KEY": "AIzaSyCLT-nqnS-13nBpe-mqzJVsRK7RZIl3I5s",
       "eas": {

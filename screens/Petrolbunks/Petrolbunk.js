@@ -41,35 +41,84 @@ const Petrolbunks = () => {
 
   const [discount, setDiscount] = useState("");
 
+  // const [amenities, setAmenities] = useState({
+  //   wifi: false,
+  //   drinkingWater: false,
+  //   toilet: false,
+  //   parking: false,
+  //   atm: false,
+  //   freeAir: false,
+  //   oilChangeService: false,
+  //   foodCourt: false,
+  //   evCharging: false,
+  //   lodging: false,
+  //   restArea: false,
+  //   firstAidFacility: false,
+  // });
+
+  // const labels = [
+  //   "Wifi",
+  //   "Drinking Water",
+  //   "Toilet",
+  //   "Parking",
+  //   "ATM",
+  //   "Free Air",
+  //   "Oil Change Service",
+  //   "Food Court",
+  //   "EV Charging",
+  //   "Lodging",
+  //   "Rest Area",
+  //   "First Aid Facility",
+  // ];
+
+
   const [amenities, setAmenities] = useState({
-    wifi: false,
+    dieselDiscounts: false,
+    cngAvailability: false,
+    spaciousTruckParking: false,
+    cleanToilets: false,
+    restAreas: false,
+    creditDebitCardPayments: false,
+    dieselFuelCardPayments: false,
+    automatedBills: false,
+    freeCommercialAir: false,
+    onSiteATM: false,
+    vehicleOilForSale: false,
     drinkingWater: false,
-    toilet: false,
-    parking: false,
-    atm: false,
-    freeAir: false,
-    oilChangeService: false,
-    foodCourt: false,
-    evCharging: false,
-    lodging: false,
-    restArea: false,
-    firstAidFacility: false,
+    pollutionControlCheck: false,
+    waterWashServices: false,
+    punctureRepair: false,
+    minorMaintenanceServices: false,
+    wheelAlignment: false,
+    weighbridge: false,
+    generalStores: false,
+    hotelsDhabas: false,
   });
 
+  
   const labels = [
-    "Wifi",
+    "Diesel Discounts",
+    "CNG Availability",
+    "Spacious Truck Parking",
+    "Clean Toilets",
+    "Rest Areas",
+    "Credit/Debit Card Payments Accepted",
+    "Diesel Fuel Card Payments Accepted",
+    "Automated Bills with Pump Readings",
+    "Free Commercial Air for Tyres",
+    "On-Site ATM",
+    "Vehicle Oil for Sale",
     "Drinking Water",
-    "Toilet",
-    "Parking",
-    "ATM",
-    "Free Air",
-    "Oil Change Service",
-    "Food Court",
-    "EV Charging",
-    "Lodging",
-    "Rest Area",
-    "First Aid Facility",
+    "Pollution Control Check (PUC) (Within 500m)",
+    "Water Wash Services (Within 500m)",
+    "Puncture Repair (Within 500m)",
+    "Minor Maintenance Services (Within 500m)",
+    "Wheel Alignment (Within 500m)",
+    "Weighbridge (Within 500m)",
+    "General Stores (Within 500m)",
+    "Hotels/Dhabas (Within 500m)",
   ];
+  
 
 
   useFocusEffect(
@@ -280,6 +329,7 @@ const Petrolbunks = () => {
 
 
   const handleFilterBunks = () => {
+    // Normalize amenities names to match labels
     const capitalizedAmenities = Object.fromEntries(
       labels.map(label => [
         label,
@@ -291,22 +341,56 @@ const Petrolbunks = () => {
       ])
     );
 
-
+    // Get selected amenities
     const activeAmenities = Object.entries(capitalizedAmenities)
-      .filter(([key, value]) => value === true)
+      .filter(([_, value]) => value === true)
       .map(([key]) => key);
-    const filteredBunks = petrolBunksCopy.filter(bunk =>
-      activeAmenities.every(amenity => bunk.amenities.map(a => a.toLowerCase()).includes(amenity.toLowerCase()))
-    );
+
+    // Check if user selected any amenities or entered a discount
+    const filterByAmenities = activeAmenities.length > 0;
+    const filterByDiscount = discount.trim() !== "";
+
+    // Filter petrol bunks based on selected criteria
+    const filteredBunks = petrolBunksCopy.filter(bunk => {
+      const hasAllAmenities = activeAmenities.every(amenity =>
+        bunk.amenities.map(a => a.toLowerCase()).includes(amenity.toLowerCase())
+      );
+
+      const meetsDiscountCriteria =
+        !filterByDiscount || (bunk.discount && bunk.discount >= parseFloat(discount));
+
+      // Apply filtering based on user selection
+      if (filterByAmenities && filterByDiscount) {
+        return hasAllAmenities && meetsDiscountCriteria;
+      } else if (filterByAmenities) {
+        return hasAllAmenities;
+      } else if (filterByDiscount) {
+        return meetsDiscountCriteria;
+      } else {
+        return true; // If nothing is selected, show all
+      }
+    });
 
     setPetrolBunks(filteredBunks);
-    setFilterBunksModal(false)
-
+    setFilterBunksModal(false);
   };
+
+  const handleClearFilter = () => {
+    const resetAmenities = Object.keys(amenities).reduce((acc, key) => {
+      acc[key] = false;
+      return acc;
+    }, {});
+
+    setAmenities(resetAmenities); // Reset checkboxes
+    setDiscount(""); // Reset discount input
+    setPetrolBunks(petrolBunksCopy); // Restore original list
+  };
+
+
 
   return (
     <SafeAreaView style={styles.container}>
-      <HeaderWithOutBS title="Petrol Bunk" isPetrolBunkPage="true" onPress={handleAddPetrolBunk} />
+      <HeaderWithOutBS title="Prime Petrol Bunk" isPetrolBunkPage="true" onPress={handleAddPetrolBunk} />
 
       <View style={styles.mapContainer}>
         <MapView
@@ -419,21 +503,22 @@ const Petrolbunks = () => {
             <View>
 
               <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginRight: 10 }}>
-                <Text onPress={() => handleFilterBunksModal()} style={{ color: COLORS.white, fontWeight: '700', backgroundColor: COLORS.primary, paddingVertical: 6, paddingHorizontal: 10, borderRadius: 5, textAlign: 'right', width: '', marginBottom: 10 }}>Filter bunks</Text>
+                <Text onPress={() => handleFilterBunksModal()} style={{ marginRight: 10, color: COLORS.white, fontWeight: '700', backgroundColor: 'green', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 5, textAlign: 'right', width: '', marginBottom: 10 }}>Filter bunks</Text>
+                <Text onPress={() => handleClearFilter()} style={{ color: COLORS.white, fontWeight: '700', backgroundColor: COLORS.primary, paddingVertical: 6, paddingHorizontal: 10, borderRadius: 5, textAlign: 'right', width: '', marginBottom: 10 }}>Clear filter</Text>
               </View>
-              <ScrollView style={styles.tableContainer}>
-
-
+              <ScrollView style={styles.tableContainer} >
                 <View style={styles.tableHeader}>
                   <Text style={styles.tableCell}>Name</Text>
                   <Text style={styles.tableCell}>Location</Text>
                   <Text style={styles.tableCell}>Amenities</Text>
+                  <Text style={styles.tableCell}>Discount</Text>
                 </View>
                 {petrolBunks.map((bunk) => (
                   <View style={styles.tableRow} key={bunk.bunk_id}>
                     <Text style={styles.tableCell}>{bunk.petrol_bunk_name}</Text>
                     <Text style={styles.tableCell}>{bunk.location}</Text>
                     <Text style={styles.tableCell}>{bunk.amenities.join(", ")}</Text>
+                    <Text style={styles.tableCell}>{bunk.discount}</Text>
                   </View>
                 ))}
               </ScrollView>
@@ -588,7 +673,7 @@ const styles = StyleSheet.create({
   tableContainer: { flex: 1, paddingHorizontal: 10, width: 350 },
   tableHeader: { flexDirection: "row", backgroundColor: "#ccc", padding: 10, },
   tableRow: { flexDirection: "row", },
-  tableCell: { flex: 1, padding: 5, borderWidth: 1, borderColor: "#ccc" },
+  tableCell: { flex: 1, width: 100, padding: 5, borderWidth: 1, borderColor: "#ccc" },
 
 
   modalContainer: {
@@ -614,6 +699,8 @@ const styles = StyleSheet.create({
   locationContainer: {
     flex: 1,
     padding: 5,
+    overflow: 'scroll'
+
   },
   locationTextInputContainer: {
 

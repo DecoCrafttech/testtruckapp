@@ -151,6 +151,7 @@ const SignUp = () => {
         { label: 'Load booking agent', category: 'Load booking agent' },
         { label: 'Driver', category: 'Driver' },
         { label: 'Lorry Buy & Sell dealers / Owners', category: 'Lorry Buy &Sell dealers / Owners' },
+        { label: 'Petrol bunk Owner', category: 'Petrol bunk Owner' },
     ];
 
 
@@ -299,7 +300,7 @@ const SignUp = () => {
                         <View style={styles.avatarContainer}>
                             <Image
                                 style={styles.avatar}
-                                source={{ uri: `${cdnLink}/truckmessage_round.png` }}
+                                source={{ uri: `${cdnLink}/truckmessage_round (1).png` }}
                             />
                         </View>
 

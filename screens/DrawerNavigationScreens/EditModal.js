@@ -41,6 +41,8 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
 
   useEffect(() => {
 
+    console.log(loadDetails)
+
     if (loadDetails) {
       setEditedDetails({
         companyName: loadDetails.company_name || "",
@@ -657,6 +659,8 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
                 }
                 placeholder="Kms driven"
               />
+
+
 
               <View style={{ borderColor: COLORS.gray, borderWidth: 1, width: "100%", padding: 0, borderRadius: 5, marginVertical: 8 }}>
                 <RNPickerSelect

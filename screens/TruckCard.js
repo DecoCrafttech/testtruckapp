@@ -93,7 +93,7 @@ const TruckCard = ({
             selectedValue === "user_buy_sell_details" ||
             selectedValue === "petrol_bunks" ?
             <Text style={styles.title}>
-               {selectedValue === "user_truck_details" ? transportName : companyName}
+              {selectedValue === "user_truck_details" ? transportName : companyName}
             </Text>
             :
             <>
@@ -137,8 +137,8 @@ const TruckCard = ({
       <View style={styles.locationContainer}>
         <Icon name="place" size={24} color={COLORS.iconDrop} />
         <Text style={styles.location}>
-          {selectedValue === "user_truck_details" ? toLocation.join(", ") : toLocation }
-          </Text>
+          {selectedValue === "user_truck_details" ? toLocation.join(", ") : toLocation}
+        </Text>
       </View>
       <View style={styles.locationContainer}>
         <Icon name="calendar-month" size={24} color={COLORS.secondary} />
@@ -146,9 +146,9 @@ const TruckCard = ({
       </View>
 
 
-{/* MY post labels */}
+      {/* MY post labels */}
       <View style={styles.labelsContainer}>
-        {labels.slice(0, 6).map((label, index) => 
+        {labels.slice(0, 6).map((label, index) =>
         (
           <View key={index} style={styles.labelRow}>
             {label.icon !== "weight" ?
@@ -159,7 +159,7 @@ const TruckCard = ({
 
             <Text style={styles.label}>
               {
-                index === 5 ? availableTruckPage === 'true' ? truckSize : companyName || truckSize  : label.text
+                index === 5 ? availableTruckPage === 'true' ? `${truckSize} ft` : companyName || truckSize : label.text
               }
             </Text>
           </View>

@@ -157,7 +157,6 @@ const AvailableTruck = ({ navigation }) => {
         setPageLoading(true)
 
         const response = await axiosInstance.get("/all_truck_details");
-
         if (response.data.error_code === 0) {
           const transformedData = response.data.data.map((item) => ({
             companyName: item.company_name,

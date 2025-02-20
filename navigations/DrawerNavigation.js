@@ -148,7 +148,7 @@ const DrawerNavigation = () => {
                 }}
               >
                 <Image
-                  source={{ uri: `${cdnLink}/truckmessage_round.png` }}
+                  source={{ uri: `${cdnLink}/truckmessage_round (1).png` }}
                   style={{
                     width: 100,
                     height: 100,

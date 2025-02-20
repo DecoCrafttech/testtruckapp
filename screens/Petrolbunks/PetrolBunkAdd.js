@@ -60,35 +60,84 @@ const PetrolBunkAdd = () => {
 
     const [locationModal, setLocationModal] = useState(false)
 
-    const [amenities, setAmenities] = useState({
-        wifi: false,
-        drinkingWater: false,
-        toilet: false,
-        parking: false,
-        atm: false,
-        freeAir: false,
-        oilChangeService: false,
-        foodCourt: false,
-        evCharging: false,
-        lodging: false,
-        restArea: false,
-        firstAidFacility: false,
-    });
+    // const [amenities, setAmenities] = useState({
+    //     wifi: false,
+    //     drinkingWater: false,
+    //     toilet: false,
+    //     parking: false,
+    //     atm: false,
+    //     freeAir: false,
+    //     oilChangeService: false,
+    //     foodCourt: false,
+    //     evCharging: false,
+    //     lodging: false,
+    //     restArea: false,
+    //     firstAidFacility: false,
+    // });
 
-    const labels = [
-        "Wifi",
+    // const labels = [
+    //     "Wifi",
+    //     "Drinking Water",
+    //     "Toilet",
+    //     "Parking",
+    //     "ATM",
+    //     "Free Air",
+    //     "Oil Change Service",
+    //     "Food Court",
+    //     "EV Charging",
+    //     "Lodging",
+    //     "Rest Area",
+    //     "First Aid Facility",
+    // ];
+
+
+      const [amenities, setAmenities] = useState({
+        dieselDiscounts: false,
+        cngAvailability: false,
+        spaciousTruckParking: false,
+        cleanToilets: false,
+        restAreas: false,
+        creditDebitCardPayments: false,
+        dieselFuelCardPayments: false,
+        automatedBills: false,
+        freeCommercialAir: false,
+        onSiteATM: false,
+        vehicleOilForSale: false,
+        drinkingWater: false,
+        pollutionControlCheck: false,
+        waterWashServices: false,
+        punctureRepair: false,
+        minorMaintenanceServices: false,
+        wheelAlignment: false,
+        weighbridge: false,
+        generalStores: false,
+        hotelsDhabas: false,
+      });
+    
+      
+      const labels = [
+        "Diesel Discounts",
+        "CNG Availability",
+        "Spacious Truck Parking",
+        "Clean Toilets",
+        "Rest Areas",
+        "Credit/Debit Card Payments Accepted",
+        "Diesel Fuel Card Payments Accepted",
+        "Automated Bills with Pump Readings",
+        "Free Commercial Air for Tyres",
+        "On-Site ATM",
+        "Vehicle Oil for Sale",
         "Drinking Water",
-        "Toilet",
-        "Parking",
-        "ATM",
-        "Free Air",
-        "Oil Change Service",
-        "Food Court",
-        "EV Charging",
-        "Lodging",
-        "Rest Area",
-        "First Aid Facility",
-    ];
+        "Pollution Control Check (PUC) (Within 500m)",
+        "Water Wash Services (Within 500m)",
+        "Puncture Repair (Within 500m)",
+        "Minor Maintenance Services (Within 500m)",
+        "Wheel Alignment (Within 500m)",
+        "Weighbridge (Within 500m)",
+        "General Stores (Within 500m)",
+        "Hotels/Dhabas (Within 500m)",
+      ];
+
 
     const capitalizedAmenities = Object.fromEntries(
         labels.map(label => [

@@ -62,32 +62,32 @@ const Login = () => {
             setPageLoading(false)
         }, 4000);
 
-        // const registerForPushNotifications = async () => {
-        //     const { status: existingStatus } = await Notifications.getPermissionsAsync();
-        //     let finalStatus = existingStatus;
+        const registerForPushNotifications = async () => {
+            const { status: existingStatus } = await Notifications.getPermissionsAsync();
+            let finalStatus = existingStatus;
 
-        //     if (existingStatus !== 'granted') {
-        //         const { status } = await Notifications.requestPermissionsAsync();
-        //         finalStatus = status;
-        //     }
+            if (existingStatus !== 'granted') {
+                const { status } = await Notifications.requestPermissionsAsync();
+                finalStatus = status;
+            }
 
-        //     if (finalStatus !== 'granted') {
-        //         Toast.error('Failed to get push token for push notification!');
-        //         return;
-        //     }
+            if (finalStatus !== 'granted') {
+                Toast.error('Failed to get push token for push notification!');
+                return;
+            }
 
-        //     const token = (await Notifications.getExpoPushTokenAsync()).data;
-        //     await AsyncStorage.setItem("pushToken", token)
-        //     setPushToken(token);
-        //     console.log("Generated Push Token:", token);
-        // };
+            const token = (await Notifications.getExpoPushTokenAsync()).data;
+            await AsyncStorage.setItem("pushToken", token)
+            setPushToken(token);
+            console.log("Generated Push Token:", token);
+        };
 
         registerForPushNotifications();
     }, [])
 
-    // useEffect(() => {
-    //     registerForPushNotifications();
-    //   }, []);
+    useEffect(() => {
+        registerForPushNotifications();
+      }, []);
 
     const registerForPushNotifications = async () => {
         try {
@@ -270,7 +270,7 @@ const Login = () => {
                             <View style={styles.avatarContainer}>
                                 <Image
                                     style={styles.avatar}
-                                    source={{ uri: "https://ddyz8ollngqwo.cloudfront.net/truckmessage_round.png" }}
+                                    source={{ uri: "https://dmq79vlehx2uk.cloudfront.net/truckmessage_round (1).png" }}
                                 />
                             </View>
 

@@ -317,7 +317,7 @@ const TruckNeeds = () => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
       <View style={{ flex: 1, backgroundColor: COLORS.white }}>
-        <HeaderWithOutBS title="Truck Needs" />
+        <HeaderWithOutBS title="Add Truck" />
 
         <ScrollView contentContainerStyle={styles.contentContainer}>
           <View style={styles.textInputContainer}>

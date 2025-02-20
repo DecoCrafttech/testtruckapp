@@ -336,6 +336,7 @@ const MarketPlace = ({ navigation }) => {
     });
     setTruckBodyType("")
     setNumberOfTyres("")
+    setStatelist([])
     toggleModal()
   }
 
@@ -517,7 +518,7 @@ const MarketPlace = ({ navigation }) => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
       <View style={{ flex: 1, backgroundColor: COLORS.white }}>
-        <HeaderWithOutBS title="Market Place" />
+        <HeaderWithOutBS title="Used Vehicle Sale" />
         <View style={styles.container}>
           <CustomButton
             title="Sell your Truck"

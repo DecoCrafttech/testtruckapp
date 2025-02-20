@@ -44,7 +44,7 @@ const ProfileTopContainer = () => {
     const [mobile, setMobile] = useState("");
     const [dob, setDob] = useState("");
     const [category, setCategory] = useState("Category");
-    const [profileImage, setProfileImage] = useState(null)
+    const [profileImage, setProfileImage] = useState("https://dmq79vlehx2uk.cloudfront.net/user.png")
     const [isImagePicked, setImagePicked] = useState(false)
 
     const [userCities, setUserCities] = useState([])

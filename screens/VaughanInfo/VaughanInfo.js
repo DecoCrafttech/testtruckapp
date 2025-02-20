@@ -65,10 +65,10 @@ const VaughanInfo = ({ navigation }) => {
     return (
       <>
         <TouchableOpacity
-          style={styles.button}
+          style={[styles.button,{backgroundColor :'green'}]}
           onPress={() => handleDetailsPress(item)}
         >
-          <Text style={styles.buttonText}>View Full Details</Text>
+          <Text style={[styles.buttonText,]}>View Full Details</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.deleteButton}

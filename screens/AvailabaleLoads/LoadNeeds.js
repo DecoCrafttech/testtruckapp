@@ -208,7 +208,7 @@ const LoadNeeds = () => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
       <View style={{ flex: 1, backgroundColor: COLORS.white }}>
-        <HeaderWithOutBS title="Load Needs"  />
+        <HeaderWithOutBS title="Add Load"  />
 
         <ScrollView contentContainerStyle={styles.contentContainer}>
           <View style={styles.textInputContainer}>

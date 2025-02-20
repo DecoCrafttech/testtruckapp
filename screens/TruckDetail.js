@@ -242,7 +242,7 @@ const TruckDetail = ({ route }) => {
             </View>
             <View style={styles.cardContent}>
               <Text style={styles.description}>
-                {fullProductDetails.price}
+              ₹ {fullProductDetails.price}
               </Text>
             </View>
 
@@ -383,13 +383,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomLeftRadius: 1,
     borderBottomRightRadius: 1,
+
   },
   cardTitle: {
-    color: COLORS.brand,
+    color: "#000",
+    fontSize : 14,
+    fontStyle:'italic',
+    
   },
   description: {
-    fontSize: 18,
-    color: "#696969",
+    fontSize: 17,
+    color: "#000",
+    fontWeight : "700",
+    marginTop : -5
   },
   shareButton: {
     marginTop: 10,
