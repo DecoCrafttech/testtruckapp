@@ -57,55 +57,10 @@ const TruckCard = ({
 
 
   return (
-    <View style={styles.card}>
+    <>
+      <View style={styles.card}>
 
 
-
-      {
-        selectedValue === "user_load_details" ||
-          selectedValue === "user_driver_details" ||
-          selectedValue === "user_truck_details" ||
-          selectedValue === "user_buy_sell_details" ||
-          selectedValue === "petrol_bunks" ?
-          null :
-          <View style={[styles.ratingsContainer]}>
-            {/* <View style={styles.starsContainer}>
-              {[...Array(5)].map((_, index) => (
-                <Icon1
-                  key={index}
-                  name={index > 2 ? "star-o" : "star"}
-                  size={13}
-                  color="#FFD700"
-                />
-              ))}
-            </View>
-            <Text style={styles.textRight}>Posts : {post}</Text> */}
-          </View>
-      }
-
-
-      {/* My posts Title */}
-      <View style={styles.titleContainer}>
-        {
-          selectedValue === "user_load_details" ||
-            selectedValue === "user_driver_details" ||
-            selectedValue === "user_truck_details" ||
-            selectedValue === "user_buy_sell_details" ||
-            selectedValue === "petrol_bunks" ?
-            <Text style={styles.title}>
-              {selectedValue === "user_truck_details" ? transportName : companyName}
-            </Text>
-            :
-            <>
-              <Text style={styles.title}>
-                {profileName}{" "}
-                {
-                  isAadhaarVerified === 1 &&
-                  <MaterialIcons name="verified" size={16} color="green" />
-                }
-              </Text>
-            </>
-        }
 
         {
           selectedValue === "user_load_details" ||
@@ -114,78 +69,126 @@ const TruckCard = ({
             selectedValue === "user_buy_sell_details" ||
             selectedValue === "petrol_bunks" ?
             null :
-            <>
-              <View style={[styles.labelsContainer, { justifyContent: 'center' }]}>
-                <Icon1 name="building-o" size={20} color={COLORS.black} />
-
-                <Text style={styles.label}>
-                  {
-                    availableTruckPage === 'true' ?
-                      labels[5].text || nameOfTheTransport :
-                      companyName
-                  }
-                </Text>
-              </View>
-            </>
-        }
-
-      </View>
-      <View style={styles.locationContainer}>
-        <Icon name="place" size={24} color={COLORS.iconPickup} />
-        <Text style={styles.location}>{fromLocation}</Text>
-      </View>
-      <View style={styles.locationContainer}>
-        <Icon name="place" size={24} color={COLORS.iconDrop} />
-        <Text style={styles.location}>
-          {selectedValue === "user_truck_details" ? toLocation.join(", ") : toLocation}
-        </Text>
-      </View>
-      <View style={styles.locationContainer}>
-        <Icon name="calendar-month" size={24} color={COLORS.secondary} />
-        <Text style={styles.location}>{formattedTime}</Text>
-      </View>
-
-
-      {/* MY post labels */}
-      <View style={styles.labelsContainer}>
-        {labels.slice(0, 6).map((label, index) =>
-        (
-          <View key={index} style={styles.labelRow}>
-            {label.icon !== "weight" ?
-              <Icon name={label.icon} size={20} color={COLORS.black} />
-              :
-              <Icon2 name={label.icon} size={20} color={COLORS.black} />
-            }
-
-            <Text style={styles.label}>
-              {
-                index === 5 ? availableTruckPage === 'true' ? `${truckSize} ft` : companyName || truckSize : label.text
-              }
-            </Text>
-          </View>
+            <View style={[styles.ratingsContainer]}>
+              {/* <View style={styles.starsContainer}>
+        {[...Array(5)].map((_, index) => (
+          <Icon1
+            key={index}
+            name={index > 2 ? "star-o" : "star"}
+            size={13}
+            color="#FFD700"
+          />
         ))}
       </View>
+      <Text style={styles.textRight}>Posts : {post}</Text> */}
+            </View>
+        }
 
-      <View>
-        <Text style={{ fontWeight: "bold" }}>Description</Text>
-        <Text style={styles.description}>{description}</Text>
-      </View>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[styles.button, styles.buttonGreen]}
-          onPress={onButton1Press}
-        >
-          <Text style={styles.buttonText}>{status === "editAndDelete" ? "Edit" : "Call"}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.buttonRed]}
-          onPress={onButton2Press}
-        >
-          <Text style={styles.buttonText}>{status === "editAndDelete" ? "Delete" : "Message"}</Text>
-        </TouchableOpacity>
+
+        {/* My posts Title */}
+        <View style={styles.titleContainer}>
+          {
+            selectedValue === "user_load_details" ||
+              selectedValue === "user_driver_details" ||
+              selectedValue === "user_truck_details" ||
+              selectedValue === "user_buy_sell_details" ||
+              selectedValue === "petrol_bunks" ?
+              <Text style={styles.title}>
+                {selectedValue === "user_truck_details" ? transportName : companyName}
+              </Text>
+              :
+              <>
+                <Text style={styles.title}>
+                  {profileName}{" "}
+                  {
+                    isAadhaarVerified === 1 &&
+                    <MaterialIcons name="verified" size={16} color="green" />
+                  }
+                </Text>
+              </>
+          }
+
+          {
+            selectedValue === "user_load_details" ||
+              selectedValue === "user_driver_details" ||
+              selectedValue === "user_truck_details" ||
+              selectedValue === "user_buy_sell_details" ||
+              selectedValue === "petrol_bunks" ?
+              null :
+              <>
+                <View style={[styles.labelsContainer, { justifyContent: 'center' }]}>
+                  <Icon1 name="building-o" size={20} color={COLORS.black} />
+
+                  <Text style={styles.label}>
+                    {
+                      availableTruckPage === 'true' ?
+                        labels[5].text || nameOfTheTransport :
+                        companyName
+                    }
+                  </Text>
+                </View>
+              </>
+          }
+
+        </View>
+        <View style={styles.locationContainer}>
+          <Icon name="place" size={24} color={COLORS.iconPickup} />
+          <Text style={styles.location}>{fromLocation}</Text>
+        </View>
+        <View style={styles.locationContainer}>
+          <Icon name="place" size={24} color={COLORS.iconDrop} />
+          <Text style={styles.location}>
+            {selectedValue === "user_truck_details" ? toLocation.join(", ") : toLocation}
+          </Text>
+        </View>
+        <View style={styles.locationContainer}>
+          <Icon name="calendar-month" size={24} color={COLORS.secondary} />
+          <Text style={styles.location}>{formattedTime}</Text>
+        </View>
+
+
+        {/* MY post labels */}
+        <View style={styles.labelsContainer}>
+          {labels.slice(0, 6).map((label, index) =>
+          (
+            <View key={index} style={styles.labelRow}>
+              {label.icon !== "weight" ?
+                <Icon name={label.icon} size={20} color={COLORS.black} />
+                :
+                <Icon2 name={label.icon} size={20} color={COLORS.black} />
+              }
+
+              <Text style={styles.label}>
+                {
+                  index === 5 ? availableTruckPage === 'true' ? `${truckSize} ft` : companyName || truckSize : label.text
+                }
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        <View>
+          <Text style={{ fontWeight: "bold" }}>Description</Text>
+          <Text style={styles.description}>{description}</Text>
+        </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.button, styles.buttonGreen]}
+            onPress={onButton1Press}
+          >
+            <Text style={styles.buttonText}>{status === "editAndDelete" ? "Edit" : "Call"}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, styles.buttonRed]}
+            onPress={onButton2Press}
+          >
+            <Text style={styles.buttonText}>{status === "editAndDelete" ? "Delete" : "Message"}</Text>
+          </TouchableOpacity>
+        </View>
+
       </View>
 
-    </View>
+    </>
   );
 };
 

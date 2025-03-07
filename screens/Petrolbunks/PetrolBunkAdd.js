@@ -60,36 +60,6 @@ const PetrolBunkAdd = () => {
 
     const [locationModal, setLocationModal] = useState(false)
 
-    // const [amenities, setAmenities] = useState({
-    //     wifi: false,
-    //     drinkingWater: false,
-    //     toilet: false,
-    //     parking: false,
-    //     atm: false,
-    //     freeAir: false,
-    //     oilChangeService: false,
-    //     foodCourt: false,
-    //     evCharging: false,
-    //     lodging: false,
-    //     restArea: false,
-    //     firstAidFacility: false,
-    // });
-
-    // const labels = [
-    //     "Wifi",
-    //     "Drinking Water",
-    //     "Toilet",
-    //     "Parking",
-    //     "ATM",
-    //     "Free Air",
-    //     "Oil Change Service",
-    //     "Food Court",
-    //     "EV Charging",
-    //     "Lodging",
-    //     "Rest Area",
-    //     "First Aid Facility",
-    // ];
-
 
       const [amenities, setAmenities] = useState({
         dieselDiscounts: false,

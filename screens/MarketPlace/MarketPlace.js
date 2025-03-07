@@ -8,6 +8,7 @@ import {
   Text,
   Alert,
   ActivityIndicator,
+  ScrollView
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS } from "../../constants";
@@ -28,6 +29,9 @@ import { statesData } from "../../constants/cityAndState";
 import { AntDesign, MaterialIcons as Icon } from '@expo/vector-icons';
 import DropDownPicker from "react-native-dropdown-picker";
 import CustomButtonWithLoading from "../../components/CustomButtonWithLoading";
+
+
+import { MultiSelect } from "react-native-element-dropdown";
 
 
 
@@ -79,6 +83,21 @@ const MarketPlace = ({ navigation }) => {
 
   const [locationModal, setLocationModal] = useState(false)
   const [pageLoading, setPageLoading] = useState(false)
+
+  const [selected, setSelected] = useState([]);
+
+  const data = [
+    { label: "Select All", value: "select_all" },
+    ...statesData.map(state => ({ label: state.name, value: state.id.toString() }))
+  ];
+
+  const handleSelection = (values) => {
+    if (values.includes("select_all")) {
+      setSelected(selected.length === data.length - 1 ? [] : data.map(item => item.value).filter(v => v !== "select_all"));
+    } else {
+      setSelected(values.filter(v => v !== "select_all"));
+    }
+  };
 
 
   useEffect(() => {
@@ -149,7 +168,7 @@ const MarketPlace = ({ navigation }) => {
   const filteredProducts = marketPlaceProducts.filter((product) =>
     product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.kms_driven.includes(searchQuery) 
+    product.kms_driven.includes(searchQuery)
   );
 
 
@@ -262,7 +281,7 @@ const MarketPlace = ({ navigation }) => {
       "statelist": statelist
     }
 
-   try {
+    try {
 
       toggleModal(); // Close modal after applying filter
       setPageLoading(true)
@@ -477,42 +496,7 @@ const MarketPlace = ({ navigation }) => {
 
   const [open, setOpen] = useState(false); // Controls dropdown visibility
   const [statelist, setStatelist] = useState([]); // Stores selected items
-  const [statesData, setStatesData] = useState([
-    { label: "Andaman and Nicobar Islands", value: "Andaman and Nicobar Islands" },
-    { label: "Andhra Pradesh", value: "Andhra Pradesh" },
-    { label: "Arunachal Pradesh", value: "Arunachal Pradesh" },
-    { label: "Assam", value: "Assam" },
-    { label: "Bihar", value: "Bihar" },
-    { label: "Chandigarh", value: "Chandigarh" },
-    { label: "Chhattisgarh", value: "Chhattisgarh" },
-    { label: "Dadra and Nagar Haveli", value: "Dadra and Nagar Haveli" },
-    { label: "Delhi", value: "Delhi" },
-    { label: "Goa", value: "Goa" },
-    { label: "Gujarat", value: "Gujarat" },
-    { label: "Haryana", value: "Haryana" },
-    { label: "Himachal Pradesh", value: "Himachal Pradesh" },
-    { label: "Jammu and Kashmir", value: "Jammu and Kashmir" },
-    { label: "Jharkhand", value: "Jharkhand" },
-    { label: "Karnataka", value: "Karnataka" },
-    { label: "Kerala", value: "Kerala" },
-    { label: "Madhya Pradesh", value: "Madhya Pradesh" },
-    { label: "Maharashtra", value: "Maharashtra" },
-    { label: "Manipur", value: "Manipur" },
-    { label: "Meghalaya", value: "Meghalaya" },
-    { label: "Mizoram", value: "Mizoram" },
-    { label: "Nagaland", value: "Nagaland" },
-    { label: "Odisha", value: "Odisha" },
-    { label: "Punjab", value: "Punjab" },
-    { label: "Puducherry", value: "Puducherry" },
-    { label: "Rajasthan", value: "Rajasthan" },
-    { label: "Sikkim", value: "Sikkim" },
-    { label: "Tamil Nadu", value: "Tamil Nadu" },
-    { label: "Telangana", value: "Telangana" },
-    { label: "Tripura", value: "Tripura" },
-    { label: "Uttar Pradesh", value: "Uttar Pradesh" },
-    { label: "Uttarakhand", value: "Uttarakhand" },
-    { label: "West Bengal", value: "West Bengal" },
-  ]);
+
 
 
   return (
@@ -552,181 +536,197 @@ const MarketPlace = ({ navigation }) => {
 
 
 
-
+      {/* Filter Modal */}
       <Modal
         animationType="slide"
         transparent={true}
         visible={isModalVisible}
         onRequestClose={toggleModal}
       >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center", // Center vertically
+            alignItems: "center", // Center horizontally
+            backgroundColor: "rgba(0,0,0,0.5)", // Semi-transparent background
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "white",
+              width: "80%", // Adjust modal width
+              borderRadius: 10,
+              padding: 20,
+              maxHeight: "80%", // Restrict height for scrolling
+            }}
+          >
+            <ScrollView
+              style={{ maxHeight: "100%", width: "100%" }} // Ensure full width
+              contentContainerStyle={{ paddingBottom: 20 }}
+              keyboardShouldPersistTaps="handled"
+            >
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                <Text style={{ flex: 1, textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>
+                  Filter Options
+                </Text>
+                <AntDesign
+                  name="close"
+                  size={24}
+                  color="black"
+                  onPress={() => {
+                    setSelected([])
+                    toggleModal()
+                  }} />
+              </View>
 
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
 
+              <View style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
+                <RNPickerSelect
+                  onValueChange={(value) => setModalValues({ ...modalValues, model: value })}
+                  items={yearsData}
+                  value={modalValues.model}
+                  placeholder={{
+                    label: 'Model',
+                    value: null,
+                    color: 'grey',
+                  }}
+                />
+              </View>
 
-            <View style={[styles.filterHeadingContainer, { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }]}>
-              <Text style={[styles.modalTitle, { flex: 1, textAlign: 'center' }]}>Filter Options</Text>
-              <AntDesign name="close" size={24} color="black" onPress={toggleModal} />
-            </View>
+              <View style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
+                <RNPickerSelect
+                  onValueChange={(value) => setModalValues({ ...modalValues, brand: value })}
+                  items={brandData}
+                  value={modalValues.brand}
+                  placeholder={{
+                    label: 'Brand',
+                    value: null,
+                    color: 'grey',
+                  }}
+                />
+              </View>
 
-
-
-            <View style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
-              <RNPickerSelect
-                onValueChange={(value) => setModalValues({ ...modalValues, model: value })}
-                items={yearsData}
-                value={modalValues.model}
-                placeholder={{
-                  label: 'Model',
-                  value: null,
-                  color: 'grey',
+              <TextInput
+                style={[styles.input, errorFields.location && styles.inputError, { fontSize: 16, borderColor: COLORS.gray, borderWidth: 1, paddingLeft: 17, borderRadius: 5, height: 55, marginBottom: 10 }]}
+                placeholder="Search location"
+                placeholderTextColor="#c2c2c2"
+                value={modalValues.location}
+                onPress={() => {
+                  setLocationModal(true);
                 }}
               />
-            </View>
 
-            <View style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
-              <RNPickerSelect
-                onValueChange={(value) => setModalValues({ ...modalValues, brand: value })}
-                items={brandData}
-                value={modalValues.brand}
-                placeholder={{
-                  label: 'Brand',
-                  value: null,
-                  color: 'grey',
-                }}
-              />
-            </View>
 
-            <TextInput
-              style={[styles.input, errorFields.location && styles.inputError, { fontSize: 16, borderColor: COLORS.gray, borderWidth: 1, paddingLeft: 17, borderRadius: 5, height: 55, marginBottom: 10 }]}
-              placeholder="Search location"
-              placeholderTextColor="#c2c2c2"
-              value={modalValues.location}
-              onPress={() => {
-                setLocationModal(true);
-              }}
-            />
 
-            {/* <View>
-              <SectionedMultiSelect
+              {/* <DropDownPicker
+                open={open}
+                value={statelist}
                 items={statesData}
-                IconRenderer={Icon}
-                uniqueKey="id"
-                searchPlaceholderText="Search state"
-                selectedText="selected"
-                selectText="Select"
-                confirmText="Done"
-                onSelectedItemsChange={handleEditStatesChange}
-                statelist={editSelectedStates}
-                styles={{
-                  backdrop: styles.multiSelectBackdrop,
-                  selectToggle: styles.multiSelectBox,
-                  chipContainer: styles.multiSelectChipContainer,
-                  chipText: styles.multiSelectChipText,
-                  selectToggleText: styles.selectToggleText,
-                  selectedItemText: styles.selectedItemText,
-                  selectText: styles.selectText,
-                  button: { backgroundColor: '#CE093A' },
-                }}
-              />
-            </View> */}
+                setOpen={setOpen}
+                setValue={setStatelist}
+                setItems={setStatesData}
+                multiple={true} // Enable multi-select
+                min={0} // Minimum number of items to select
+                max={5} // Maximum number of items to select
+                placeholder="Select states"
+                style={styles.dropdown}
+                dropDownContainerStyle={styles.dropdownContainer}
+              /> */}
 
 
-            <DropDownPicker
-              open={open}
-              value={statelist}
-              items={statesData}
-              setOpen={setOpen}
-              setValue={setStatelist}
-              setItems={setStatesData}
-              multiple={true} // Enable multi-select
-              min={0} // Minimum number of items to select
-              max={5} // Maximum number of items to select
-              placeholder="Select states"
-              style={styles.dropdown}
-              dropDownContainerStyle={styles.dropdownContainer}
-            />
+              <View style={{ marginBottom: 10 }}>
+                <MultiSelect
+                  style={{ borderColor: "#ccc", borderWidth: 1, padding: 12, borderRadius: 5 }}
+                  data={data}
+                  labelField="label"
+                  valueField="value"
+                  placeholder="To Location"
+                  value={selected}
+                  onChange={handleSelection}
+                  placeholderStyle={{ fontSize: 16 }}
+                />
+              </View>
+
+              <View style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
+                <RNPickerSelect
+                  onValueChange={(value) => setModalValues({ ...modalValues, ton: value })}
+                  items={tonsData}
+                  value={modalValues.ton}
+                  placeholder={{
+                    label: 'Select ton',
+                    value: null,
+                    color: 'grey',
+                  }}
+                />
+              </View>
+
+              <View style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
+                <RNPickerSelect
+                  onValueChange={(value) => setModalValues({ ...modalValues, kmsDriven: value })}
+                  items={kmsData}
+                  value={modalValues.kmsDriven}
+                  placeholder={{
+                    label: 'KMS Driven',
+                    value: null,
+                    color: 'grey',
+                  }}
+                />
+              </View>
 
 
-            <View style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
-              <RNPickerSelect
-                onValueChange={(value) => setModalValues({ ...modalValues, ton: value })}
-                items={tonsData}
-                value={modalValues.ton}
-                placeholder={{
-                  label: 'Select ton',
-                  value: null,
-                  color: 'grey',
-                }}
-              />
-            </View>
+              <View style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
+                <RNPickerSelect
+                  onValueChange={(value) => {
+                    setModalValues({ ...modalValues, price: value })
+                  }}
+                  items={priceData}
+                  value={modalValues.price}
+                  placeholder={{
+                    label: 'Price',
+                    color: 'grey',
+                  }}
+                />
+              </View>
 
-            <View style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
-              <RNPickerSelect
-                onValueChange={(value) => setModalValues({ ...modalValues, kmsDriven: value })}
-                items={kmsData}
-                value={modalValues.kmsDriven}
-                placeholder={{
-                  label: 'KMS Driven',
-                  value: null,
-                  color: 'grey',
-                }}
-              />
-            </View>
+              <View style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
+                <RNPickerSelect
+                  onValueChange={(value) => setModalValues({ ...modalValues, truckBodyType: value })}
+                  items={bodyTypeData}
+                  value={modalValues.truckBodyType}
+                  placeholder={{
+                    label: 'Select truck body type',
+                    value: null,
+                    color: 'grey',
+                  }}
+                />
+              </View>
 
+              <View style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
+                <RNPickerSelect
+                  onValueChange={(value) => setModalValues({ ...modalValues, noOfTyres: value })}
+                  items={numberOfTyresData}
+                  value={modalValues.noOfTyres}
+                  placeholder={{
+                    label: 'Select number of tyres',
+                    value: null,
+                    color: 'grey',
+                  }}
+                />
+              </View>
 
-            <View style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
-              <RNPickerSelect
-                onValueChange={(value) => {
-                  setModalValues({ ...modalValues, price: value })
-                }}
-                items={priceData}
-                value={modalValues.price}
-                placeholder={{
-                  label: 'Price',
-                  color: 'grey',
-                }}
-              />
-            </View>
-
-            <View style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
-              <RNPickerSelect
-                onValueChange={(value) => setModalValues({ ...modalValues, truckBodyType: value })}
-                items={bodyTypeData}
-                value={modalValues.truckBodyType}
-                placeholder={{
-                  label: 'Select truck body type',
-                  value: null,
-                  color: 'grey',
-                }}
-              />
-            </View>
-
-            <View style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
-              <RNPickerSelect
-                onValueChange={(value) => setModalValues({ ...modalValues, noOfTyres: value })}
-                items={numberOfTyresData}
-                value={modalValues.noOfTyres}
-                placeholder={{
-                  label: 'Select number of tyres',
-                  value: null,
-                  color: 'grey',
-                }}
-              />
-            </View>
-
-
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <TouchableOpacity style={[styles.applyButton, { width: "48%" }]} onPress={handleClearFilter}>
-                <Text style={styles.applyButtonText}>Clear filter</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.applyButton, { width: "48%", backgroundColor: "green" }]} onPress={applyFilter}>
-                <Text style={styles.applyButtonText}>Apply filter</Text>
-              </TouchableOpacity>
-            </View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <TouchableOpacity style={[styles.applyButton, { width: "48%" }]} onPress={handleClearFilter}>
+                  <Text style={styles.applyButtonText}>Clear filter</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.applyButton, { width: "48%", backgroundColor: "green" }]} onPress={applyFilter}>
+                  <Text style={styles.applyButtonText}>Apply filter</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
           </View>
         </View>
       </Modal>
+
 
 
 

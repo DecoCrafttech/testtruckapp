@@ -114,10 +114,6 @@ const ProfileTopContainer = () => {
         }
     };
 
-    const handleCheckBox = () => {
-        setIsChecked(!isChecked)
-    }
-
 
 
     useEffect(() => {
@@ -251,12 +247,6 @@ const ProfileTopContainer = () => {
             console.error('Error uploading image:', error);
         }
     };
-
-
-
-
-
-
 
 
     const handleSave = async () => {

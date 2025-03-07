@@ -1,23 +1,24 @@
 import React from "react";
-import { StyleSheet, View, ScrollView, Text,  Image } from "react-native";
+import { StyleSheet, View, ScrollView, Text, Image } from "react-native";
 import TruckCard from "../TruckCard";
 import { TouchableOpacity } from "react-native";
 import { COLORS } from "../../constants";
 import { useNavigation } from "@react-navigation/native";
 import Constants from 'expo-constants';
+import PaginationScreen from "../PaginationScreen";
 
 
 
 
 
 
-const LoadDetails = ({ filteredTrucks, status,  selectedValue }) => {
+const LoadDetails = ({ filteredTrucks, status, selectedValue, handlePagination }) => {
 
-  
+
   // cdn link
-  const cdnLink = Constants.expoConfig?.extra?.REACT_APP_CDN_LINK 
+  const cdnLink = Constants.expoConfig?.extra?.REACT_APP_CDN_LINK
 
-  
+
   const navigation = useNavigation()
 
 
@@ -25,34 +26,37 @@ const LoadDetails = ({ filteredTrucks, status,  selectedValue }) => {
     <ScrollView contentContainerStyle={styles.container}>
       {filteredTrucks.length > 0 ? (
         filteredTrucks.reverse().map((truck, index) => (
-          <TruckCard
-            selectedValue={selectedValue}
-            key={index}
-            post={truck.post}
-            profileName={truck.profileName}
-            companyName={truck.companyName}
-            transportName={truck.transportName}
-            title={truck.title}
-            fromLocation={truck.fromLocation}
-            toLocation={truck.toLocation}
-            labels={truck.labels}
-            description={truck.description}
-            onButton1Press={truck.onButton1Press} // Ensure handleEdit is invoked correctly
-            onButton2Press={truck.onButton2Press}
-            status={status}
-            updatedTime={truck.updatedTime}
-            isAadhaarVerified={truck.isAadhaarVerified}
-          />
+          <View key={index}
+          >
+            <TruckCard
+              selectedValue={selectedValue}
+              post={truck.post}
+              profileName={truck.profileName}
+              companyName={truck.companyName}
+              transportName={truck.transportName}
+              title={truck.title}
+              fromLocation={truck.fromLocation}
+              toLocation={truck.toLocation}
+              labels={truck.labels}
+              description={truck.description}
+              onButton1Press={truck.onButton1Press} // Ensure handleEdit is invoked correctly
+              onButton2Press={truck.onButton2Press}
+              status={status}
+              updatedTime={truck.updatedTime}
+              isAadhaarVerified={truck.isAadhaarVerified}
+            />
+
+          </View>
         ))
       ) : (
         <>
-        {/* If My Posts empty */}
+          {/* If My Posts empty */}
           {
             selectedValue === "user_load_details" ?
               <View style={styles.noResultContainer}>
                 <View>
                   <Image
-                     source={{ uri: `${cdnLink}/Folder_empty.png` }}
+                    source={{ uri: `${cdnLink}/Folder_empty.png` }}
                     width={50}
                     height={50}
                     resizeMode="center"
@@ -68,7 +72,7 @@ const LoadDetails = ({ filteredTrucks, status,  selectedValue }) => {
               <View style={styles.noResultContainer}>
                 <View>
                   <Image
-                     source={{ uri: `${cdnLink}/Folder_empty.png` }}
+                    source={{ uri: `${cdnLink}/Folder_empty.png` }}
                     width={50}
                     height={50}
                     resizeMode="center"
@@ -84,7 +88,7 @@ const LoadDetails = ({ filteredTrucks, status,  selectedValue }) => {
               <View style={styles.noResultContainer}>
                 <View>
                   <Image
-                     source={{ uri: `${cdnLink}/Folder_empty.png` }}
+                    source={{ uri: `${cdnLink}/Folder_empty.png` }}
                     width={50}
                     height={50}
                     resizeMode="center"
@@ -100,7 +104,7 @@ const LoadDetails = ({ filteredTrucks, status,  selectedValue }) => {
               <View style={styles.noResultContainer}>
                 <View>
                   <Image
-                     source={{ uri: `${cdnLink}/Folder_empty.png` }}
+                    source={{ uri: `${cdnLink}/Folder_empty.png` }}
                     width={50}
                     height={50}
                     resizeMode="center"
@@ -124,7 +128,7 @@ const LoadDetails = ({ filteredTrucks, status,  selectedValue }) => {
               <View style={styles.noResultContainer}>
                 <View>
                   <Image
-                     source={{ uri: `${cdnLink}/Folder_empty.png` }}
+                    source={{ uri: `${cdnLink}/Folder_empty.png` }}
                     width={50}
                     height={50}
                     resizeMode="center"
@@ -142,10 +146,12 @@ const LoadDetails = ({ filteredTrucks, status,  selectedValue }) => {
               null
           }
 
-          
+
 
         </>
       )}
+
+      <PaginationScreen data={filteredTrucks.reverse()} handlePagination={handlePagination} />
     </ScrollView>
   );
 };
@@ -157,7 +163,7 @@ const styles = StyleSheet.create({
   },
   noResultContainer: {
     marginTop: 200,
-    flex:1,
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -167,6 +173,12 @@ const styles = StyleSheet.create({
     color: "grey",
     fontSize: 16,
   },
+  paginationContainer: {
+    backgroundColor: 'red',
+    marginHorizontal: 10,
+    borderRadius: 5,
+    padding: 10
+  }
 });
 
 export default LoadDetails;

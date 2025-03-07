@@ -8,6 +8,7 @@ import {
   Text,
   ActivityIndicator,
   Linking,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS } from "../../constants";
@@ -28,6 +29,9 @@ import Constants from 'expo-constants'
 import AntDesign from '@expo/vector-icons/AntDesign';
 import CustomButtonWithLoading from "../../components/CustomButtonWithLoading";
 
+
+import { MultiSelect } from "react-native-element-dropdown";
+import { statesData } from "../../constants/cityAndState";
 
 
 
@@ -88,6 +92,20 @@ const AvailableDrivers = ({ navigation }) => {
   const [pageLoading, setPageLoading] = useState(false)
   const [loadingKey, setLoadingKey] = useState(null); // Single loading state
 
+  const [selected, setSelected] = useState([]);
+
+  const data = [
+    { label: "Select All", value: "select_all" },
+    ...statesData.map(state => ({ label: state.name, value: state.id.toString() }))
+  ];
+
+  const handleSelection = (values) => {
+    if (values.includes("select_all")) {
+      setSelected(selected.length === data.length - 1 ? [] : data.map(item => item.value).filter(v => v !== "select_all"));
+    } else {
+      setSelected(values.filter(v => v !== "select_all"));
+    }
+  };
 
 
 
@@ -148,9 +166,16 @@ const AvailableDrivers = ({ navigation }) => {
   useEffect(() => {
     const getAllDrivers = async () => {
       try {
+        const payload = {
+          "search_val": "",
+          "page_no": "1",
+          "data_limit": "5"
+        }
         setPageLoading(true)
 
-        const response = await axiosInstance.get("/all_driver_details");
+
+        const response = await axiosInstance.post("/all_driver_details", payload);
+
         if (response.data.error_code === 0) {
           const transformedData = response.data.data.map((item) => ({
             companyName: item.company_name,
@@ -208,8 +233,8 @@ const AvailableDrivers = ({ navigation }) => {
       truck.toLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
       truck.labels[0].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
       truck.labels[1].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.labels[2].text.toLowerCase().includes(searchQuery.toLowerCase()) 
-      // truck.labels[3].text.toLowerCase().includes(searchQuery.toLowerCase())
+      truck.labels[2].text.toLowerCase().includes(searchQuery.toLowerCase())
+    // truck.labels[3].text.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const toggleModal = () => {
@@ -569,99 +594,163 @@ const AvailableDrivers = ({ navigation }) => {
         }
       </View>
 
+
+
+      {/* Filter Modal */}
       <Modal
         animationType="slide"
         transparent={true}
         visible={isModalVisible}
         onRequestClose={toggleModal}
       >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <View style={[styles.filterHeadingContainer, { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }]}>
-              <Text style={[styles.modalTitle, { flex: 1, textAlign: 'center' }]}>Filter Options</Text>
-              <AntDesign name="close" size={24} color="black" onPress={toggleModal} />
-            </View>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center", // Centers the modal
+            alignItems: "center", // Centers horizontally
+            backgroundColor: "rgba(0, 0, 0, 0.5)", // Dark overlay
+          }}
+        >
 
-            <TextInput
-              style={[
-                styles.input,
-                errorFields.fromLocation && styles.inputError,
-              ]}
-              placeholder="From Location"
-              value={modalValues.fromLocation}
-              onPress={() => {
-                setFromLocationModal(true);
-                setModalValues(prevValues => ({
-                  ...prevValues,
-                  fromLocation: ""
-                }));
-              }}
-            />
+          <View
+            style={{
+              backgroundColor: "white",
+              width: "80%", // Adjust modal width
+              borderRadius: 10,
+              padding: 20,
+              maxHeight: "80%", // Restrict height for scrolling
+            }}
+          >
+            <ScrollView
+              contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
+              keyboardShouldPersistTaps="handled"
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  marginBottom: 10,
+                }}
+              >
+                <Text
+                  style={{
+                    flex: 1,
+                    textAlign: "center",
+                    fontSize: 18,
+                    fontWeight: "bold",
+                  }}
+                >
+                  Filter Options
+                </Text>
+                <AntDesign name="close" size={24} color="black" onPress={() => {
+                  setSelected([])
+                  toggleModal()
+                }} />
+              </View>
 
-            <View style={{ width: "auto", marginBottom: 5 }}>
-              <SectionedMultiSelect
-                items={userToLocationStatesData}
-                IconRenderer={Icon}
-                uniqueKey="id"
-                searchPlaceholderText="Search state"
-                selectedText="selected"
-                selectText="To Location"
-                confirmText="Done"
-                onSelectedItemsChange={handleSelectStates}  // Call to update selected items
-                selectedItems={selectedStates}  // Initialize with current user states
-                styles={{
-                  backdrop: styles.multiSelectBackdrop,
-                  selectToggle: styles.multiSelectBox,
-                  chipContainer: styles.multiSelectChipContainer,
-                  chipText: styles.multiSelectChipText,
-                  selectToggleText: styles.selectToggleText,
-                  selectedItemText: styles.selectedItemText,
-                  selectText: styles.selectText,
-                  button: { backgroundColor: '#CE093A' },
+
+              <TextInput
+                style={[
+                  styles.input,
+                  errorFields.fromLocation && styles.inputError,
+                ]}
+                placeholder="From Location"
+                value={modalValues.fromLocation}
+                onPress={() => {
+                  setFromLocationModal(true);
+                  setModalValues(prevValues => ({
+                    ...prevValues,
+                    fromLocation: ""
+                  }));
                 }}
               />
-            </View>
+              {/* 
+              <View style={{ width: "auto", marginBottom: 5 }}>
+                <SectionedMultiSelect
+                  items={userToLocationStatesData}
+                  IconRenderer={Icon}
+                  uniqueKey="id"
+                  searchPlaceholderText="Search state"
+                  selectedText="selected"
+                  selectText="To Location"
+                  confirmText="Done"
+                  onSelectedItemsChange={handleSelectStates}  // Call to update selected items
+                  selectedItems={selectedStates}  // Initialize with current user states
+                  styles={{
+                    backdrop: styles.multiSelectBackdrop,
+                    selectToggle: styles.multiSelectBox,
+                    chipContainer: styles.multiSelectChipContainer,
+                    chipText: styles.multiSelectChipText,
+                    selectToggleText: styles.selectToggleText,
+                    selectedItemText: styles.selectedItemText,
+                    selectText: styles.selectText,
+                    button: { backgroundColor: '#CE093A' },
+                  }}
+                />
+              </View> */}
+
+              <View style={{ marginBottom: 10 }}>
+                <MultiSelect
+                  style={{ borderColor: "#ccc", borderWidth: 1, padding: 12, borderRadius: 5 }}
+                  data={data}
+                  labelField="label"
+                  valueField="value"
+                  placeholder="To Location"
+                  value={selected}
+                  onChange={handleSelection}
+                  placeholderStyle={{ fontSize: 16 }}
+                />
+              </View>
 
 
 
-            <View style={{ borderColor: "#ccc", borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
-              <RNPickerSelect
-                onValueChange={(value) => setModalValues({ ...modalValues, truckBodyType: value })}
-                items={bodyTypeData}
-                value={modalValues.truckBodyType}
-                placeholder={{
-                  label: 'Select truck body type',
-                  value: null,
-                  color: 'grey',
-                }}
-              />
-            </View>
+
+              <View style={{ borderColor: "#ccc", borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
+                <RNPickerSelect
+                  onValueChange={(value) => setModalValues({ ...modalValues, truckBodyType: value })}
+                  items={bodyTypeData}
+                  value={modalValues.truckBodyType}
+                  placeholder={{
+                    label: 'Select truck body type',
+                    value: null,
+                    color: 'grey',
+                  }}
+                />
+              </View>
 
 
-            <View style={{ borderColor: "#ccc", borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
-              <RNPickerSelect
-                onValueChange={(value) => setModalValues({ ...modalValues, noOfTyres: value })}
-                items={numberOfTyresData}
-                value={modalValues.noOfTyres}
-                placeholder={{
-                  label: 'Select number of tyres',
-                  value: null,
-                  color: 'grey',
-                }}
-              />
-            </View>
+              <View style={{ borderColor: "#ccc", borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
+                <RNPickerSelect
+                  onValueChange={(value) => setModalValues({ ...modalValues, noOfTyres: value })}
+                  items={numberOfTyresData}
+                  value={modalValues.noOfTyres}
+                  placeholder={{
+                    label: 'Select number of tyres',
+                    value: null,
+                    color: 'grey',
+                  }}
+                />
+              </View>
 
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <TouchableOpacity style={[styles.applyButton, { width: "48%" }]} onPress={handleClearFilter}>
-                <Text style={styles.applyButtonText}>Clear filter</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.applyButton, { width: "48%", backgroundColor: "green" }]} onPress={applyFilter}>
-                <Text style={styles.applyButtonText}>Apply filter</Text>
-              </TouchableOpacity>
-            </View>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
+                <TouchableOpacity
+                  style={[styles.applyButton, { width: "48%" }]}
+                  onPress={handleClearFilter}
+                >
+                  <Text style={styles.applyButtonText}>Clear filter</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.applyButton, { width: "48%", backgroundColor: "green" }]}
+                  onPress={applyFilter}
+                >
+                  <Text style={styles.applyButtonText}>Apply filter</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
           </View>
         </View>
       </Modal>
+
 
       {/* Aadhaar verify Modal */}
       <Modal

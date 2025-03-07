@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
-import { StyleSheet, View, Modal, TextInput, TouchableOpacity, Text, ActivityIndicator, Alert, Linking } from "react-native";
+import { StyleSheet, View, Modal, TextInput, TouchableOpacity, Text, ActivityIndicator, Alert, Linking, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS } from "../../constants";
 import HeaderWithOutBS from "../../components/HeaderWithOutBS";
@@ -19,6 +19,12 @@ import SendMessageModal from "../SendMessageModal";
 import Constants from 'expo-constants'
 import AntDesign from '@expo/vector-icons/AntDesign';
 import CustomButtonWithLoading from "../../components/CustomButtonWithLoading";
+
+import { MultiSelect } from "react-native-element-dropdown";
+import { statesData } from "../../constants/cityAndState";
+
+
+
 
 
 
@@ -79,6 +85,29 @@ const AvailableLoads = ({ navigation }) => {
   const [doNotAskModal, setDoNotAskModalModal] = useState(false)
   const [pageLoading, setPageLoading] = useState(false)
   const [loadingKey, setLoadingKey] = useState(null); // Single loading state
+
+  const [selected, setSelected] = useState([]);
+
+  const data = [
+    { label: "Select All", value: "select_all" },
+    ...statesData.map(state => ({ label: state.name, value: state.id.toString() }))
+  ];
+
+  const handleSelection = (values) => {
+    if (values.includes("select_all")) {
+      setSelected(selected.length === data.length - 1 ? [] : data.map(item => item.value).filter(v => v !== "select_all"));
+    } else {
+      setSelected(values.filter(v => v !== "select_all"));
+    }
+  };
+
+  const handleFindLoadStates = (values) => {
+    if (values.includes("select_all")) {
+      setSelectedStates(selectedStates.length === data.length - 1 ? [] : data.map(item => item.value).filter(v => v !== "select_all"));
+    } else {
+      setSelectedStates(values.filter(v => v !== "select_all"));
+    }
+  };
 
 
 
@@ -151,12 +180,19 @@ const AvailableLoads = ({ navigation }) => {
   useEffect(() => {
     const getAllLoads = async () => {
       try {
+        const payload = {
+          "search_val": "",
+          "page_no": "1",
+          "data_limit": "5"
+        }
         setPageLoading(true)
 
-        const response = await axiosInstance.get("/all_load_details");
+
+        const response = await axiosInstance.post("/all_load_details", payload);
 
         if (response.data.error_code === 0) {
-          const transformedData = response.data.data.map((item) => ({
+          const transformedData = response.data.data.map((item, index) => ({
+            key: index,
             companyName: item.company_name,
             updatedTime: item.updt,
             post: item.user_post,
@@ -180,10 +216,8 @@ const AvailableLoads = ({ navigation }) => {
               setSendMessageModal(true)
             }
           }));
-
           setAllLoadData(transformedData);
           setPageLoading(false)
-
         } else {
           console.error(
             "Error fetching all loads:",
@@ -545,7 +579,63 @@ const AvailableLoads = ({ navigation }) => {
     setIsChecked(!isChecked)
   }
 
+  const handlePagination = async (itemsPerPage, currentPage) => {
+    try {
+      const payload = {
+        "search_val": "",
+        "page_no": currentPage | "1",
+        "data_limit": itemsPerPage || "1"
+      }
+      // setPageLoading(true)
 
+
+      const response = await axiosInstance.post("/all_load_details", payload);
+
+      if (response.data.error_code === 0) {
+        const transformedData = response.data.data.map((item) => ({
+          companyName: item.company_name,
+          updatedTime: item.updt,
+          post: item.user_post,
+          profileName: item.profile_name,
+          title: item.company_name,
+          fromLocation: item.from_location,
+          toLocation: item.to_location,
+          isAadhaarVerified: item.aadhaar_verified,
+          labels: [
+            { icon: "table-view", text: item.material },
+            { icon: "attractions", text: `${item.no_of_tyres} wheels` },
+            { icon: "monitor-weight", text: `${item.tone} tons` },
+            { icon: "local-shipping", text: item.truck_body_type },
+
+          ],
+          description: item.description,
+          onButton1Press: () => Linking.openURL(`tel:${item.contact_no}`),
+          onButton2Press: () => {
+
+            setMessageReceiver(item)
+            setSendMessageModal(true)
+          }
+        }));
+        setAllLoadData(transformedData);
+        setPageLoading(false)
+      } else {
+        console.error(
+          "Error fetching all loads:",
+          response.data.error_message
+        );
+        setPageLoading(false)
+
+      }
+    } catch (error) {
+      console.error("Error fetching all loads:", error);
+      setPageLoading(false)
+
+    } finally {
+      setisLoadings(false);
+      setPageLoading(false)
+
+    }
+  }
 
 
   return (
@@ -583,7 +673,12 @@ const AvailableLoads = ({ navigation }) => {
         <SearchFilter onSearch={handleSearch} />
         {
           pageLoading == false ?
-            <LoadDetails navigation={navigation} filteredTrucks={filteredTrucks} />
+            <>
+              <LoadDetails
+                navigation={navigation}
+                filteredTrucks={filteredTrucks}
+                handlePagination={handlePagination} />
+            </>
             :
             <View style={styles.ActivityIndicatorContainer}>
               <ActivityIndicator size="large" color={COLORS.primary} />
@@ -598,108 +693,142 @@ const AvailableLoads = ({ navigation }) => {
         visible={isModalVisible}
         onRequestClose={toggleModal}
       >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <View style={[styles.filterHeadingContainer, { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }]}>
-              <Text style={[styles.modalTitle, { flex: 1, textAlign: 'center' }]}>Filter Options</Text>
-              <AntDesign name="close" size={24} color="black" onPress={toggleModal} />
-            </View>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center", // Center vertically
+            alignItems: "center", // Center horizontally
+            backgroundColor: "rgba(0,0,0,0.5)", // Semi-transparent background
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "white",
+              width: "80%", // Adjust modal width
+              borderRadius: 10,
+              padding: 20,
+              maxHeight: "80%", // Restrict height for scrolling
+            }}
+          >
+            <ScrollView
+              style={{ maxHeight: "100%", width: "100%" }} // Ensure full width
+              contentContainerStyle={{ paddingBottom: 20 }}
+              keyboardShouldPersistTaps="handled"
+            >
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                <Text style={{ flex: 1, textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>
+                  Filter Options
+                </Text>
+                <AntDesign
+                  name="close"
+                  size={24}
+                  color="black"
+                  onPress={() => {
+                    setSelected([])
+                    toggleModal()
+                  }} />
+              </View>
 
-            <TextInput
-              style={[styles.input, errorFields.fromLocation && styles.inputError]}
-              placeholder="From Location"
-              value={modalValues.fromLocation}
-              onPress={() => {
-                setFromLocationModal(true);
-                setModalValues(prevValues => ({
-                  ...prevValues,
-                  fromLocation: ""
-                }));
-              }}
-            />
-
-
-            <View style={{ width: "auto", marginBottom: 5 }}>
-              <SectionedMultiSelect
-                items={userToLocationStatesData}
-                IconRenderer={Icon}
-                uniqueKey="id"
-                searchPlaceholderText="Search state"
-                selectedText="selected"
-                selectText="To Location"
-                confirmText="Done"
-                onSelectedItemsChange={handleSelectStates}  // Call to update selected items
-                selectedItems={selectedStates}  // Initialize with current user states
-                styles={{
-                  backdrop: styles.multiSelectBackdrop,
-                  selectToggle: styles.multiSelectBox,
-                  chipContainer: styles.multiSelectChipContainer,
-                  chipText: styles.multiSelectChipText,
-                  selectToggleText: styles.selectToggleText,
-                  selectedItemText: styles.selectedItemText,
-                  selectText: styles.selectText,
-                  button: { backgroundColor: '#CE093A' },
+              <TextInput
+                style={{
+                  borderColor: "#ccc",
+                  borderWidth: 1,
+                  padding: 10,
+                  borderRadius: 5,
+                  marginBottom: 10,
+                  fontSize: 16
+                }}
+                placeholder="From Location"
+                value={modalValues.fromLocation}
+                onPress={() => {
+                  setFromLocationModal(true);
+                  setModalValues(prevValues => ({
+                    ...prevValues,
+                    fromLocation: ""
+                  }));
                 }}
               />
-            </View>
+
+              <View style={{ marginBottom: 10 }}>
+                <MultiSelect
+                  style={{ borderColor: "#ccc", borderWidth: 1, padding: 12, borderRadius: 5 }}
+                  data={data}
+                  labelField="label"
+                  valueField="value"
+                  placeholder="To Location"
+                  value={selected}
+                  onChange={handleSelection}
+                  placeholderStyle={{ fontSize: 16 }}
+                />
+              </View>
 
 
-            <View style={{ borderColor: "#ccc", borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
-              <RNPickerSelect
-                onValueChange={(value) => setModalValues({ ...modalValues, truckBodyType: value })}
-                items={bodyTypeData}
-                value={modalValues.truckBodyType}
-                placeholder={{
-                  label: 'Select truck body type',
-                  value: null,
-                  color: 'grey',
+              <View style={{ borderColor: "#ccc", borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
+                <RNPickerSelect
+                  onValueChange={(value) => setModalValues({ ...modalValues, truckBodyType: value })}
+                  items={bodyTypeData}
+                  value={modalValues.truckBodyType}
+                  placeholder={{
+                    label: 'Select truck body type',
+                    value: null,
+                    color: 'grey',
+                  }}
+                />
+              </View>
+
+              <View style={{ borderColor: "#ccc", borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
+                <RNPickerSelect
+                  onValueChange={(value) => setModalValues({ ...modalValues, noOfTyres: value })}
+                  items={numberOfTyresData}
+                  value={modalValues.noOfTyres}
+                  placeholder={{
+                    label: 'Select number of tyres',
+                    value: null,
+                    color: 'grey',
+                  }}
+                />
+              </View>
+
+              <TextInput
+                style={{
+                  borderColor: "#ccc",
+                  borderWidth: 1,
+                  padding: 10,
+                  borderRadius: 5,
+                  marginBottom: 10,
                 }}
+                placeholder="Material"
+                value={modalValues.material}
+                onChangeText={(text) => handleInputChange('material', text)}
               />
-            </View>
-            <View style={{ borderColor: "#ccc", borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
-              <RNPickerSelect
-                onValueChange={(value) => setModalValues({ ...modalValues, noOfTyres: value })}
-                items={numberOfTyresData}
-                value={modalValues.noOfTyres}
-                placeholder={{
-                  label: 'Select number of tyres',
-                  value: null,
-                  color: 'grey',
-                }}
-              />
-            </View>
-            <TextInput
-              style={[styles.input, errorFields.material && styles.inputError]}
-              placeholder="Material"
-              value={modalValues.material}
-              onChangeText={(text) => handleInputChange('material', text)}
-            />
 
-            <View style={{ borderColor: "#ccc", borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
-              <RNPickerSelect
-                onValueChange={(value) => setModalValues({ ...modalValues, tons: value })}
-                items={tonsData}
-                value={modalValues.tons}
-                placeholder={{
-                  label: 'Select ton',
-                  value: null,
-                  color: 'grey',
-                }}
-              />
-            </View>
+              <View style={{ borderColor: "#ccc", borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
+                <RNPickerSelect
+                  onValueChange={(value) => setModalValues({ ...modalValues, tons: value })}
+                  items={tonsData}
+                  value={modalValues.tons}
+                  placeholder={{
+                    label: 'Select ton',
+                    value: null,
+                    color: 'grey',
+                  }}
+                />
+              </View>
 
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <TouchableOpacity style={[styles.applyButton, { width: "48%" }]} onPress={handleClearFilter}>
-                <Text style={styles.applyButtonText}>Clear filter</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.applyButton, { width: "48%", backgroundColor: "green" }]} onPress={applyFilter}>
-                <Text style={styles.applyButtonText}>Apply filter</Text>
-              </TouchableOpacity>
-            </View>
-
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <TouchableOpacity style={[styles.applyButton, { width: "48%" }]} onPress={handleClearFilter}>
+                  <Text style={styles.applyButtonText}>Clear filter</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.applyButton, { width: "48%", backgroundColor: "green" }]} onPress={applyFilter}>
+                  <Text style={styles.applyButtonText}>Apply filter</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
           </View>
         </View>
       </Modal>
+
+
 
       {/* Aadhaar verify Modal */}
       <Modal
@@ -759,16 +888,6 @@ const AvailableLoads = ({ navigation }) => {
 
             {
               showOTPInputBox ?
-                // OTP Verify
-                // isLoading ?
-                //   <TouchableOpacity disabled style={[styles.applyButton, { marginTop: 20, opacity: isLoading ? 0.5 : 1 }]} >
-                //     <ActivityIndicator size="small" color={COLORS.white} />
-                //   </TouchableOpacity>
-                //   :
-                //   <TouchableOpacity disabled={aadhaarOTP.length === 6 ? false : true} style={[styles.applyButton, { marginTop: 20, opacity: aadhaarOTP.length === 6 ? 1 : 0.5 }]} onPress={handleVerifyAadhaarOTP}>
-                //     <Text style={styles.applyButtonText}>Verify</Text>
-                //   </TouchableOpacity>
-
                 <CustomButtonWithLoading
                   buttonText="Verify"
                   buttonStyle={[styles.applyButton, { marginTop: 20, opacity: aadhaarOTP.length === 6 ? 1 : 0.5, }]}
@@ -792,19 +911,6 @@ const AvailableLoads = ({ navigation }) => {
                   // disabled={timeLeft === null ? false : true}
                   isLoading={loadingKey === "Submit"}
                 />
-
-
-              // isLoading ?
-              //   <TouchableOpacity disabled style={[styles.applyButton, { marginTop: 20, opacity: isLoading ? 0.5 : 1 }]}>
-              //     <ActivityIndicator size="small" color={COLORS.white} />
-              //   </TouchableOpacity>
-
-              //   :
-              //   <TouchableOpacity style={[styles.applyButton, { marginTop: 20 }]} onPress={handleAadhaarSubmit}>
-              //     <Text style={styles.applyButtonText}>Submit</Text>
-              //   </TouchableOpacity>
-
-
             }
             <TouchableOpacity style={styles.closeButton} onPress={() => handleClose()}>
               <Text style={styles.applyButtonText}>Close</Text>
@@ -905,24 +1011,48 @@ const AvailableLoads = ({ navigation }) => {
         <SendMessageModal handleYes={handleYes} handleCancel={handleCancel} />
       </Modal>
 
-      {/* Dont ask Modal */}
+      {/* Find loads Modal */}
       <Modal
         animationType="slide"
         transparent={true}
         visible={doNotAskModal}
         onRequestClose={() => setDoNotAskModalModal(false)}
       >
-        <>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
+        <View style={{
+          flex: 1,
+          justifyContent: 'center', // Centers modal vertically
+          alignItems: 'center', // Centers modal horizontally
+          backgroundColor: 'rgba(0, 0, 0, 0.5)', // Adds overlay effect
+        }}>
+          <View style={{
+            backgroundColor: 'white',
+            width: '90%', // Adjust width as needed
+            borderRadius: 10,
+            padding: 20,
+            maxHeight: "80%", // Ensures it doesn't take full screen
+          }}>
+            <ScrollView
+              contentContainerStyle={{ flexGrow: 1 }}
+              keyboardShouldPersistTaps="handled"
+            >
               <View style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                marginBottom: 20
+                marginBottom: 20,
               }}>
-                <Text style={[styles.modalTitle, { marginBottom: 0, marginLeft: "auto", marginRight: 'auto' }]}>Find Loads</Text>
-                <AntDesign onPress={() => setDoNotAskModalModal(false)} name="close" size={25} color="black" />
+                <Text style={{
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                  flex: 1,
+                }}>Find Loads</Text>
+                <AntDesign
+                  onPress={() => setDoNotAskModalModal(false)}
+                  name="close"
+                  size={25}
+                  color="black"
+                />
               </View>
 
               <TextInput
@@ -938,57 +1068,35 @@ const AvailableLoads = ({ navigation }) => {
                 }}
               />
 
-
-              <View style={{ width: "auto", marginBottom: 5 }}>
-                <SectionedMultiSelect
-                  items={userToLocationStatesData}
-                  IconRenderer={Icon}
-                  uniqueKey="id"
-                  searchPlaceholderText="Search state"
-                  selectedText="selected"
-                  selectText="To Location"
-                  confirmText="Done"
-                  onSelectedItemsChange={handleSelectStates}  // Call to update selected items
-                  selectedItems={selectedStates}  // Initialize with current user states
-                  styles={{
-                    backdrop: styles.multiSelectBackdrop,
-                    selectToggle: styles.multiSelectBox,
-                    chipContainer: styles.multiSelectChipContainer,
-                    chipText: styles.multiSelectChipText,
-                    selectToggleText: styles.selectToggleText,
-                    selectedItemText: styles.selectedItemText,
-                    selectText: styles.selectText,
-                    button: { backgroundColor: '#CE093A' },
-                  }}
+              <View style={{ marginBottom: 10 }}>
+                <MultiSelect
+                  style={{ borderColor: "#ccc", borderWidth: 1, padding: 12, borderRadius: 5 }}
+                  data={data}
+                  labelField="label"
+                  valueField="value"
+                  placeholder="To Location"
+                  value={selectedStates}
+                  onChange={handleFindLoadStates}
+                  placeholderStyle={{ fontSize: 16 }}
                 />
               </View>
 
-              {/* <View style={styles.checkboxContainer}>
-                <Checkbox
-                  value={isChecked ? true : false}
-                  onValueChange={handleCheckBox}
-                  color={COLORS.defaultPrimary}
-                />
-                <Text
-                  onPress={handleCheckBox}
-                  style={{ paddingLeft: 12 }}
-                >Do not ask again</Text>
-              </View> */}
-
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={[styles.button, styles.saveButton, { width: "100%" }]} onPress={handleFind}>
-                  <Text style={[styles.buttonText, { textAlign: "center", }]}>Find</Text>
+              <View style={{ marginTop: 20, alignItems: 'center' }}>
+                <TouchableOpacity
+                  style={[styles.button, styles.saveButton, { width: "100%" }]}
+                  onPress={handleFind}
+                >
+                  <Text style={[styles.buttonText, { textAlign: "center" }]}>Find</Text>
                 </TouchableOpacity>
-
               </View>
-            </View>
+            </ScrollView>
           </View>
-
-        </>
+        </View>
       </Modal>
 
 
-    </SafeAreaView>
+
+    </SafeAreaView >
   );
 };
 
@@ -1014,13 +1122,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
+
   },
   modalContent: {
     backgroundColor: COLORS.white,
     padding: 20,
-    width: "80%",
     borderRadius: 10,
     elevation: 5,
+    width: "80%",
+    maxHeight: "50%"
   },
   modalTitle: {
     fontSize: 18,
@@ -1073,7 +1183,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
-    height: "90%"
+    height: "90%",
   },
   locationModalContent: {
     backgroundColor: COLORS.white,
@@ -1153,6 +1263,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     textAlign: "center",
   },
+
 });
 
 export default AvailableLoads;

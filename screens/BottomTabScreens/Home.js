@@ -44,8 +44,6 @@ const Home = () => {
     })
   )
 
-
-
   useEffect(() => {
     setPageLoading(true)
     setTimeout(() => {
