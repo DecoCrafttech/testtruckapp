@@ -92,18 +92,18 @@ const AvailableDrivers = ({ navigation }) => {
   const [pageLoading, setPageLoading] = useState(false)
   const [loadingKey, setLoadingKey] = useState(null); // Single loading state
 
-  const [selected, setSelected] = useState([]);
+  const [selectedFilterStates, setSelectedFilterStates] = useState([]);
 
   const data = [
     { label: "Select All", value: "select_all" },
     ...statesData.map(state => ({ label: state.name, value: state.id.toString() }))
   ];
 
-  const handleSelection = (values) => {
+  const handleFilterStates = (values) => {
     if (values.includes("select_all")) {
-      setSelected(selected.length === data.length - 1 ? [] : data.map(item => item.value).filter(v => v !== "select_all"));
+      setSelectedFilterStates(selectedFilterStates.length === data.length - 1 ? [] : data.map(item => item.value).filter(v => v !== "select_all"));
     } else {
-      setSelected(values.filter(v => v !== "select_all"));
+      setSelectedFilterStates(values.filter(v => v !== "select_all"));
     }
   };
 
@@ -423,6 +423,8 @@ const AvailableDrivers = ({ navigation }) => {
       "truck_body_type": modalValues.truckBodyType !== "" && modalValues.truckBodyType !== undefined && modalValues.truckBodyType !== null ? modalValues.truckBodyType : "",
       "truck_name": modalValues.truckName !== "" && modalValues.truckName !== undefined && modalValues.truckName !== null ? modalValues.truckName : "",
       "no_of_tyres": modalValues.noOfTyres !== "" && modalValues.noOfTyres !== undefined && modalValues.noOfTyres !== null ? modalValues.noOfTyres : "",
+      "page_no": "0",
+      "data_limit": "10"
 
 
     }
@@ -643,7 +645,7 @@ const AvailableDrivers = ({ navigation }) => {
                   Filter Options
                 </Text>
                 <AntDesign name="close" size={24} color="black" onPress={() => {
-                  setSelected([])
+                  setSelectedFilterStates([])
                   toggleModal()
                 }} />
               </View>
@@ -696,8 +698,8 @@ const AvailableDrivers = ({ navigation }) => {
                   labelField="label"
                   valueField="value"
                   placeholder="To Location"
-                  value={selected}
-                  onChange={handleSelection}
+                  value={selectedFilterStates}
+                  onChange={handleFilterStates}
                   placeholderStyle={{ fontSize: 16 }}
                 />
               </View>

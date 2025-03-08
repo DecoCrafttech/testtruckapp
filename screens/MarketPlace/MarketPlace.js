@@ -24,10 +24,8 @@ import AadhaarOTPVerification from "../AadhaarOTPVerification";
 import Toast from "react-native-toast-message";
 import RNPickerSelect from 'react-native-picker-select';
 import Constants from 'expo-constants'
-import SectionedMultiSelect from "react-native-sectioned-multi-select";
 import { statesData } from "../../constants/cityAndState";
 import { AntDesign, MaterialIcons as Icon } from '@expo/vector-icons';
-import DropDownPicker from "react-native-dropdown-picker";
 import CustomButtonWithLoading from "../../components/CustomButtonWithLoading";
 
 
@@ -84,18 +82,18 @@ const MarketPlace = ({ navigation }) => {
   const [locationModal, setLocationModal] = useState(false)
   const [pageLoading, setPageLoading] = useState(false)
 
-  const [selected, setSelected] = useState([]);
+  const [selectedFilterStates, setSelectedFilterStates] = useState([]);
 
   const data = [
     { label: "Select All", value: "select_all" },
     ...statesData.map(state => ({ label: state.name, value: state.id.toString() }))
   ];
 
-  const handleSelection = (values) => {
+  const handleFilterStates = (values) => {
     if (values.includes("select_all")) {
-      setSelected(selected.length === data.length - 1 ? [] : data.map(item => item.value).filter(v => v !== "select_all"));
+      setSelectedFilterStates(selectedFilterStates.length === data.length - 1 ? [] : data.map(item => item.value).filter(v => v !== "select_all"));
     } else {
-      setSelected(values.filter(v => v !== "select_all"));
+      setSelectedFilterStates(values.filter(v => v !== "select_all"));
     }
   };
 
@@ -278,7 +276,11 @@ const MarketPlace = ({ navigation }) => {
       "tonnage": modalValues.ton !== "" && modalValues.ton !== undefined && modalValues.ton !== null ? modalValues.ton : "",
       "truck_body_type": modalValues.truckBodyType !== "" && modalValues.truckBodyType !== undefined && modalValues.truckBodyType !== null ? modalValues.truckBodyType : "",
       "no_of_tyres": modalValues.noOfTyres !== "" && modalValues.noOfTyres !== undefined && modalValues.noOfTyres !== null ? modalValues.noOfTyres : "",
-      "statelist": statelist
+      "statelist": statelist,
+      "company_name": "",
+      "page_no": "0",
+      "data_limit": "10"
+
     }
 
     try {
@@ -574,7 +576,7 @@ const MarketPlace = ({ navigation }) => {
                   size={24}
                   color="black"
                   onPress={() => {
-                    setSelected([])
+                    setSelectedFilterStates([])
                     toggleModal()
                   }} />
               </View>
@@ -641,8 +643,8 @@ const MarketPlace = ({ navigation }) => {
                   labelField="label"
                   valueField="value"
                   placeholder="To Location"
-                  value={selected}
-                  onChange={handleSelection}
+                  value={selectedFilterStates}
+                  onChange={handleFilterStates}
                   placeholderStyle={{ fontSize: 16 }}
                 />
               </View>

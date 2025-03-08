@@ -6,13 +6,14 @@ import { COLORS } from "../../constants";
 import { useNavigation } from "@react-navigation/native";
 import Constants from 'expo-constants';
 import PaginationScreen from "../PaginationScreen";
+import Pagination from "../Pagination";
 
 
 
 
 
 
-const LoadDetails = ({ filteredTrucks, status, selectedValue, handlePagination }) => {
+const LoadDetails = ({ filteredTrucks, status, selectedValue, handlePagination,totalRecords }) => {
 
 
   // cdn link
@@ -150,8 +151,14 @@ const LoadDetails = ({ filteredTrucks, status, selectedValue, handlePagination }
 
         </>
       )}
+      {/* {
+        filteredTrucks.length > 0 ?
+          <Pagination data1={filteredTrucks?.reverse()} handlePagination={handlePagination}               totalRecords={totalRecords}
+          />
+          :
+          null
+      } */}
 
-      <PaginationScreen data={filteredTrucks.reverse()} handlePagination={handlePagination} />
     </ScrollView>
   );
 };

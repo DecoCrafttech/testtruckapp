@@ -26,15 +26,10 @@ import { statesData } from "../../constants/cityAndState";
 
 
 
-
-
-
-
 const AvailableLoads = ({ navigation }) => {
 
   // google api key
   const googleApiKey = Constants.expoConfig?.extra?.REACT_APP_GOOGLE_PLACES_KEY
-
 
 
   const {
@@ -86,24 +81,39 @@ const AvailableLoads = ({ navigation }) => {
   const [pageLoading, setPageLoading] = useState(false)
   const [loadingKey, setLoadingKey] = useState(null); // Single loading state
 
-  const [selected, setSelected] = useState([]);
+  const [selectedFilterStates, setSelectedFilterStates] = useState([]);
+
+  const [totalRecords, setTotalRecords] = useState(0)
+
 
   const data = [
     { label: "Select All", value: "select_all" },
-    ...statesData.map(state => ({ label: state.name, value: state.id.toString() }))
+    ...statesData.map(state => ({ label: state.name, value: state.name }))
   ];
 
-  const handleSelection = (values) => {
+
+  const handleFilterStates = (values) => {
     if (values.includes("select_all")) {
-      setSelected(selected.length === data.length - 1 ? [] : data.map(item => item.value).filter(v => v !== "select_all"));
+      // Select all or deselect all logic
+      setSelectedFilterStates(
+        selectedFilterStates.length === statesData.length
+          ? []
+          : statesData.map(item => item.name) // Ensure correct field name
+      );
     } else {
-      setSelected(values.filter(v => v !== "select_all"));
+      // Remove "select_all" if selected and update selected states
+      setSelectedFilterStates(values.filter(v => v !== "select_all"));
     }
   };
 
+
   const handleFindLoadStates = (values) => {
     if (values.includes("select_all")) {
-      setSelectedStates(selectedStates.length === data.length - 1 ? [] : data.map(item => item.value).filter(v => v !== "select_all"));
+      setSelectedStates(
+        selectedStates.length === statesData.length
+          ? [] // Deselect all if already selected
+          : statesData.map(item => item.name) // Ensure correct property name
+      );
     } else {
       setSelectedStates(values.filter(v => v !== "select_all"));
     }
@@ -182,15 +192,18 @@ const AvailableLoads = ({ navigation }) => {
       try {
         const payload = {
           "search_val": "",
-          "page_no": "1",
+          "page_no": "1",  // Always fetch the first page to get the total count
           "data_limit": "5"
-        }
-        setPageLoading(true)
-
+        };
+        setPageLoading(true);
 
         const response = await axiosInstance.post("/all_load_details", payload);
+        console.log("response.data.data", response.data.data.length);
 
         if (response.data.error_code === 0) {
+          // Set totalRecords only once
+          setTotalRecords(prev => prev || Number(response.data.data.length));
+
           const transformedData = response.data.data.map((item, index) => ({
             key: index,
             companyName: item.company_name,
@@ -206,36 +219,30 @@ const AvailableLoads = ({ navigation }) => {
               { icon: "attractions", text: `${item.no_of_tyres} wheels` },
               { icon: "monitor-weight", text: `${item.tone} tons` },
               { icon: "local-shipping", text: item.truck_body_type },
-
             ],
             description: item.description,
             onButton1Press: () => Linking.openURL(`tel:${item.contact_no}`),
             onButton2Press: () => {
-
-              setMessageReceiver(item)
-              setSendMessageModal(true)
+              setMessageReceiver(item);
+              setSendMessageModal(true);
             }
           }));
-          setAllLoadData(transformedData);
-          setPageLoading(false)
-        } else {
-          console.error(
-            "Error fetching all loads:",
-            response.data.error_message
-          );
-          setPageLoading(false)
 
+          setAllLoadData(transformedData);
+          setPageLoading(false);
+        } else {
+          console.error("Error fetching all loads:", response.data.error_message);
+          setPageLoading(false);
         }
       } catch (error) {
         console.error("Error fetching all loads:", error);
-        setPageLoading(false)
-
+        setPageLoading(false);
       } finally {
         setisLoadings(false);
-        setPageLoading(false)
-
+        setPageLoading(false);
       }
     };
+
 
     getAllLoads();
   }, [isLoading]);
@@ -456,14 +463,15 @@ const AvailableLoads = ({ navigation }) => {
       "from_location": modalValues.fromLocation,
       "material": modalValues.material,
       "no_of_tyres": modalValues.noOfTyres !== "" && modalValues.noOfTyres !== undefined && modalValues.noOfTyres !== null ? modalValues.noOfTyres : "",
-      "to_location": filteredStates,
+      "to_location": selectedFilterStates,
       "tone": modalValues.tons !== "" && modalValues.tons !== undefined && modalValues.tons !== null ? modalValues.tons : "",
       "truck_body_type": modalValues.truckBodyType !== "" && modalValues.truckBodyType !== undefined && modalValues.truckBodyType !== null ? modalValues.truckBodyType : "",
-      "user_id": ""
+      "user_id": "",
+      "page_no": "0",
+      "data_limit": "10"
 
     }
     try {
-
 
 
       if (value !== "initialModal") {
@@ -471,8 +479,11 @@ const AvailableLoads = ({ navigation }) => {
       }
       setPageLoading(true)
 
+      console.log("filterParams", filterParams)
+
       const response = await axiosInstance.post("/user_load_details_filter", filterParams)
 
+      console.log(response.data.data.length)
 
       if (response.data.error_code === 0) {
         const transformedData = response.data.data.map((item) => ({
@@ -579,19 +590,24 @@ const AvailableLoads = ({ navigation }) => {
     setIsChecked(!isChecked)
   }
 
+
   const handlePagination = async (itemsPerPage, currentPage) => {
+
     try {
       const payload = {
         "search_val": "",
-        "page_no": currentPage | "1",
-        "data_limit": itemsPerPage || "1"
+        "page_no": `${currentPage + 1}`,  // Fix: Make it 1-based
+        "data_limit": `${itemsPerPage}` || "1"
       }
       // setPageLoading(true)
 
 
       const response = await axiosInstance.post("/all_load_details", payload);
 
+      console.log("response.data.data.length",response.data.data.length)
+
       if (response.data.error_code === 0) {
+
         const transformedData = response.data.data.map((item) => ({
           companyName: item.company_name,
           updatedTime: item.updt,
@@ -638,6 +654,9 @@ const AvailableLoads = ({ navigation }) => {
   }
 
 
+
+console.log("Total records:", totalRecords);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#e8f4ff" }}>
 
@@ -677,6 +696,7 @@ const AvailableLoads = ({ navigation }) => {
               <LoadDetails
                 navigation={navigation}
                 filteredTrucks={filteredTrucks}
+                totalRecords={totalRecords}
                 handlePagination={handlePagination} />
             </>
             :
@@ -724,7 +744,7 @@ const AvailableLoads = ({ navigation }) => {
                   size={24}
                   color="black"
                   onPress={() => {
-                    setSelected([])
+                    setSelectedFilterStates([])
                     toggleModal()
                   }} />
               </View>
@@ -756,8 +776,8 @@ const AvailableLoads = ({ navigation }) => {
                   labelField="label"
                   valueField="value"
                   placeholder="To Location"
-                  value={selected}
-                  onChange={handleSelection}
+                  value={selectedFilterStates}
+                  onChange={handleFilterStates}
                   placeholderStyle={{ fontSize: 16 }}
                 />
               </View>

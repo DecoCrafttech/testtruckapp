@@ -21,8 +21,9 @@ import RNPickerSelect from 'react-native-picker-select';
 import { useNavigation } from "@react-navigation/native";
 import Constants from 'expo-constants'
 import SectionedMultiSelect from "react-native-sectioned-multi-select";
-import { statesData } from "../constants/cityAndState";
 import { MaterialIcons as Icon } from '@expo/vector-icons';
+import { statesData } from "../constants/cityAndState"; 
+import { MultiSelect } from "react-native-element-dropdown";
 
 
 
@@ -82,6 +83,7 @@ const TruckNeeds = () => {
   const [updateSelectedStates, setUpdateSelectedStates] = useState([])
 
 
+  const [selectedStates, setSelectedStates] = useState([]);
 
 
 
@@ -157,7 +159,7 @@ const TruckNeeds = () => {
       description: description,
       from: fromLocation,
       // to: toLocation,
-      to: updateSelectedStates,
+      to: selectedStates,
       vehicle_number: vehicleNumber !== "" ? vehicleNumber : vehicleFromDropdown,
       name_of_the_transport: transportName,
       no_of_tyres: numberOfTyres,
@@ -314,6 +316,28 @@ const TruckNeeds = () => {
     { label: '22', value: '22' },
   ];
 
+
+  const data = [
+    { label: "Select All", value: "select_all" },
+    ...statesData.map(state => ({ label: state.name, value: state.name }))
+  ];
+
+
+  const handleSelectedStates = (values) => {
+    if (values.includes("select_all")) {
+      // Select all or deselect all logic
+      setSelectedStates(
+        selectedStates.length === statesData.length
+          ? []
+          : statesData.map(item => item.name) // Ensure correct field name
+      );
+    } else {
+      // Remove "select_all" if selected and update selected states
+      setSelectedStates(values.filter(v => v !== "select_all"));
+    }
+  };
+
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
       <View style={{ flex: 1, backgroundColor: COLORS.white }}>
@@ -445,10 +469,10 @@ const TruckNeeds = () => {
             />
 
 
-          
 
 
-            <Text style={styles.label}>To</Text>
+
+            {/* <Text style={styles.label}>To</Text>
             <View style={{ width: "auto", marginBottom: 5 }}>
               <SectionedMultiSelect
                 items={statesData}
@@ -471,7 +495,24 @@ const TruckNeeds = () => {
                   button: { backgroundColor: '#CE093A' },
                 }}
               />
+            </View> */}
+
+            <Text style={styles.label}>To</Text>
+            <View style={{ marginBottom: 10 }}>
+              <MultiSelect
+                style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 15, borderRadius: 5 }}
+                data={data}
+                labelField="label"
+                valueField="value"
+                placeholder="To Location"
+                value={selectedStates}
+                onChange={handleSelectedStates}
+                placeholderStyle={{ fontSize: 16 }}
+              />
             </View>
+
+
+
             {/* <TextInput
               style={[
                 styles.textInput,

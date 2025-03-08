@@ -19,9 +19,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import RNPickerSelect from 'react-native-picker-select';
 import Constants from 'expo-constants'
+import { statesData } from "../../constants/cityAndState";
+import { MultiSelect } from "react-native-element-dropdown";
 
 
-const DriverNeeds = ({navigation}) => {
+
+const DriverNeeds = ({ navigation }) => {
 
 
   // google api key
@@ -64,6 +67,8 @@ const DriverNeeds = ({navigation}) => {
   const [truckBodyTypeValid, setTruckBodyTypeValid] = useState(true);
   const [numberOfTyresValid, setNumberOfTyresValid] = useState(true);
   const [descriptionValid, setDescriptionValid] = useState(true);
+
+  const [selectedStates, setSelectedStates] = useState([]);
 
 
 
@@ -111,7 +116,7 @@ const DriverNeeds = ({navigation}) => {
       toLocation.trim() === "" ||
       // truckName.trim() === "" ||
       truckBodyType.trim() === "" ||
-      numberOfTyres.trim() === "" 
+      numberOfTyres.trim() === ""
     ) {
       Alert.alert("Please fill in all the fields.");
       setDriverNameValid(driverName.trim() !== "");
@@ -133,7 +138,7 @@ const DriverNeeds = ({navigation}) => {
       company_name: companyName,
       contact_no: contactNumber,
       from: fromLocation,
-      to: toLocation,
+      to: selectedStates,
       truck_name: truckName,
       truck_body_type: truckBodyType,
       no_of_tyres: numberOfTyres,
@@ -257,6 +262,27 @@ const DriverNeeds = ({navigation}) => {
   ];
 
 
+  const data = [
+    { label: "Select All", value: "select_all" },
+    ...statesData.map(state => ({ label: state.name, value: state.name }))
+  ];
+
+
+  const handleSelectedStates = (values) => {
+    if (values.includes("select_all")) {
+      // Select all or deselect all logic
+      setSelectedStates(
+        selectedStates.length === statesData.length
+          ? []
+          : statesData.map(item => item.name) // Ensure correct field name
+      );
+    } else {
+      // Remove "select_all" if selected and update selected states
+      setSelectedStates(values.filter(v => v !== "select_all"));
+    }
+  };
+
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
       <View style={{ flex: 1, backgroundColor: COLORS.white }}>
@@ -348,7 +374,7 @@ const DriverNeeds = ({navigation}) => {
               onPress={() => setFromLocationModal(true)}
             />
 
-            <Text style={styles.label}>To</Text>
+            {/* <Text style={styles.label}>To</Text>
             <TextInput
               style={[
                 styles.textInput,
@@ -357,7 +383,23 @@ const DriverNeeds = ({navigation}) => {
               placeholder="Destination Location"
               value={toLocation}
               onPress={() => setToLocationModal(true)}
-            />
+            /> */}
+
+            <Text style={styles.label}>To</Text>
+            <View style={{ marginBottom: 10 }}>
+              <MultiSelect
+                style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 15, borderRadius: 5 }}
+                data={data}
+                labelField="label"
+                valueField="value"
+                placeholder="To Location"
+                value={selectedStates}
+                onChange={handleSelectedStates}
+                placeholderStyle={{ fontSize: 16 }}
+              />
+            </View>
+
+
             <Text style={styles.label}>Truck Body Type</Text>
             <View style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
               <RNPickerSelect

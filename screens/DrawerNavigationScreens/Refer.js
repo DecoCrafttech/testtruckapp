@@ -35,6 +35,7 @@ const Refer = () => {
   const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [editedDetails, setEditedDetails] = useState(null);
+  const [selectedStates, setSelectedStates] = useState([])
 
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState([
@@ -102,7 +103,7 @@ const Refer = () => {
         "material": editedDetails.material,
         "no_of_tyres": editedDetails.numberOfTyres,
         "profile_name": editedDetails.fromLocation,
-        "to_location": editedDetails.fromLocation,
+        "to_location": editedDetails.toLocation,
         "tone": editedDetails.ton,
         "truck_body_type": editedDetails.truckBodyType,
         "updt": editedDetails.updatedTime,
@@ -136,13 +137,15 @@ const Refer = () => {
         "driver_id": editedDetails.driverId,
         "driver_name": editedDetails.driverName,
         "from": editedDetails.fromLocation,
-        "to": editedDetails.toLocation,
+        "to": selectedStates,
         "no_of_tyres": editedDetails.numberOfTyres,
         "truck_body_type": editedDetails.truckBodyType,
         "truck_name": editedDetails.truckName,
         "user_id": editedDetails.userId,
         "vehicle_number": editedDetails.vehicleNumber,
       }
+
+      console.log("editingParams", editingParams)
 
       try {
         const response = await axiosInstance.post(
@@ -168,8 +171,8 @@ const Refer = () => {
         "name_of_the_transport": editedDetails.transportName,
         "no_of_tyres": editedDetails.numberOfTyres,
         "profile_name": editedDetails.profileName,
-        "to": editedDetails.toLocation,
-        "to_location": editedDetails.toLocation,
+        "to": selectedStates,
+        "to": selectedStates,
         "tone": editedDetails.ton,
         "truck_body_type": editedDetails.truckBodyType,
         "truck_brand_name": editedDetails.truckBrandName,
@@ -474,7 +477,8 @@ const Refer = () => {
           selectedValue={selectedValue}
           editedDetails={editedDetails}
           setEditedDetails={setEditedDetails}
-
+          selectedStates={selectedStates}
+          setSelectedStates={setSelectedStates}
         />
 
         <Modal

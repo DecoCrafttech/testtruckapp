@@ -15,11 +15,12 @@ import Constants from 'expo-constants'
 import SectionedMultiSelect from "react-native-sectioned-multi-select";
 import { MaterialIcons as Icon } from '@expo/vector-icons';
 import { statesData } from "../../constants/cityAndState";
+import { MultiSelect } from "react-native-element-dropdown";
 
 
 
 
-const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, editedDetails, setEditedDetails }) => {
+const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, editedDetails, setEditedDetails,selectedStates,setSelectedStates }) => {
 
 
   // google api key
@@ -39,9 +40,9 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
 
 
 
-  useEffect(() => {
 
-    console.log(loadDetails)
+
+  useEffect(() => {
 
     if (loadDetails) {
       setEditedDetails({
@@ -95,7 +96,7 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
   const handleLabelChange = (text, index) => {
     const updatedLabels = [...editedDetails.labels];
     if (text === "") {
-      text = " "; 
+      text = " ";
     }
     updatedLabels[index].text = text;
     setEditedDetails({ ...editedDetails, labels: updatedLabels });
@@ -202,7 +203,7 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
         return state ? state.name : null;
       }).filter(name => name !== null);
       setUpdateSelectedStates(selectedStateNames)
-      setEditedDetails({ ...editedDetails, toLocation:selectedStateNames })
+      setEditedDetails({ ...editedDetails, toLocation: selectedStateNames })
     };
 
 
@@ -273,6 +274,26 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
     const yearsData = years
 
 
+    const data = [
+      { label: "Select All", value: "select_all" },
+      ...statesData.map(state => ({ label: state.name, value: state.name }))
+    ];
+
+
+    const handleSelectedStates = (values) => {
+      if (values.includes("select_all")) {
+        // Select all or deselect all logic
+        setSelectedStates(
+          selectedStates.length === statesData.length
+            ? []
+            : statesData.map(item => item.name) // Ensure correct field name
+        );
+      } else {
+        // Remove "select_all" if selected and update selected states
+        setSelectedStates(values.filter(v => v !== "select_all"));
+      }
+    };
+
 
     const renderEditModalFields = (selectedValue) => {
 
@@ -313,6 +334,8 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
                 value={editedDetails.toLocation}
                 onPress={() => setToLocationModal(true)}
               />
+
+
 
               <TextInput
                 style={styles.input}
@@ -413,12 +436,23 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
                 onPress={() => setFromLocationModal(true)}
               />
 
-              <TextInput
+              {/* <TextInput
                 style={styles.input}
 
                 placeholder="To Location"
                 value={editedDetails.toLocation}
                 onPress={() => setToLocationModal(true)}
+              /> */}
+
+              <MultiSelect
+                style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 15, borderRadius: 5 }}
+                data={data}
+                labelField="label"
+                valueField="value"
+                placeholder="To Location"
+                value={selectedStates}
+                onChange={handleSelectedStates}
+                placeholderStyle={{ fontSize: 14 }} // Adjust placeholder font size
               />
 
               {/* <TextInput
@@ -551,7 +585,7 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
                 onPress={() => setToLocationModal(true)}
               /> */}
 
-              <View style={{ width: "auto", marginBottom: 5 }}>
+              {/* <View style={{ width: "auto", marginBottom: 5 }}>
                 <SectionedMultiSelect
                   items={statesData}
                   IconRenderer={Icon}
@@ -560,8 +594,8 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
                   selectedText="selected"
                   selectText="Select"
                   confirmText="Done"
-                  onSelectedItemsChange={handleEditStatesChange} 
-                  selectedItems={editSelectedStates}  
+                  onSelectedItemsChange={handleEditStatesChange}
+                  selectedItems={editSelectedStates}
                   styles={{
                     backdrop: styles.multiSelectBackdrop,
                     selectToggle: styles.multiSelectBox,
@@ -573,9 +607,20 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
                     button: { backgroundColor: '#CE093A' },
                   }}
                 />
-              </View>
+              </View> */}
 
-                <TextInput
+              <MultiSelect
+                style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 15, borderRadius: 5 }}
+                data={data}
+                labelField="label"
+                valueField="value"
+                placeholder="To Location"
+                value={selectedStates}
+                onChange={handleSelectedStates}
+                placeholderStyle={{ fontSize: 14 }} // Adjust placeholder font size
+                />
+
+              <TextInput
                 style={styles.input}
                 placeholder="Truck size"
                 value={editedDetails.truckSize}
