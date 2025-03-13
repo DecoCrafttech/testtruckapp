@@ -192,20 +192,22 @@ const AvailableLoads = ({ navigation }) => {
       try {
         const payload = {
           "search_val": "",
-          "page_no": "1",  // Always fetch the first page to get the total count
+          "page_no": "1",
           "data_limit": "5"
         };
         setPageLoading(true);
 
         const response = await axiosInstance.post("/all_load_details", payload);
-        console.log("response.data.data", response.data.data.length);
+        
+        // Access the load data array correctly
+        const loadData = response.data.data.load_data;
+        // Access total count
+        const totalCount = response.data.data.all_record_count;
 
         if (response.data.error_code === 0) {
-          // Set totalRecords only once
-          setTotalRecords(prev => prev || Number(response.data.data.length));
+          setTotalRecords(Number(totalCount));
 
-          const transformedData = response.data.data.map((item, index) => ({
-            key: index,
+          const transformedData = loadData.map((item) => ({
             companyName: item.company_name,
             updatedTime: item.updt,
             post: item.user_post,
@@ -229,17 +231,12 @@ const AvailableLoads = ({ navigation }) => {
           }));
 
           setAllLoadData(transformedData);
-          setPageLoading(false);
-        } else {
-          console.error("Error fetching all loads:", response.data.error_message);
-          setPageLoading(false);
         }
       } catch (error) {
-        console.error("Error fetching all loads:", error);
-        setPageLoading(false);
+        console.error("Error fetching loads:", error);
       } finally {
-        setisLoadings(false);
         setPageLoading(false);
+        setisLoadings(false);
       }
     };
 
