@@ -22,6 +22,7 @@ import CustomButtonWithLoading from "../../components/CustomButtonWithLoading";
 
 import { MultiSelect } from "react-native-element-dropdown";
 import { statesData } from "../../constants/cityAndState";
+import PaginationComponent from "../PaginationComponent";
 
 
 
@@ -83,7 +84,15 @@ const AvailableLoads = ({ navigation }) => {
 
   const [selectedFilterStates, setSelectedFilterStates] = useState([]);
 
+  const [showingData, setShowingData] = useState([]);
+  const [showingDataLoading, setShowingDataLoading] = useState([]);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [dataLimit, setDataLimit] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0)
+  const [isFiltered, setIsFiltered] = useState(false);
+
+
 
 
   const data = [
@@ -179,6 +188,11 @@ const AvailableLoads = ({ navigation }) => {
     setSearchQuery(query);
   };
 
+
+
+
+  console.log("query", searchQuery)
+
   useEffect(() => {
     setTimeout(() => {
       setDoNotAskModalModal(true)
@@ -186,63 +200,93 @@ const AvailableLoads = ({ navigation }) => {
   }, [])
 
 
+  useEffect(() => {
+    if (!isFiltered) { // Only fetch when not filtered
+      let delaySearch;
+      if (search) {
+        delaySearch = setTimeout(() => {
+          getAllLoads(search, page, dataLimit);
+        }, 500);
+      } else {
+        getAllLoads(search, page, dataLimit);
+      }
+
+      return () => clearTimeout(delaySearch);
+    }
+  }, [search, isFiltered]); // Add isFiltered to dependency array
 
   useEffect(() => {
-    const getAllLoads = async () => {
-      try {
-        const payload = {
-          "search_val": "",
-          "page_no": "1",
-          "data_limit": "5"
-        };
-        setPageLoading(true);
+    if (!isFiltered) { // Prevent fetching all loads when filtered
+      getAllLoads(search, page, dataLimit);
+    }
+  }, [page, dataLimit, isFiltered]); // Add isFiltered to dependency array
 
-        const response = await axiosInstance.post("/all_load_details", payload);
-        
-        // Access the load data array correctly
-        const loadData = response.data.data.load_data;
-        // Access total count
+  const getAllLoads = async (searchVal, pageNo, limit) => {
+
+    try {
+      if (isFiltered) return; // Prevent fetching if filtered data is displayed
+
+      setShowingDataLoading(true);
+
+      const payload = {
+        page_no: pageNo,
+        data_limit: limit,
+        search_val: searchVal
+      };
+      const response = await axiosInstance.post("/all_load_details", payload);
+
+
+
+      if (response.data.error_code === 0) {
         const totalCount = response.data.data.all_record_count;
 
-        if (response.data.error_code === 0) {
-          setTotalRecords(Number(totalCount));
+        setTotalRecords(Number(totalCount));
 
-          const transformedData = loadData.map((item) => ({
-            companyName: item.company_name,
-            updatedTime: item.updt,
-            post: item.user_post,
-            profileName: item.profile_name,
-            title: item.company_name,
-            fromLocation: item.from_location,
-            toLocation: item.to_location,
-            isAadhaarVerified: item.aadhaar_verified,
-            labels: [
-              { icon: "table-view", text: item.material },
-              { icon: "attractions", text: `${item.no_of_tyres} wheels` },
-              { icon: "monitor-weight", text: `${item.tone} tons` },
-              { icon: "local-shipping", text: item.truck_body_type },
-            ],
-            description: item.description,
-            onButton1Press: () => Linking.openURL(`tel:${item.contact_no}`),
-            onButton2Press: () => {
-              setMessageReceiver(item);
-              setSendMessageModal(true);
-            }
-          }));
+        console.log("response.data.data",response.data)
 
-          setAllLoadData(transformedData);
+
+        const transformedData = response.data.data.load_data.map((item) => ({
+          companyName: item.company_name,
+          updatedTime: item.updt,
+          post: item.user_post,
+          profileName: item.profile_name,
+          title: item.company_name,
+          fromLocation: item.from_location,
+          toLocation: item.to_location,
+          isAadhaarVerified: item.aadhaar_verified,
+          labels: [
+            { icon: "table-view", text: item.material },
+            { icon: "attractions", text: `${item.no_of_tyres} wheels` },
+            { icon: "monitor-weight", text: `${item.tone} tons` },
+            { icon: "local-shipping", text: item.truck_body_type },
+          ],
+          description: item.description,
+          onButton1Press: () => Linking.openURL(`tel:${item.contact_no}`),
+          onButton2Press: () => {
+            setMessageReceiver(item);
+            setSendMessageModal(true);
+          }
+        }));
+        if (searchVal === "" && pageNo === 1 && limit === 10) {
+          setSearchQuery("")
+          setPage(1)
+          setDataLimit(10)
         }
-      } catch (error) {
-        console.error("Error fetching loads:", error);
-      } finally {
-        setPageLoading(false);
-        setisLoadings(false);
+
+        setShowingData(transformedData);
+        setAllLoadData(transformedData);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching loads:", error);
+    } finally {
+      setisLoadings(false);
+      setShowingDataLoading(false);
+    }
+  };
 
 
-    getAllLoads();
-  }, [isLoading]);
+
+
 
   const filteredTrucks = allLoadData.filter(
     (truck) =>
@@ -262,8 +306,11 @@ const AvailableLoads = ({ navigation }) => {
     setIsModalVisible(!isModalVisible);
   };
 
-  const handleClearFilter = () => {
-    setIsLoading(!isLoading)
+  const handleClearFilter = async () => {
+    setIsLoading(true);
+    setIsFiltered(false); // Exit filtered mode
+
+    // Reset filter values
     setModalValues({
       companyName: "",
       fromLocation: "",
@@ -273,7 +320,8 @@ const AvailableLoads = ({ navigation }) => {
       tons: "",
       truckBodyType: ""
     });
-    setSelectedStates([])
+
+    setSelectedStates([]);
 
     setErrorFields({
       companyName: false,
@@ -284,9 +332,24 @@ const AvailableLoads = ({ navigation }) => {
       tons: false,
       truckBodyType: false
     });
-    setIsModalVisible(!isModalVisible);
 
-  }
+    // Reset pagination
+    setPage(1);
+
+    try {
+      // Wait for data to load before closing the modal
+      await getAllLoads("", 1, 10);
+
+      // Now close the modal only after data is fetched
+      setIsModalVisible(false);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
 
   const handleInputChange = (field, value) => {
     setModalValues({ ...modalValues, [field]: value });
@@ -452,38 +515,42 @@ const AvailableLoads = ({ navigation }) => {
   };
 
 
-  const applyFilter = async (value) => {
 
+  const applyFilter = async (value) => {
+    setIsFiltered(true); // Enable filtered mode immediately
+
+    // Wait for state update before continuing
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     const filterParams = {
-      "company_name": "",
-      "from_location": modalValues.fromLocation,
-      "material": modalValues.material,
-      "no_of_tyres": modalValues.noOfTyres !== "" && modalValues.noOfTyres !== undefined && modalValues.noOfTyres !== null ? modalValues.noOfTyres : "",
-      "to_location": selectedFilterStates,
-      "tone": modalValues.tons !== "" && modalValues.tons !== undefined && modalValues.tons !== null ? modalValues.tons : "",
-      "truck_body_type": modalValues.truckBodyType !== "" && modalValues.truckBodyType !== undefined && modalValues.truckBodyType !== null ? modalValues.truckBodyType : "",
-      "user_id": "",
-      "page_no": "0",
-      "data_limit": "10"
+      company_name: "",
+      from_location: modalValues.fromLocation,
+      material: modalValues.material,
+      no_of_tyres: modalValues.noOfTyres || "",
+      to_location: selectedFilterStates,
+      tone: modalValues.tons || "",
+      truck_body_type: modalValues.truckBodyType || "",
+      user_id: "",
+      page_no: "0",
+      data_limit: "10"
+    };
 
-    }
     try {
-
-
       if (value !== "initialModal") {
-        toggleModal(); // Close modal after applying filter
+        toggleModal();
       }
-      setPageLoading(true)
 
-      console.log("filterParams", filterParams)
+      setPageLoading(true);
+      setShowingData([]);
 
-      const response = await axiosInstance.post("/user_load_details_filter", filterParams)
+      const response = await axiosInstance.post("/user_load_details_filter", filterParams);
 
-      console.log(response.data.data.length)
+      console.log("Filtered length", response.data.data.result_data.length);
 
       if (response.data.error_code === 0) {
-        const transformedData = response.data.data.map((item) => ({
+        const totalCount = response.data.data.all_record_count;
+        setTotalRecords(Number(totalCount));
+        const transformedData = response.data.data.result_data.map((item) => ({
           companyName: item.company_name,
           updatedTime: item.updt,
           post: item.user_post,
@@ -501,25 +568,20 @@ const AvailableLoads = ({ navigation }) => {
           description: item.description,
           onButton1Press: () => Linking.openURL(`tel:${item.contact_no}`),
           onButton2Press: () => {
-            setMessageReceiver(item)
-            setSendMessageModal(true)
+            setMessageReceiver(item);
+            setSendMessageModal(true);
           }
         }));
+
+        setShowingData(transformedData);
         setAllLoadData(transformedData);
-        setPageLoading(false)
-
       } else {
-        console.error(
-          "Error fetching all loads:",
-          response.data.error_message
-        );
-        setPageLoading(false)
+        setShowingData([]);
       }
-
     } catch (err) {
-      console.log(err)
-      setPageLoading(false)
-
+      console.log("Filter Error", err);
+    } finally {
+      setPageLoading(false);
     }
   };
 
@@ -588,71 +650,6 @@ const AvailableLoads = ({ navigation }) => {
   }
 
 
-  const handlePagination = async (itemsPerPage, currentPage) => {
-
-    try {
-      const payload = {
-        "search_val": "",
-        "page_no": `${currentPage + 1}`,  // Fix: Make it 1-based
-        "data_limit": `${itemsPerPage}` || "1"
-      }
-      // setPageLoading(true)
-
-
-      const response = await axiosInstance.post("/all_load_details", payload);
-
-      console.log("response.data.data.length",response.data.data.length)
-
-      if (response.data.error_code === 0) {
-
-        const transformedData = response.data.data.map((item) => ({
-          companyName: item.company_name,
-          updatedTime: item.updt,
-          post: item.user_post,
-          profileName: item.profile_name,
-          title: item.company_name,
-          fromLocation: item.from_location,
-          toLocation: item.to_location,
-          isAadhaarVerified: item.aadhaar_verified,
-          labels: [
-            { icon: "table-view", text: item.material },
-            { icon: "attractions", text: `${item.no_of_tyres} wheels` },
-            { icon: "monitor-weight", text: `${item.tone} tons` },
-            { icon: "local-shipping", text: item.truck_body_type },
-
-          ],
-          description: item.description,
-          onButton1Press: () => Linking.openURL(`tel:${item.contact_no}`),
-          onButton2Press: () => {
-
-            setMessageReceiver(item)
-            setSendMessageModal(true)
-          }
-        }));
-        setAllLoadData(transformedData);
-        setPageLoading(false)
-      } else {
-        console.error(
-          "Error fetching all loads:",
-          response.data.error_message
-        );
-        setPageLoading(false)
-
-      }
-    } catch (error) {
-      console.error("Error fetching all loads:", error);
-      setPageLoading(false)
-
-    } finally {
-      setisLoadings(false);
-      setPageLoading(false)
-
-    }
-  }
-
-
-
-console.log("Total records:", totalRecords);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#e8f4ff" }}>
@@ -686,15 +683,28 @@ console.log("Total records:", totalRecords);
             textColor="white"
           />
         </View>
-        <SearchFilter onSearch={handleSearch} />
+        <SearchFilter onSearch={handleSearch} searchQuery={searchQuery} />
         {
           pageLoading == false ?
             <>
               <LoadDetails
+                isMyPost={false}
+                getAllData={getAllLoads}
+                showingData={filteredTrucks}
+                setShowingData={setShowingData}
+                showingDataLoading={showingDataLoading}
+                setShowingDataLoading={setShowingDataLoading}
                 navigation={navigation}
                 filteredTrucks={filteredTrucks}
                 totalRecords={totalRecords}
-                handlePagination={handlePagination} />
+                search={search}
+                setSearch={setSearch}
+                page={page}
+                setPage={setPage}
+                dataLimit={dataLimit}
+                setDataLimit={setDataLimit}
+              />
+
             </>
             :
             <View style={styles.ActivityIndicatorContainer}>

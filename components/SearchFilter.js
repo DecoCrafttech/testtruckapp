@@ -2,25 +2,20 @@ import React, { useState } from "react";
 import { View, TextInput, StyleSheet } from "react-native";
 import { COLORS } from "../constants";
 
-const SearchFilter = ({ onSearch }) => {
-  const [query, setQuery] = useState("");
-
-  const handleSearch = (text) => {
-    setQuery(text);
-    onSearch(text);
-  };
-
+const SearchFilter = ({ searchQuery, onSearch }) => {
+  
   return (
     <View style={styles.container}>
       <TextInput
         style={styles.input}
         placeholder="Search..."
-        value={query}
-        onChangeText={handleSearch}
+        value={searchQuery} // Controlled input
+        onChangeText={onSearch}
       />
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

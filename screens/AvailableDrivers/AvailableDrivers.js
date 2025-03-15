@@ -94,6 +94,15 @@ const AvailableDrivers = ({ navigation }) => {
 
   const [selectedFilterStates, setSelectedFilterStates] = useState([]);
 
+  const [showingData, setShowingData] = useState([]);
+  const [showingDataLoading, setShowingDataLoading] = useState([]);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [dataLimit, setDataLimit] = useState(10);
+  const [totalRecords, setTotalRecords] = useState(0)
+  const [isFiltered, setIsFiltered] = useState(false);
+
+
   const data = [
     { label: "Select All", value: "select_all" },
     ...statesData.map(state => ({ label: state.name, value: state.id.toString() }))
@@ -163,67 +172,94 @@ const AvailableDrivers = ({ navigation }) => {
   };
 
 
+
   useEffect(() => {
-    const getAllDrivers = async () => {
-      try {
-        const payload = {
-          "search_val": "",
-          "page_no": "1",
-          "data_limit": "5"
+    if (!isFiltered) { // Only fetch when not filtered
+      let delaySearch;
+      if (search) {
+        delaySearch = setTimeout(() => {
+          getAllDrivers(search, page, dataLimit);
+        }, 500);
+      } else {
+        getAllDrivers(search, page, dataLimit);
+      }
+
+      return () => clearTimeout(delaySearch);
+    }
+  }, [search, isFiltered]); // Add isFiltered to dependency array
+
+  useEffect(() => {
+    if (!isFiltered) { // Prevent fetching all loads when filtered
+      getAllDrivers(search, page, dataLimit);
+    }
+  }, [page, dataLimit, isFiltered]); // Add isFiltered to dependency array
+
+
+  const getAllDrivers = async (searchVal, pageNo, limit) => {
+
+    try {
+      if (isFiltered) return; // Prevent fetching if filtered data is displayed
+
+      setShowingDataLoading(true);
+
+      const payload = {
+        page_no: pageNo,
+        data_limit: limit,
+        search_val: searchVal
+      };
+
+      const response = await axiosInstance.post("/all_driver_details", payload);
+
+
+
+      if (response.data.error_code === 0) {
+        const totalCount = response.data.data.all_record_count;
+
+        setTotalRecords(Number(totalCount));
+
+        console.log("response.data.data", response.data)
+
+        const transformedData = response.data.data.result_data.map((item) => ({
+          companyName: item.company_name,
+          updatedTime: item.updt,
+          post: item.user_post,
+          profileName: item.profile_name,
+          title: item.driver_name,
+          fromLocation: item.from_location,
+          toLocation: item.to_location,
+          isAadhaarVerified: item.aadhaar_verified,
+          labels: [
+            { icon: "directions-bus", text: item.vehicle_number },
+            { icon: "attractions", text: `${item.no_of_tyres} wheels` },
+            { icon: "local-shipping", text: item.truck_body_type },
+            { icon: "person", text: item.driver_name },
+          ],
+          description: item.description,
+          onButton1Press: () => Linking.openURL(`tel:${item.contact_no}`),
+          onButton2Press: () => {
+            setMessageReceiver(item)
+            setSendMessageModal(true)
+          }
+        }));
+        if (searchVal === "" && pageNo === 1 && limit === 10) {
+          setSearchQuery("")
+          setPage(1)
+          setDataLimit(10)
         }
-        setPageLoading(true)
 
-
-        const response = await axiosInstance.post("/all_driver_details", payload);
-
-        if (response.data.error_code === 0) {
-          const transformedData = response.data.data.map((item) => ({
-            companyName: item.company_name,
-            updatedTime: item.updt,
-            post: item.user_post,
-            profileName: item.profile_name,
-            title: item.driver_name,
-            fromLocation: item.from_location,
-            toLocation: item.to_location,
-            isAadhaarVerified: item.aadhaar_verified,
-            labels: [
-              { icon: "directions-bus", text: item.vehicle_number },
-              { icon: "attractions", text: `${item.no_of_tyres} wheels` },
-              { icon: "local-shipping", text: item.truck_body_type },
-              { icon: "person", text: item.driver_name },
-            ],
-            description: item.description,
-            onButton1Press: () => Linking.openURL(`tel:${item.contact_no}`),
-            onButton2Press: () => {
-              setMessageReceiver(item)
-              setSendMessageModal(true)
-            }
-          }));
-
-          setDriversData(transformedData);
-          setPageLoading(false)
-
-        } else {
-          console.error(
-            "Error fetching all loads:",
-            response.data.error_message
-          );
-          setPageLoading(false)
-
-        }
-      } catch (error) {
-        console.error("Error fetching all drivers:", error);
-        setPageLoading(false)
-
-      } finally {
-        setisLoadings(false);
-        setPageLoading(false)
+        setShowingData(transformedData);
+        setDriversData(transformedData);
 
       }
-    };
+    } catch (error) {
+      console.error("Error fetching loads:", error);
+    } finally {
+      setisLoadings(false);
+      setShowingDataLoading(false);
+    }
+  };
 
-    getAllDrivers();
-  }, [isLoading]);
+
 
   const filteredTrucks = driversData.filter(
     (truck) =>
@@ -241,7 +277,7 @@ const AvailableDrivers = ({ navigation }) => {
     setIsModalVisible(!isModalVisible);
   };
 
-  const handleClearFilter = () => {
+  const handleClearFilter = async () => {
 
     setIsLoading(!isLoading)
     // Reset modal values and error fields when modal opens/closes
@@ -266,7 +302,22 @@ const AvailableDrivers = ({ navigation }) => {
       truckName: false,
     });
 
-    setIsModalVisible(!isModalVisible);
+
+
+    // Reset pagination
+    setPage(1);
+
+    try {
+      // Wait for data to load before closing the modal
+      await getAllDrivers("", 1, 10);
+
+      // Now close the modal only after data is fetched
+      setIsModalVisible(false);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
+    }
 
 
 
@@ -413,6 +464,11 @@ const AvailableDrivers = ({ navigation }) => {
 
   const applyFilter = async () => {
 
+    setIsFiltered(true); // Enable filtered mode immediately
+
+    // Wait for state update before continuing
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
     const filterParams = {
       "driver_name": modalValues.driverName,
       "contact_no": "",
@@ -424,7 +480,7 @@ const AvailableDrivers = ({ navigation }) => {
       "truck_name": modalValues.truckName !== "" && modalValues.truckName !== undefined && modalValues.truckName !== null ? modalValues.truckName : "",
       "no_of_tyres": modalValues.noOfTyres !== "" && modalValues.noOfTyres !== undefined && modalValues.noOfTyres !== null ? modalValues.noOfTyres : "",
       "page_no": "0",
-      "data_limit": "10"
+      "data_limit": "10",
 
 
     }
@@ -433,9 +489,18 @@ const AvailableDrivers = ({ navigation }) => {
       toggleModal(); // Close modal after applying filter
       setPageLoading(true)
 
+      setShowingData([]);
+
 
       const response = await axiosInstance.post("/user_driver_details_filter", filterParams)
       if (response.data.error_code === 0) {
+
+        const totalCount = response.data.data.all_record_count;
+        setTotalRecords(Number(totalCount));
+
+
+        console.log("response.data,filter", response.data)
+
         const transformedData = response.data.data.map((item) => ({
           companyName: item.company_name,
           updatedTime: item.updt,
@@ -458,6 +523,8 @@ const AvailableDrivers = ({ navigation }) => {
             setSendMessageModal(true)
           }
         }));
+        setShowingData(transformedData);
+
         setDriversData(transformedData);
         setPageLoading(false)
 
@@ -466,6 +533,8 @@ const AvailableDrivers = ({ navigation }) => {
           "Error fetching all loads:",
           response.data.error_message
         );
+        setShowingData(transformedData);
+
         setPageLoading(false)
 
       }
@@ -582,12 +651,25 @@ const AvailableDrivers = ({ navigation }) => {
             textColor="white"
           />
         </View>
-        <SearchFilter onSearch={handleSearch} />
+        <SearchFilter onSearch={handleSearch} searchQuery={searchQuery} />
         {
           pageLoading === false ?
             <DriverDetails
               navigation={navigation}
               filteredTrucks={filteredTrucks}
+              isMyPost={false}
+              getAllData={getAllDrivers}
+              showingData={filteredTrucks}
+              setShowingData={setShowingData}
+              showingDataLoading={showingDataLoading}
+              setShowingDataLoading={setShowingDataLoading}
+              totalRecords={totalRecords}
+              search={search}
+              setSearch={setSearch}
+              page={page}
+              setPage={setPage}
+              dataLimit={dataLimit}
+              setDataLimit={setDataLimit}
             />
             :
             <View style={styles.ActivityIndicatorContainer}>
