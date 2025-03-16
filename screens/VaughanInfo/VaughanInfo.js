@@ -194,11 +194,11 @@ const VaughanInfo = ({ navigation }) => {
               <Text style={styles.tableValue}>{item.to_location}</Text>
             </View>
             <View style={styles.tableRow}>
-              <Text style={styles.tableLabel}>Load Price:</Text>
+              <Text style={styles.tableLabel}>Credit amount:</Text>
               <Text style={styles.tableValue}>₹ {item.load_price}</Text>
             </View>
             <View style={styles.tableRow}>
-              <Text style={styles.tableLabel}>Spend amount:</Text>
+              <Text style={styles.tableLabel}>Debit amount:</Text>
               <Text style={styles.tableValue}>₹ {item.spend_amount}</Text>
             </View>
             <View style={styles.tableRow}>

@@ -637,15 +637,15 @@ const Petrolbunks = () => {
                 </TouchableOpacity>
               ))}
 
-              <Text style={[styles.label, { marginTop: 10 }]}>Discount</Text>
+              {/* <Text style={[styles.label, { marginTop: 10 }]}>Discount</Text>
               <TextInput
                 style={[
                   styles.textInput,
                 ]}
-                placeholder="Enter discount"
+                placeholder="Enter discount per litre(in Rupees)"
                 onChangeText={setDiscount}
                 value={discount}
-              />
+              /> */}
 
             </ScrollView>
 

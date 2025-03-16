@@ -30,12 +30,13 @@ const LoadExpenseCalculator = ({ route }) => {
   const [cashStatus, setCashStatus] = useState("");
   const [modalValues, setModalValues] = useState({
     name: "",
-    category: "",
+    description: "",
     amount: "",
   });
   const [errorFields, setErrorFields] = useState({
     name: false,
     amount: false,
+    description : false
   });
 
   const toggleModal = (cash) => {
@@ -44,10 +45,14 @@ const LoadExpenseCalculator = ({ route }) => {
     setModalValues({
       name: "",
       amount: "",
+      description: "",
+
     });
     setErrorFields({
       name: false,
       amount: false,
+      description : false
+
     });
 
 
@@ -137,7 +142,7 @@ const LoadExpenseCalculator = ({ route }) => {
         load_trip_id: item.load_trip_id,
         cash_flow_name: modalValues.name,
         category: "",
-        description: "",
+        description:  modalValues.description,
         cash_flow_type: cashStatus === "Credit entry" ? "IN" : "OUT",
         amount: modalValues.amount,
 
@@ -320,13 +325,13 @@ const LoadExpenseCalculator = ({ route }) => {
               <Text style={styles.boxTitle}>
                 ₹ {loadPrice}
               </Text>
-              <Text style={styles.boxValue}>Load price</Text>
+              <Text style={styles.boxValue}>Credit amount</Text>
             </View>
             <View style={[styles.box, { marginRight: 10 }]}>
               <Text style={styles.boxTitle}>
                 ₹ {initalCash.cashOut}
               </Text>
-              <Text style={styles.boxValue}>Spent amount</Text>
+              <Text style={styles.boxValue}>Debit amount</Text>
             </View>
             <View style={styles.box}>
               <Text style={styles.boxTitle}>₹ {initalCash.cashIn}</Text>
@@ -374,12 +379,12 @@ const LoadExpenseCalculator = ({ route }) => {
               onChangeText={(text) => handleInputChange("amount", text)} // Use lowercase
             />
 
-            {/* <TextInput
+            <TextInput
               style={[styles.input, errorFields.details && styles.inputError]}
-              placeholder="Details"
-              value={modalValues.details}
-              onChangeText={(text) => handleInputChange("details", text)} // Use lowercase
-            /> */}
+              placeholder="Description"
+              value={modalValues.description}
+              onChangeText={(text) => handleInputChange("description", text)} // Use lowercase
+            />
 
             <TouchableOpacity style={[styles.applyButton, { backgroundColor: "#24a0ed" }]} onPress={handleCashInOut}>
               <Text style={styles.applyButtonText}>Add</Text>

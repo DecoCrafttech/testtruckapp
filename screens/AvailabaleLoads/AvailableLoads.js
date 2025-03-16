@@ -91,6 +91,7 @@ const AvailableLoads = ({ navigation }) => {
   const [dataLimit, setDataLimit] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0)
   const [isFiltered, setIsFiltered] = useState(false);
+  const [applyFilterPagination, setApplyFilterPagination] = useState(false)
 
 
 
@@ -202,18 +203,22 @@ const AvailableLoads = ({ navigation }) => {
 
 
 
-
-
+  // ✅ Prevent `getAllLoads` from running when filters are applied
   useEffect(() => {
-    let delaySearch = setTimeout(() => {
-      getAllLoads(searchQuery ? searchQuery : search, page, dataLimit);
-    }, search ? 500 : 0);
-    return () => clearTimeout(delaySearch);
-  }, [search, page, dataLimit]); // Add search as a dependency
+    if (!isFiltered && !applyFilterPagination) {
+      let delaySearch = setTimeout(() => {
+        console.log("Fetching all loads (no filter applied)");
+        getAllLoads(searchQuery ? searchQuery : search, page, dataLimit);
+      }, search ? 500 : 0);
 
+      return () => clearTimeout(delaySearch);
+    }
+  }, [search, page, dataLimit]);
 
   const getAllLoads = async (searchVal, pageNo, limit) => {
-    console.log("getallloads");
+
+    if (isFiltered) return
+
     try {
       setShowingDataLoading(true);
 
@@ -223,14 +228,11 @@ const AvailableLoads = ({ navigation }) => {
         search_val: searchVal,
       };
 
-      console.log("payload", payload)
 
       const response = await axiosInstance.post("/all_load_details", payload);
 
       if (response.data.error_code === 0) {
         const totalCount = response.data.data.all_record_count;
-
-        console.log("totalCount", totalCount)
 
         setTotalRecords(Number(totalCount));
 
@@ -257,6 +259,14 @@ const AvailableLoads = ({ navigation }) => {
           },
         }));
 
+        if (searchVal === "" && pageNo === 1 && limit === 10) {
+          setSearchQuery("")
+          setPage(1)
+          setDataLimit(10)
+        }
+
+
+
         setisLoadings(false);
         setAllLoadData(transformedData);
         setShowingData(transformedData);
@@ -268,7 +278,6 @@ const AvailableLoads = ({ navigation }) => {
       setShowingDataLoading(false);
     }
   };
-
 
   // const filteredTrucks = allLoadData.filter(
   //   (truck) =>
@@ -288,48 +297,6 @@ const AvailableLoads = ({ navigation }) => {
     setIsModalVisible(!isModalVisible);
   };
 
-  const handleClearFilter = async () => {
-    setIsLoading(true);
-    setIsFiltered(false); // Exit filtered mode
-
-    // Reset filter values
-    setModalValues({
-      companyName: "",
-      fromLocation: "",
-      toLocation: "",
-      material: "",
-      noOfTyres: "",
-      tons: "",
-      truckBodyType: ""
-    });
-
-    setSelectedStates([]);
-
-    setErrorFields({
-      companyName: false,
-      fromLocation: false,
-      toLocation: false,
-      material: false,
-      noOfTyres: false,
-      tons: false,
-      truckBodyType: false
-    });
-
-    // Reset pagination
-    setPage(1);
-
-    try {
-      // Wait for data to load before closing the modal
-      await getAllLoads("", 1, 10);
-
-      // Now close the modal only after data is fetched
-      setIsModalVisible(false);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
 
 
@@ -496,9 +463,13 @@ const AvailableLoads = ({ navigation }) => {
     setFilteredStates(selectedStateNames)
   };
 
+  const applyFilter = async (value,pageNo,limit) => {
 
-  const applyFilter = async (value) => {
-    setIsFiltered(true); // Enable filtered mode immediately
+    console.log("Applying filter pagination...");
+    console.log("pageNo",pageNo)
+    console.log("limit",limit)
+
+    setIsFiltered(true); // Prevent getAllLoads from running
 
     await new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -511,25 +482,36 @@ const AvailableLoads = ({ navigation }) => {
       tone: modalValues.tons || "",
       truck_body_type: modalValues.truckBodyType || "",
       user_id: "",
-      page_no: "0",
-      data_limit: "10"
+      page_no: pageNo, // Reset to first page when filtering
+      data_limit: limit
     };
 
+
     try {
-      if (value !== "initialModal") {
-        toggleModal();
+      if (isModalVisible) {
+        setIsModalVisible(false)
+        // console.log("isModalVisible",isModalVisible)
+        // console.log("value !== initialModal")
+        // toggleModal();
       }
 
+
+      // setPage(1); // ✅ Reset to first page
       setPageLoading(true);
       setShowingData([]);
 
       const response = await axiosInstance.post("/user_load_details_filter", filterParams);
 
-      console.log("Filtered length", response.data);
+
 
       if (response.data.error_code === 0) {
-        const totalCount = response.data.data.all_record_count;
-        setTotalRecords(Number(totalCount));
+
+
+
+        setApplyFilterPagination(true)
+        const totalCount = response.data.data.all_record_count || 0;
+
+        setTotalRecords(Number(totalCount)); // ✅ Update totalRecords correctly
 
         const transformedData = response.data.data.result_data.map((item) => ({
           companyName: item.company_name,
@@ -551,20 +533,72 @@ const AvailableLoads = ({ navigation }) => {
           onButton2Press: () => {
             setMessageReceiver(item);
             setSendMessageModal(true);
-          }
+          },
         }));
 
         setShowingData(transformedData);
         setAllLoadData(transformedData);
       } else {
         setShowingData([]);
+        setTotalRecords(0); // ✅ Set totalRecords to 0 if no results found
       }
     } catch (err) {
       console.log("Filter Error", err);
     } finally {
       setPageLoading(false);
+
+      // ✅ Reset `isFiltered` only after updating totalRecords and showingData
+      setTimeout(() => setIsFiltered(false), 500);
     }
   };
+
+  const handleClearFilter = async () => {
+    setIsLoading(true);
+    setIsFiltered(false); // Exit filtered mode
+    setIsModalVisible(false);
+
+    setApplyFilterPagination(false); // Allow `getAllLoads` to be called again
+
+    // Reset filter values
+    setModalValues({
+      companyName: "",
+      fromLocation: "",
+      toLocation: "",
+      material: "",
+      noOfTyres: "",
+      tons: "",
+      truckBodyType: ""
+    });
+
+    setSelectedStates([]);
+
+    setErrorFields({
+      companyName: false,
+      fromLocation: false,
+      toLocation: false,
+      material: false,
+      noOfTyres: false,
+      tons: false,
+      truckBodyType: false
+    });
+
+    // Reset pagination
+    setPage(1);
+
+    try {
+      // Fetch default loads
+      await getAllLoads("", 1, 10);
+
+      // Reset UI state after clearing filters
+      setSelectedFilterStates([]);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
 
   const handleClose = () => {
     setShowOTPInputBox(false)
@@ -622,7 +656,7 @@ const AvailableLoads = ({ navigation }) => {
   };
 
   const handleFind = () => {
-    applyFilter("initialModal")
+    applyFilter("initialModal","","")
     setDoNotAskModalModal(false)
   }
 
@@ -664,7 +698,7 @@ const AvailableLoads = ({ navigation }) => {
             textColor="white"
           />
         </View>
-        <SearchFilter getAllData={getAllLoads} onSearch={handleSearch} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        <SearchFilter setApplyFilterPagination={setApplyFilterPagination} getAllData={getAllLoads} onSearch={handleSearch} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         {
           pageLoading == false ?
             <>
@@ -686,6 +720,10 @@ const AvailableLoads = ({ navigation }) => {
                 setDataLimit={setDataLimit}
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
+                isFiltered={isFiltered}
+                applyFilter={applyFilter}
+                applyFilterPagination={applyFilterPagination}
+                setApplyFilterPagination={setApplyFilterPagination}
               />
 
             </>
@@ -829,7 +867,7 @@ const AvailableLoads = ({ navigation }) => {
                 <TouchableOpacity style={[styles.applyButton, { width: "48%" }]} onPress={handleClearFilter}>
                   <Text style={styles.applyButtonText}>Clear filter</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.applyButton, { width: "48%", backgroundColor: "green" }]} onPress={applyFilter}>
+                <TouchableOpacity style={[styles.applyButton, { width: "48%", backgroundColor: "green" }]} onPress={() => applyFilter("",page,dataLimit)}>
                   <Text style={styles.applyButtonText}>Apply filter</Text>
                 </TouchableOpacity>
               </View>

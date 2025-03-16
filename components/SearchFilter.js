@@ -3,7 +3,7 @@ import { View, TextInput, StyleSheet, TouchableOpacity, Alert } from "react-nati
 import { MaterialIcons } from "@expo/vector-icons"; // Import clear icon
 import { COLORS } from "../constants"; // Keeping your existing styles
 
-const SearchFilter = ({ searchQuery,setSearchQuery, onSearch,getAllData }) => {
+const SearchFilter = ({ setApplyFilterPagination, searchQuery, setSearchQuery, onSearch, getAllData }) => {
   return (
     <View style={styles.container}>
       <TextInput
@@ -18,6 +18,7 @@ const SearchFilter = ({ searchQuery,setSearchQuery, onSearch,getAllData }) => {
         <TouchableOpacity
           style={styles.clearIcon}
           onPress={async () => {
+            setApplyFilterPagination(false); // Allow `getAllLoads` to be called again
             setSearchQuery("")
             await getAllData("", 1, 10)
           }}

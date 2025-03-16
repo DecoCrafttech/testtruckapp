@@ -35,7 +35,12 @@ const LoadDetails = ({
   status,
   selectedValue,
   handlePagination,
-  totalRecords
+  totalRecords,
+  isFiltered,
+  applyFilter,
+  applyFilterPagination,
+  setApplyFilterPagination
+
 }) => {
 
 
@@ -61,7 +66,9 @@ const LoadDetails = ({
             <View style={{ margin: 10, flexDirection: 'row', gap: 10, alignItems: 'center' }}>
               <TouchableOpacity
                 onPress={async () => {
+                  setApplyFilterPagination(false); // Allow `getAllLoads` to be called again
                   setSearchQuery("")
+                  setPage(1)
                   await getAllData("", 1, 10)
                 }}>
                 <MaterialIcons name="replay" size={20} color="black" />
@@ -83,6 +90,12 @@ const LoadDetails = ({
             data1={filteredTrucks?.reverse()} handlePagination={handlePagination} totalRecords={totalRecords}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
+            isFiltered={isFiltered}
+            applyFilter={applyFilter}
+            applyFilterPagination={applyFilterPagination}
+            setApplyFilterPagination={setApplyFilterPagination}
+
+
           />
         </>
 

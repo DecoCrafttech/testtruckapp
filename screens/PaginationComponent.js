@@ -27,14 +27,30 @@ const PaginationComponent = ({
     setShowingDataLoading,
     getAllData, data1, selectedValue, status, handlePagination, totalRecords,
     searchQuery,
-    setSearchQuery
+    setSearchQuery,
+    isFiltered,
+    applyFilterPagination,
+    applyFilter,
+    setApplyFilterPagination
 }) => {
     const totalPages = Math.ceil(totalRecords / dataLimit) || 1;
 
     useEffect(() => {
-        setPage(1); // Reset to first page when search or data limit changes
-        getAllData(searchQuery ? searchQuery : search, 1, dataLimit);
-    }, [search, dataLimit]);
+        if (isFiltered && applyFilterPagination === false) {
+            console.log("useeff")
+            setPage(1); // ✅ Reset to first page when search or data limit changes
+            getAllData(searchQuery ? searchQuery : search, 1, dataLimit);
+        }
+    }, [search, dataLimit, totalRecords]); // ✅ Include totalRecords in dependency array
+
+
+    console.log("pageeeeeeeeeeeeeeeeeeeeeeeeeeee",page)
+
+    // useEffect(() => {
+    //         console.log("Applying filter pagination...");
+    //         applyFilter("")
+    // }, [search, dataLimit, totalRecords]);
+
 
     return (
         <View style={styles.container}>
@@ -78,8 +94,16 @@ const PaginationComponent = ({
                                 selectedValue={dataLimit}
                                 style={styles.entriesPicker}
                                 onValueChange={(itemValue) => {
-                                    setDataLimit(itemValue);
-                                    setPage(1); // Reset to first page when limit changes
+
+                                    if (applyFilterPagination) {
+                                        console.log("itemValue", itemValue)
+                                        applyFilter("", 1, itemValue)
+                                        setDataLimit(itemValue); // ✅ Ensure dataLimit updates before applying filter
+
+                                    } else {
+                                        setDataLimit(itemValue);
+                                        setPage(1); // Reset to first page when limit changes
+                                    }
                                 }}
                             >
                                 <Picker.Item label="1" value={1} />
@@ -92,7 +116,15 @@ const PaginationComponent = ({
                         <View style={styles.paginationContainer}>
                             <TouchableOpacity
                                 style={[styles.pageButton, page === 1 && styles.disabledButton]}
-                                onPress={() => setPage((prevPage) => Math.max(1, prevPage - 1))}
+                                onPress={() => {
+                                    setPage((prevPage) => {
+                                        const newPage = Math.max(1, prevPage - 1); // Ensure it doesn’t go below 1
+                                        if (applyFilterPagination) {
+                                            applyFilter("", newPage, dataLimit); // Use the updated page value
+                                        }
+                                        return newPage;
+                                    });
+                                }}
                                 disabled={page === 1}
                             >
                                 <Text style={styles.pageText}>«</Text>
@@ -107,9 +139,15 @@ const PaginationComponent = ({
                                     styles.pageButton,
                                     page >= totalPages && styles.disabledButton,
                                 ]}
-                                onPress={() =>
-                                    setPage((prevPage) => Math.min(prevPage + 1, totalPages))
-                                }
+                                onPress={() => {
+                                    setPage((prevPage) => {
+                                        const newPage = Math.min(prevPage + 1, totalPages); // Ensure it doesn’t go beyond totalPages
+                                        if (applyFilterPagination) {
+                                            applyFilter("", newPage, dataLimit); // Use the updated page value
+                                        }
+                                        return newPage;
+                                    });
+                                }}
                                 disabled={page >= totalPages}
                             >
                                 <Text style={styles.pageText}>»</Text>

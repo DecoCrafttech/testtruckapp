@@ -326,7 +326,7 @@ const PetrolBunkAdd = () => {
                                 styles.textInput,
                                 !discountValid && { borderColor: "red" },
                             ]}
-                            placeholder="Enter discount"
+                            placeholder="Enter discount per litre(in Rupees)"
                             onChangeText={setDiscount}
                             value={discount}
                             keyboardType="number-pad"
