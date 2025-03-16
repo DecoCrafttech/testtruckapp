@@ -85,7 +85,7 @@ const AvailableLoads = ({ navigation }) => {
   const [selectedFilterStates, setSelectedFilterStates] = useState([]);
 
   const [showingData, setShowingData] = useState([]);
-  const [showingDataLoading, setShowingDataLoading] = useState([]);
+  const [showingDataLoading, setShowingDataLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [dataLimit, setDataLimit] = useState(10);
@@ -184,14 +184,15 @@ const AvailableLoads = ({ navigation }) => {
     }
   };
 
-  const handleSearch = (query) => {
+
+  const handleSearch = async (query) => {
     setSearchQuery(query);
+    setPage(1); // Reset to first page on new search
+    await getAllLoads(query ? query : search, 1, dataLimit); // Fetch data with page reset
   };
 
 
 
-
-  console.log("query", searchQuery)
 
   useEffect(() => {
     setTimeout(() => {
@@ -200,50 +201,38 @@ const AvailableLoads = ({ navigation }) => {
   }, [])
 
 
-  useEffect(() => {
-    if (!isFiltered) { // Only fetch when not filtered
-      let delaySearch;
-      if (search) {
-        delaySearch = setTimeout(() => {
-          getAllLoads(search, page, dataLimit);
-        }, 500);
-      } else {
-        getAllLoads(search, page, dataLimit);
-      }
 
-      return () => clearTimeout(delaySearch);
-    }
-  }, [search, isFiltered]); // Add isFiltered to dependency array
+
 
   useEffect(() => {
-    if (!isFiltered) { // Prevent fetching all loads when filtered
-      getAllLoads(search, page, dataLimit);
-    }
-  }, [page, dataLimit, isFiltered]); // Add isFiltered to dependency array
+    let delaySearch = setTimeout(() => {
+      getAllLoads(searchQuery ? searchQuery : search, page, dataLimit);
+    }, search ? 500 : 0);
+    return () => clearTimeout(delaySearch);
+  }, [search, page, dataLimit]); // Add search as a dependency
+
 
   const getAllLoads = async (searchVal, pageNo, limit) => {
-
+    console.log("getallloads");
     try {
-      if (isFiltered) return; // Prevent fetching if filtered data is displayed
-
       setShowingDataLoading(true);
 
       const payload = {
         page_no: pageNo,
         data_limit: limit,
-        search_val: searchVal
+        search_val: searchVal,
       };
+
+      console.log("payload", payload)
+
       const response = await axiosInstance.post("/all_load_details", payload);
-
-
 
       if (response.data.error_code === 0) {
         const totalCount = response.data.data.all_record_count;
 
+        console.log("totalCount", totalCount)
+
         setTotalRecords(Number(totalCount));
-
-        console.log("response.data.data",response.data)
-
 
         const transformedData = response.data.data.load_data.map((item) => ({
           companyName: item.company_name,
@@ -261,20 +250,16 @@ const AvailableLoads = ({ navigation }) => {
             { icon: "local-shipping", text: item.truck_body_type },
           ],
           description: item.description,
-          onButton1Press: () => Linking.openURL(`tel:${item.contact_no}`),
+          onButton1Press: () => Linking.openURL(`tel: ${item.contact_no}`),
           onButton2Press: () => {
             setMessageReceiver(item);
             setSendMessageModal(true);
-          }
+          },
         }));
-        if (searchVal === "" && pageNo === 1 && limit === 10) {
-          setSearchQuery("")
-          setPage(1)
-          setDataLimit(10)
-        }
 
-        setShowingData(transformedData);
+        setisLoadings(false);
         setAllLoadData(transformedData);
+        setShowingData(transformedData);
       }
     } catch (error) {
       console.error("Error fetching loads:", error);
@@ -285,21 +270,18 @@ const AvailableLoads = ({ navigation }) => {
   };
 
 
-
-
-
-  const filteredTrucks = allLoadData.filter(
-    (truck) =>
-      truck.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.profileName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.fromLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.toLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.labels[0].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.labels[1].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.labels[2].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.labels[3].text.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // const filteredTrucks = allLoadData.filter(
+  //   (truck) =>
+  //     truck.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     truck.profileName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     truck.fromLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     truck.toLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     truck.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     truck.labels[0].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     truck.labels[1].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     truck.labels[2].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     truck.labels[3].text.toLowerCase().includes(searchQuery.toLowerCase())
+  // );
 
 
   const toggleModal = () => {
@@ -515,11 +497,9 @@ const AvailableLoads = ({ navigation }) => {
   };
 
 
-
   const applyFilter = async (value) => {
     setIsFiltered(true); // Enable filtered mode immediately
 
-    // Wait for state update before continuing
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     const filterParams = {
@@ -545,11 +525,12 @@ const AvailableLoads = ({ navigation }) => {
 
       const response = await axiosInstance.post("/user_load_details_filter", filterParams);
 
-      console.log("Filtered length", response.data.data.result_data.length);
+      console.log("Filtered length", response.data);
 
       if (response.data.error_code === 0) {
         const totalCount = response.data.data.all_record_count;
         setTotalRecords(Number(totalCount));
+
         const transformedData = response.data.data.result_data.map((item) => ({
           companyName: item.company_name,
           updatedTime: item.updt,
@@ -683,19 +664,19 @@ const AvailableLoads = ({ navigation }) => {
             textColor="white"
           />
         </View>
-        <SearchFilter onSearch={handleSearch} searchQuery={searchQuery} />
+        <SearchFilter getAllData={getAllLoads} onSearch={handleSearch} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         {
           pageLoading == false ?
             <>
               <LoadDetails
                 isMyPost={false}
                 getAllData={getAllLoads}
-                showingData={filteredTrucks}
+                showingData={showingData}
                 setShowingData={setShowingData}
                 showingDataLoading={showingDataLoading}
                 setShowingDataLoading={setShowingDataLoading}
                 navigation={navigation}
-                filteredTrucks={filteredTrucks}
+                filteredTrucks={showingData}
                 totalRecords={totalRecords}
                 search={search}
                 setSearch={setSearch}
@@ -703,6 +684,8 @@ const AvailableLoads = ({ navigation }) => {
                 setPage={setPage}
                 dataLimit={dataLimit}
                 setDataLimit={setDataLimit}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
               />
 
             </>

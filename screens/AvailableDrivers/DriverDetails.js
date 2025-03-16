@@ -20,7 +20,7 @@ const DriverDetails = ({
   setPage,
   dataLimit,
   setDataLimit,
-  getAllLoads,
+  getAllData,
   showingData,
   setShowingData,
   showingDataLoading,
@@ -44,14 +44,13 @@ const DriverDetails = ({
 
       {isMyPost === false && showingData.length > 0 ?
         <>
-
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <View style={{ margin: 10, flexDirection: 'row', gap: 10, alignItems: 'center' }}>
               <Foundation name="results" size={20} color="green" />
               <Text style={{ fontSize: 16, fontWeight: 500 }}>Showing {`${showingData.length}`} of {`${totalRecords}`} </Text>
             </View>
             <View style={{ margin: 10, flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-              <TouchableOpacity onPress={async () => await getAllLoads("", 1, 10)}>
+              <TouchableOpacity onPress={async () => await getAllData("", 1, 10)}>
                 <MaterialIcons name="replay" size={20} color="black" />
               </TouchableOpacity>
             </View>
@@ -63,7 +62,7 @@ const DriverDetails = ({
             setPage={setPage}
             dataLimit={dataLimit}
             setDataLimit={setDataLimit}
-            getAllLoads={getAllLoads}
+            getAllData={getAllData}
             showingData={showingData?.reverse()}
             setShowingData={setShowingData}
             showingDataLoading={showingDataLoading}

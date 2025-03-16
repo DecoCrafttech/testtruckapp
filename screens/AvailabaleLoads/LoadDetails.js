@@ -29,12 +29,13 @@ const LoadDetails = ({
   setShowingData,
   showingDataLoading,
   setShowingDataLoading,
-
+  searchQuery,
+  setSearchQuery,
   filteredTrucks,
   status,
   selectedValue,
   handlePagination,
-  totalRecords 
+  totalRecords
 }) => {
 
 
@@ -58,7 +59,11 @@ const LoadDetails = ({
               <Text style={{ fontSize: 16, fontWeight: 500 }}>Showing {`${showingData.length}`} of {`${totalRecords}`} </Text>
             </View>
             <View style={{ margin: 10, flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-              <TouchableOpacity onPress={async () => await getAllData("", 1, 10)}>
+              <TouchableOpacity
+                onPress={async () => {
+                  setSearchQuery("")
+                  await getAllData("", 1, 10)
+                }}>
                 <MaterialIcons name="replay" size={20} color="black" />
               </TouchableOpacity>
             </View>
@@ -76,6 +81,8 @@ const LoadDetails = ({
             showingDataLoading={showingDataLoading}
             setShowingDataLoading={setShowingDataLoading}
             data1={filteredTrucks?.reverse()} handlePagination={handlePagination} totalRecords={totalRecords}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
           />
         </>
 

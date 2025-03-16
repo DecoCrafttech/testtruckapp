@@ -197,9 +197,12 @@ const AvailableDrivers = ({ navigation }) => {
 
   const getAllDrivers = async (searchVal, pageNo, limit) => {
 
+    console.log("getAllDrivers")
     try {
-      if (isFiltered) return; // Prevent fetching if filtered data is displayed
 
+      if (isFiltered && !(searchVal === "" && pageNo === 1 && limit === 10)) {
+        return;
+      }
       setShowingDataLoading(true);
 
       const payload = {
@@ -207,6 +210,8 @@ const AvailableDrivers = ({ navigation }) => {
         data_limit: limit,
         search_val: searchVal
       };
+
+      console.log("payload", payload)
 
       const response = await axiosInstance.post("/all_driver_details", payload);
 
@@ -216,8 +221,6 @@ const AvailableDrivers = ({ navigation }) => {
         const totalCount = response.data.data.all_record_count;
 
         setTotalRecords(Number(totalCount));
-
-        console.log("response.data.data", response.data)
 
         const transformedData = response.data.data.result_data.map((item) => ({
           companyName: item.company_name,
@@ -495,9 +498,11 @@ const AvailableDrivers = ({ navigation }) => {
       const response = await axiosInstance.post("/user_driver_details_filter", filterParams)
       if (response.data.error_code === 0) {
 
-        const totalCount = response.data.data.all_record_count;
+        const totalCount = response.data.data.length;
         setTotalRecords(Number(totalCount));
 
+
+        console.log("totalCount", totalCount)
 
         console.log("response.data,filter", response.data)
 

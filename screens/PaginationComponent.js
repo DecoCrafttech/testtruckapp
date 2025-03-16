@@ -12,6 +12,8 @@ import { Picker } from "@react-native-picker/picker";
 import { MaterialIcons } from "@expo/vector-icons"; // For clear icon
 import TruckCard from "./TruckCard";
 
+
+
 const PaginationComponent = ({
     search,
     setSearch,
@@ -23,13 +25,16 @@ const PaginationComponent = ({
     setShowingData,
     showingDataLoading,
     setShowingDataLoading,
-    getAllLoads, data1, selectedValue, status, handlePagination, totalRecords
+    getAllData, data1, selectedValue, status, handlePagination, totalRecords,
+    searchQuery,
+    setSearchQuery
 }) => {
-    const totalPages = Math.ceil(totalRecords / dataLimit);
+    const totalPages = Math.ceil(totalRecords / dataLimit) || 1;
 
     useEffect(() => {
-        getAllLoads(search, page, dataLimit);
-    }, [search, page, dataLimit]);
+        setPage(1); // Reset to first page when search or data limit changes
+        getAllData(searchQuery ? searchQuery : search, 1, dataLimit);
+    }, [search, dataLimit]);
 
     return (
         <View style={styles.container}>
@@ -66,6 +71,7 @@ const PaginationComponent = ({
 
                     {/* Footer Section */}
                     <View style={styles.footer}>
+                        {/* Data Limit Dropdown */}
                         <View style={styles.entriesContainer}>
                             <Text style={styles.label}>Show:</Text>
                             <Picker
@@ -73,7 +79,7 @@ const PaginationComponent = ({
                                 style={styles.entriesPicker}
                                 onValueChange={(itemValue) => {
                                     setDataLimit(itemValue);
-                                    setPage(1);
+                                    setPage(1); // Reset to first page when limit changes
                                 }}
                             >
                                 <Picker.Item label="1" value={1} />
@@ -82,20 +88,28 @@ const PaginationComponent = ({
                             </Picker>
                         </View>
 
+                        {/* Pagination Controls */}
                         <View style={styles.paginationContainer}>
                             <TouchableOpacity
                                 style={[styles.pageButton, page === 1 && styles.disabledButton]}
-                                onPress={() => setPage(Math.max(1, page - 1))}
+                                onPress={() => setPage((prevPage) => Math.max(1, prevPage - 1))}
                                 disabled={page === 1}
                             >
                                 <Text style={styles.pageText}>«</Text>
                             </TouchableOpacity>
 
-                            <Text style={styles.pageNumber}>Page {page} of {totalPages}</Text>
+                            <Text style={styles.pageNumber}>
+                                Page {page} of {totalPages}
+                            </Text>
 
                             <TouchableOpacity
-                                style={[styles.pageButton, page >= totalPages && styles.disabledButton]}
-                                onPress={() => setPage((prevPage) => Math.min(prevPage + 1, totalPages))}
+                                style={[
+                                    styles.pageButton,
+                                    page >= totalPages && styles.disabledButton,
+                                ]}
+                                onPress={() =>
+                                    setPage((prevPage) => Math.min(prevPage + 1, totalPages))
+                                }
                                 disabled={page >= totalPages}
                             >
                                 <Text style={styles.pageText}>»</Text>
@@ -107,6 +121,7 @@ const PaginationComponent = ({
         </View>
     );
 };
+
 
 const styles = StyleSheet.create({
     container: { flex: 1, padding: 10, backgroundColor: "#f5f5f5" },
@@ -126,8 +141,8 @@ const styles = StyleSheet.create({
         elevation: 4,
         borderTopLeftRadius: 10,
         borderTopRightRadius: 10,
-        flexDirection:'row',
-        justifyContent:"space-between"
+        flexDirection: 'row',
+        justifyContent: "space-between"
     },
     entriesContainer: {
         flexDirection: "row",
