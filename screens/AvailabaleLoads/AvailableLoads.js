@@ -465,9 +465,7 @@ const AvailableLoads = ({ navigation }) => {
 
   const applyFilter = async (value,pageNo,limit) => {
 
-    console.log("Applying filter pagination...");
-    console.log("pageNo",pageNo)
-    console.log("limit",limit)
+
 
     setIsFiltered(true); // Prevent getAllLoads from running
 
@@ -541,6 +539,8 @@ const AvailableLoads = ({ navigation }) => {
       } else {
         setShowingData([]);
         setTotalRecords(0); // ✅ Set totalRecords to 0 if no results found
+        setPageLoading(false)
+
       }
     } catch (err) {
       console.log("Filter Error", err);
@@ -698,7 +698,13 @@ const AvailableLoads = ({ navigation }) => {
             textColor="white"
           />
         </View>
-        <SearchFilter setApplyFilterPagination={setApplyFilterPagination} getAllData={getAllLoads} onSearch={handleSearch} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        <SearchFilter 
+        setApplyFilterPagination={setApplyFilterPagination} 
+        getAllData={getAllLoads} 
+        handleClearFilter={handleClearFilter}
+        onSearch={handleSearch} 
+        searchQuery={searchQuery} 
+        setSearchQuery={setSearchQuery} />
         {
           pageLoading == false ?
             <>

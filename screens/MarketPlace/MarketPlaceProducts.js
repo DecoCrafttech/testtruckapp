@@ -8,7 +8,6 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
-
 import { COLORS, images } from "../../constants";
 import { LoadNeedsContext } from "../../hooks/LoadNeedsContext";
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -17,12 +16,38 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Constants from 'expo-constants'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import PaginationComponent from "../PaginationComponent";
+import Foundation from '@expo/vector-icons/Foundation';
 
 
 
 
+const ProductCategoryList = ({
+  navigation,
+  filteredProducts,
+  onPressCategory,
+  loading,
+  isMyPost,
+  getAllData,
+  showingData,
+  setShowingData,
+  showingDataLoading,
+  setShowingDataLoading,
+  totalRecords,
+  search,
+  setSearch,
+  page,
+  setPage,
+  dataLimit,
+  setDataLimit,
+  searchQuery,
+  setSearchQuery,
+  isFiltered,
+  applyFilter,
+  applyFilterPagination,
+  setApplyFilterPagination,
 
-const ProductCategoryList = ({ navigation, filteredProducts, onPressCategory, loading }) => {
+}) => {
 
   const {
     setMessageReceiver
@@ -34,11 +59,6 @@ const ProductCategoryList = ({ navigation, filteredProducts, onPressCategory, lo
 
 
   const renderItem = ({ item }) => (
-
-
-
-
-
     <View >
       <View style={[styles.categoryItem]}>
         {item.images && item.images.length > 0 ? (
@@ -138,13 +158,69 @@ const ProductCategoryList = ({ navigation, filteredProducts, onPressCategory, lo
     </View>
   ) : (
     <View style={{ flex: 1 }}>
-      <FlatList
-        data={filteredProducts}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.container}
-        contentInset={{ bottom: 100 }}
-      />
+
+
+      {isMyPost === false && showingData.length > 0 ?
+        <>
+
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View style={{ margin: 10, flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+              <Foundation name="results" size={20} color="green" />
+              <Text style={{ fontSize: 16, fontWeight: 500 }}>Showing {`${showingData.length}`} of {`${totalRecords}`} </Text>
+            </View>
+            <View style={{ margin: 10, flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+              <TouchableOpacity
+                onPress={async () => {
+                  setApplyFilterPagination(false); // Allow `getAllLoads` to be called again
+                  setSearchQuery("")
+                  setPage(1)
+                  await getAllData("", 1, 10)
+                }}>
+                <MaterialIcons name="replay" size={20} color="black" />
+              </TouchableOpacity>
+            </View>
+          </View>
+          <PaginationComponent
+            search={search}
+            setSearch={setSearch}
+            page={page}
+            setPage={setPage}
+            dataLimit={dataLimit}
+            setDataLimit={setDataLimit}
+            getAllData={getAllData}
+            showingData={showingData?.reverse()}
+            setShowingData={setShowingData}
+            showingDataLoading={showingDataLoading}
+            setShowingDataLoading={setShowingDataLoading}
+            data1={showingData?.reverse()}
+            totalRecords={totalRecords}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            isFiltered={isFiltered}
+            applyFilter={applyFilter}
+            applyFilterPagination={applyFilterPagination}
+            setApplyFilterPagination={setApplyFilterPagination}
+            navigation={navigation}
+            onPressCategory={onPressCategory}
+            filteredProducts={showingData.reverse()}
+            loading={loading}
+            isMyPost={false}
+            renderBuyAndSellData={showingData?.map((item, index) => (
+              <View key={index}>{renderItem({ item })}</View>
+            ))} 
+            isBuyAndSellShowingData={true}
+          />
+        </>
+        // <FlatList
+        //   data={filteredProducts}
+        //   renderItem={renderItem}
+        //   keyExtractor={(item) => item.id.toString()}
+        //   contentContainerStyle={styles.container}
+        //   contentInset={{ bottom: 100 }}
+        // />
+        : null
+      }
+
     </View>
   );
 };

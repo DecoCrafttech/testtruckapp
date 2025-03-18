@@ -13,9 +13,6 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 
 
-
-
-
 const LoadDetails = ({
   isMyPost,
   search,
@@ -94,14 +91,8 @@ const LoadDetails = ({
             applyFilter={applyFilter}
             applyFilterPagination={applyFilterPagination}
             setApplyFilterPagination={setApplyFilterPagination}
-
-
           />
         </>
-
-
-
-
 
         : (
           <>

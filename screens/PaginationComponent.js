@@ -25,13 +25,21 @@ const PaginationComponent = ({
     setShowingData,
     showingDataLoading,
     setShowingDataLoading,
-    getAllData, data1, selectedValue, status, handlePagination, totalRecords,
+    getAllData,
+    data1,
+    selectedValue,
+    status,
+    handlePagination,
+    totalRecords,
     searchQuery,
     setSearchQuery,
     isFiltered,
     applyFilterPagination,
     applyFilter,
-    setApplyFilterPagination
+    setApplyFilterPagination,
+    availableTruckPage,
+    isBuyAndSellShowingData,
+    renderBuyAndSellData
 }) => {
     const totalPages = Math.ceil(totalRecords / dataLimit) || 1;
 
@@ -44,12 +52,12 @@ const PaginationComponent = ({
     }, [search, dataLimit, totalRecords]); // ✅ Include totalRecords in dependency array
 
 
-    console.log("pageeeeeeeeeeeeeeeeeeeeeeeeeeee",page)
 
     // useEffect(() => {
     //         console.log("Applying filter pagination...");
     //         applyFilter("")
     // }, [search, dataLimit, totalRecords]);
+
 
 
     return (
@@ -60,30 +68,42 @@ const PaginationComponent = ({
                 </View>
             ) : (
                 <ScrollView contentContainerStyle={styles.scrollContainer}>
-                    {showingData.length > 0 ? (
-                        showingData.map((item, index) => (
-                            <TruckCard
-                                key={index}
-                                selectedValue={selectedValue}
-                                post={item.post}
-                                profileName={item.profileName}
-                                companyName={item.companyName}
-                                transportName={item.transportName}
-                                title={item.title}
-                                fromLocation={item.fromLocation}
-                                toLocation={item.toLocation}
-                                labels={item.labels}
-                                description={item.description}
-                                onButton1Press={item.onButton1Press}
-                                onButton2Press={item.onButton2Press}
-                                status={status}
-                                updatedTime={item.updatedTime}
-                                isAadhaarVerified={item.isAadhaarVerified}
-                            />
-                        ))
-                    ) : (
-                        <Text style={styles.noData}>No loads found</Text>
-                    )}
+
+
+                    {
+                        isBuyAndSellShowingData ?
+                            renderBuyAndSellData
+                            :
+
+                            showingData.length > 0 ? (
+                                showingData.map((item, index) => (
+                                    <TruckCard
+                                        key={index}
+                                        selectedValue={selectedValue}
+                                        post={item.post}
+                                        profileName={item.profileName}
+                                        companyName={item.companyName}
+                                        transportName={item.transportName}
+                                        title={item.title}
+                                        fromLocation={item.fromLocation}
+                                        toLocation={item.toLocation}
+                                        labels={item.labels}
+                                        description={item.description}
+                                        onButton1Press={item.onButton1Press}
+                                        onButton2Press={item.onButton2Press}
+                                        status={status}
+                                        updatedTime={item.updatedTime}
+                                        isAadhaarVerified={item.isAadhaarVerified}
+                                        availableTruckPage={availableTruckPage}
+                                        truckSize={item.truckSize}
+                                        nameOfTheTransport={item.nameOfTheTransport}
+                                    />
+                                ))
+                            ) : (
+                                <Text style={styles.noData}>No loads found</Text>
+                            )
+
+                    }
 
                     {/* Footer Section */}
                     <View style={styles.footer}>
@@ -94,7 +114,6 @@ const PaginationComponent = ({
                                 selectedValue={dataLimit}
                                 style={styles.entriesPicker}
                                 onValueChange={(itemValue) => {
-
                                     if (applyFilterPagination) {
                                         console.log("itemValue", itemValue)
                                         applyFilter("", 1, itemValue)
@@ -106,9 +125,9 @@ const PaginationComponent = ({
                                     }
                                 }}
                             >
-                                <Picker.Item label="1" value={1} />
-                                <Picker.Item label="2" value={2} />
-                                <Picker.Item label="3" value={3} />
+                                <Picker.Item label="10" value={10} />
+                                <Picker.Item label="20" value={20} />
+                                <Picker.Item label="50" value={50} />
                             </Picker>
                         </View>
 

@@ -99,6 +99,7 @@ const TruckDetail = ({ route }) => {
   const renderImages = () => {
     return (
       <View style={styles.imagesContainer}>
+        {/* Main Image Display */}
         <View style={styles.mainImageContainer}>
           {selectedImage ? (
             <Image style={styles.mainImage} source={{ uri: selectedImage }} />
@@ -106,20 +107,26 @@ const TruckDetail = ({ route }) => {
             <Text>No Image Available</Text>
           )}
         </View>
-        <View style={styles.smallImagesContainer}>
-          {fullProductDetails.images && fullProductDetails.images.map((image, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => setSelectedImage(image)}
-              style={styles.smallImageContainer}
-            >
-              <Image style={styles.smallImage} source={{ uri: image }} />
-            </TouchableOpacity>
-          ))}
-        </View>
+  
+        {/* Scrollable Thumbnails */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.smallImagesScroll}>
+          <View style={styles.smallImagesContainer}>
+            {fullProductDetails.images &&
+              fullProductDetails.images.map((image, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => setSelectedImage(image)}
+                  style={styles.smallImageContainer}
+                >
+                  <Image style={styles.smallImage} source={{ uri: image }} />
+                </TouchableOpacity>
+              ))}
+          </View>
+        </ScrollView>
       </View>
     );
   };
+  
 
   if (!fullProductDetails.brand) {
     return (

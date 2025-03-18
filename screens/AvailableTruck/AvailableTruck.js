@@ -52,7 +52,7 @@ const AvailableTruck = ({ navigation }) => {
   } = useContext(LoadNeedsContext)
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [getTruckData, setGetTruckData] = useState([]);
+  const [allTrucksData, setAllTrucksData] = useState([]);
   const [isLoadings, setisLoadings] = useState(true);
 
   const [selectedStates, setSelectedStates] = useState([]);
@@ -98,6 +98,22 @@ const AvailableTruck = ({ navigation }) => {
 
 
   const [selectedFilterStates, setSelectedFilterStates] = useState([]);
+
+
+
+
+    const [showingData, setShowingData] = useState([]);
+    const [showingDataLoading, setShowingDataLoading] = useState(false);
+    const [search, setSearch] = useState("");
+    const [page, setPage] = useState(1);
+    const [dataLimit, setDataLimit] = useState(10);
+    const [totalRecords, setTotalRecords] = useState(0)
+    const [isFiltered, setIsFiltered] = useState(false);
+    const [applyFilterPagination, setApplyFilterPagination] = useState(false)
+  
+  
+  
+  
 
   const data = [
     { label: "Select All", value: "select_all" },
@@ -164,128 +180,124 @@ const AvailableTruck = ({ navigation }) => {
     }
   };
 
-
-  const handleSearch = (query) => {
+  const handleSearch = async (query) => {
     setSearchQuery(query);
+    setPage(1); // Reset to first page on new search
+    await getAllTrucks(query ? query : search, 1, dataLimit); // Fetch data with page reset
+  };
+
+
+  // ✅ Prevent `getAllLoads` from running when filters are applied
+  useEffect(() => {
+    if (!isFiltered && !applyFilterPagination) {
+      let delaySearch = setTimeout(() => {
+        console.log("Fetching all loads (no filter applied)");
+        getAllTrucks(searchQuery ? searchQuery : search, page, dataLimit);
+      }, search ? 500 : 0);
+
+      return () => clearTimeout(delaySearch);
+    }
+  }, [search, page, dataLimit]);
+
+
+  const getAllTrucks = async (searchVal, pageNo, limit) => {
+    
+    if (isFiltered) return
+    try {
+
+      const payload = {
+        page_no: pageNo,
+        data_limit: limit,
+        search_val: searchVal,
+      };
+
+
+      const response = await axiosInstance.post("/all_truck_details", payload);
+
+      if (response.data.error_code === 0) {
+        console.log("truckresponse.data.data",response.data.data)
+        const totalCount = response.data.data.all_record_count;
+
+        setTotalRecords(Number(totalCount));
+
+        const transformedData = response.data.data.result_data.map((item) => ({
+          companyName: item.company_name,
+          nameOfTheTransport: item.name_of_the_transport,
+          updatedTime: item.updt,
+          post: item.user_post,
+          profileName: item.profile_name,
+          title: item.company_name,
+          fromLocation: item.from_location,
+          toLocation: Array.isArray(item.to_location) ? item.to_location.map(v => v) : [], // Safe mapping
+          isAadhaarVerified: item.aadhaar_verified,
+          truckSize: item.truck_size,
+
+          labels: [
+            { icon: "weight", text: `${item.tone} tons` },
+            { icon: "local-shipping", text: item.truck_body_type },
+            { icon: "attractions", text: `${item.no_of_tyres} wheels` },
+            { icon: "directions-bus", text: item.truck_brand_name },
+            { icon: "table-view", text: item.company_name },
+            { icon: "fire-truck", text: item.truckSize },
+            { icon: "verified", text: "RC verified" },
+          ],
+          description: item.description,
+          onButton1Press: () => Linking.openURL(`tel:${item.contact_no}`),
+          onButton2Press: () => {
+
+            setMessageReceiver(item)
+            setSendMessageModal(true)
+          }
+        }));
+
+        if (searchVal === "" && pageNo === 1 && limit === 10) {
+          setSearchQuery("")
+          setPage(1)
+          setDataLimit(10)
+        }
+
+
+
+        setisLoadings(false);
+        setAllTrucksData(transformedData);
+        setShowingData(transformedData);
+        setPageLoading(false)
+
+      } else {
+        console.error(
+          "Error fetching all loads:",
+          response.data.error_message
+        );
+        setPageLoading(false)
+
+      }
+    } catch (error) {
+      console.error("Error fetching loads:", error);
+    } finally {
+      setisLoadings(false);
+      setShowingDataLoading(false);
+    }
   };
 
 
 
-  useEffect(() => {
-    const getAllTruckDetails = async () => {
-      try {
-
-        const payload = {
-          "search_val": "",
-          "page_no": "1",
-          "data_limit": "5"
-        }
-
-        setPageLoading(true)
-
-        const response = await axiosInstance.post("/all_truck_details", payload);
-
-        if (response.data.error_code === 0) {
-          const transformedData = response.data.data.map((item) => ({
-            companyName: item.company_name,
-            nameOfTheTransport: item.name_of_the_transport,
-            updatedTime: item.updt,
-            post: item.user_post,
-            profileName: item.profile_name,
-            title: item.company_name,
-            fromLocation: item.from_location,
-            toLocation: Array.isArray(item.to_location) ? item.to_location.map(v => v) : [], // Safe mapping
-            isAadhaarVerified: item.aadhaar_verified,
-            truckSize: item.truck_size,
-
-            labels: [
-              { icon: "weight", text: `${item.tone} tons` },
-              { icon: "local-shipping", text: item.truck_body_type },
-              { icon: "attractions", text: `${item.no_of_tyres} wheels` },
-              { icon: "directions-bus", text: item.truck_brand_name },
-              { icon: "table-view", text: item.company_name },
-              { icon: "fire-truck", text: item.truckSize },
-              { icon: "verified", text: "RC verified" },
-            ],
-            description: item.description,
-            onButton1Press: () => Linking.openURL(`tel:${item.contact_no}`),
-            onButton2Press: () => {
-
-              setMessageReceiver(item)
-              setSendMessageModal(true)
-            }
-          }));
-
-          setGetTruckData(transformedData);
-          setPageLoading(false)
-
-        } else {
-          console.error(
-            "Error fetching all loads:",
-            response.data.error_message
-          );
-          setPageLoading(false)
-
-        }
-      } catch (error) {
-        console.error("Error fetching all loads:", error);
-        setPageLoading(false)
-
-      } finally {
-        setisLoadings(false); // Set loading to false after fetch completes
-        setPageLoading(false)
-
-      }
-    };
-
-    getAllTruckDetails();
-  }, [isLoading]);
-
-
-  const filteredTrucks = getTruckData.filter(
-    (truck) =>
-      truck.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.fromLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (Array.isArray(truck.toLocation) && truck.toLocation.join(' ').toLowerCase().includes(searchQuery.toLowerCase())) || // Check if it's an array
-      truck.nameOfTheTransport.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.labels[0].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.labels[1].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.labels[2].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.labels[3].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.labels[4].text.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // const filteredTrucks = allTrucksData.filter(
+  //   (truck) =>
+  //     truck.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     truck.fromLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     (Array.isArray(truck.toLocation) && truck.toLocation.join(' ').toLowerCase().includes(searchQuery.toLowerCase())) || // Check if it's an array
+  //     truck.nameOfTheTransport.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     truck.labels[0].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     truck.labels[1].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     truck.labels[2].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     truck.labels[3].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     truck.labels[4].text.toLowerCase().includes(searchQuery.toLowerCase())
+  // );
 
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
   };
 
-
-  const handleClearFilter = () => {
-    setModalValues({
-      companyName: "",
-      fromLocation: "",
-      toLocation: "",
-      material: "",
-      noOfTyres: "",
-      tons: "",
-      truckBodyType: "",
-      truckName: ""
-    });
-    setSelectedStates([])
-
-    setErrorFields({
-      companyName: false,
-      fromLocation: false,
-      toLocation: false,
-      material: false,
-      noOfTyres: false,
-      tons: false,
-      truckBodyType: false,
-    });
-    setIsLoading(!isLoading)
-    setIsModalVisible(!isModalVisible);
-
-  }
 
 
   const handleInputChange = (field, value) => {
@@ -428,7 +440,13 @@ const AvailableTruck = ({ navigation }) => {
     setToLocationModal(false)
   };
 
-  const applyFilter = async () => {
+  const applyFilter = async (value,pageNo,limit) => {
+
+
+
+    setIsFiltered(true); // Prevent getAllLoads from running
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     const filterParams = {
       "contact_no": "",
@@ -441,20 +459,38 @@ const AvailableTruck = ({ navigation }) => {
       "truck_body_type": modalValues.truckBodyType !== "" && modalValues.truckBodyType !== undefined && modalValues.truckBodyType !== null ? modalValues.truckBodyType : "",
       "no_of_tyres": modalValues.noOfTyres !== "" && modalValues.noOfTyres !== undefined && modalValues.noOfTyres !== null ? modalValues.noOfTyres : "",
       "tone": modalValues.tons !== "" && modalValues.tons !== undefined && modalValues.tons !== null ? modalValues.tons : "",
-      "page_no": "0",
-      "data_limit": "10"
+      page_no: pageNo, // Reset to first page when filtering
+      data_limit: limit
     }
 
 
 
     try {
 
-      toggleModal(); // Close modal after applying filter
-      setPageLoading(true)
+      if (isModalVisible) {
+        setIsModalVisible(false)
+        // console.log("isModalVisible",isModalVisible)
+        // console.log("value !== initialModal")
+        // toggleModal();
+      }
+
+
+      // setPage(1); // ✅ Reset to first page
+      setPageLoading(true);
+      setShowingData([]);
+
 
       const response = await axiosInstance.post("/user_truck_details_filter", filterParams)
       if (response.data.error_code === 0) {
-        const transformedData = response.data.data.map((item) => ({
+        console.log("truckfilter",response.data.data)
+       
+        setApplyFilterPagination(true)
+
+        const totalCount = response.data.data.all_record_count || 0;
+
+        setTotalRecords(Number(totalCount)); // ✅ Update totalRecords correctly
+
+        const transformedData = response.data.data.load_data.map((item) => ({
           nameOfTheTransport: item.name_of_the_transport,
           companyName: item.company_name,
           updatedTime: item.updt,
@@ -484,22 +520,74 @@ const AvailableTruck = ({ navigation }) => {
             setSendMessageModal(true)
           }
         }));
-        setGetTruckData(transformedData);
+        setAllTrucksData(transformedData);
         setPageLoading(false)
-      } else {
-        console.error(
-          "Error fetching all loads:",
-          response.data.error_message
-        );
+        setShowingData(transformedData);
+      }else {
+        setShowingData([]);
+        setTotalRecords(0); // ✅ Set totalRecords to 0 if no results found
         setPageLoading(false)
 
       }
     } catch (err) {
-      console.log(err)
-      setPageLoading(false)
+      console.log("Filter Error", err);
+    } finally {
+      setPageLoading(false);
 
+      // ✅ Reset `isFiltered` only after updating totalRecords and showingData
+      setTimeout(() => setIsFiltered(false), 500);
     }
   };
+
+
+  const handleClearFilter = async () => {
+
+    setIsLoading(true);
+    setIsFiltered(false); // Exit filtered mode
+    setIsModalVisible(false);
+
+    setApplyFilterPagination(false); // Allow `getAllLoads` to be called again
+
+    setModalValues({
+      companyName: "",
+      fromLocation: "",
+      toLocation: "",
+      material: "",
+      noOfTyres: "",
+      tons: "",
+      truckBodyType: "",
+      truckName: ""
+    });
+    setSelectedStates([])
+
+    setErrorFields({
+      companyName: false,
+      fromLocation: false,
+      toLocation: false,
+      material: false,
+      noOfTyres: false,
+      tons: false,
+      truckBodyType: false,
+    });
+    
+    // Reset pagination
+    setPage(1);
+
+    try {
+      // Fetch default loads
+      await getAllTrucks("", 1, 10);
+
+      // Reset UI state after clearing filters
+      setSelectedFilterStates([]);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+
+  }
+
+
 
   if (isLoadings) {
     return (
@@ -611,10 +699,33 @@ const AvailableTruck = ({ navigation }) => {
             textColor="white"
           />
         </View>
-        <SearchFilter onSearch={handleSearch} />
+        <SearchFilter handleClearFilter={handleClearFilter} setApplyFilterPagination={setApplyFilterPagination} getAllData={getAllTrucks} onSearch={handleSearch} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         {
           pageLoading === false ?
-            <TruckDetails navigation={navigation} filteredTrucks={filteredTrucks} availableTruckPage="true" />
+            <TruckDetails
+            isMyPost={false}
+            getAllData={getAllTrucks}
+            showingData={showingData}
+            setShowingData={setShowingData}
+            showingDataLoading={showingDataLoading}
+            setShowingDataLoading={setShowingDataLoading}
+            navigation={navigation}
+            filteredTrucks={showingData}
+            totalRecords={totalRecords}
+            search={search}
+            setSearch={setSearch}
+            page={page}
+            setPage={setPage}
+            dataLimit={dataLimit}
+            setDataLimit={setDataLimit}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            isFiltered={isFiltered}
+            applyFilter={applyFilter}
+            applyFilterPagination={applyFilterPagination}
+            setApplyFilterPagination={setApplyFilterPagination}
+            availableTruckPage="true"
+             />
             :
             <View style={styles.ActivityIndicatorContainer}>
               <ActivityIndicator size="large" color={COLORS.primary} />
@@ -798,7 +909,7 @@ const AvailableTruck = ({ navigation }) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.applyButton, { width: "48%", backgroundColor: "green" }]}
-                  onPress={applyFilter}
+                  onPress={() => applyFilter("",page,dataLimit)}
                 >
                   <Text style={styles.applyButtonText}>Apply filter</Text>
                 </TouchableOpacity>

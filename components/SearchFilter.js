@@ -1,9 +1,9 @@
 import React from "react";
-import { View, TextInput, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { View, TextInput, StyleSheet, TouchableOpacity, Alert, Text } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons"; // Import clear icon
 import { COLORS } from "../constants"; // Keeping your existing styles
 
-const SearchFilter = ({ setApplyFilterPagination, searchQuery, setSearchQuery, onSearch, getAllData }) => {
+const SearchFilter = ({ setApplyFilterPagination,handleClearFilter, searchQuery, setSearchQuery, onSearch, getAllData }) => {
   return (
     <View style={styles.container}>
       <TextInput
@@ -14,18 +14,21 @@ const SearchFilter = ({ setApplyFilterPagination, searchQuery, setSearchQuery, o
       />
 
       {/* Clear Icon */}
-      {searchQuery.length > 0 && (
+    
         <TouchableOpacity
           style={styles.clearIcon}
           onPress={async () => {
             setApplyFilterPagination(false); // Allow `getAllLoads` to be called again
             setSearchQuery("")
-            await getAllData("", 1, 10)
+            // await getAllData("", 1, 10)
+            handleClearFilter()
           }}
+          
         >
-          <MaterialIcons name="clear" size={24} color={COLORS.gray} />
+          <Text style={{backgroundColor:COLORS.primary,color:'#fff',padding:10,paddingHorizontal:20,borderRadius:5}}>Clear all</Text>
+          {/* <MaterialIcons name="clear" size={24} color={COLORS.gray} /> */}
         </TouchableOpacity>
-      )}
+      
     </View>
   );
 };
@@ -47,7 +50,7 @@ const styles = StyleSheet.create({
   clearIcon: {
     position: "absolute",
     right: 25,
-    top: 12,
+    top: 5,
     zIndex: 1,
   },
 });

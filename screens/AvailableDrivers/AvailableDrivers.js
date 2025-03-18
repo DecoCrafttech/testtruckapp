@@ -95,12 +95,16 @@ const AvailableDrivers = ({ navigation }) => {
   const [selectedFilterStates, setSelectedFilterStates] = useState([]);
 
   const [showingData, setShowingData] = useState([]);
-  const [showingDataLoading, setShowingDataLoading] = useState([]);
+  const [showingDataLoading, setShowingDataLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [dataLimit, setDataLimit] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0)
   const [isFiltered, setIsFiltered] = useState(false);
+  const [applyFilterPagination, setApplyFilterPagination] = useState(false)
+
+
+
 
 
   const data = [
@@ -167,57 +171,51 @@ const AvailableDrivers = ({ navigation }) => {
   };
 
 
-  const handleSearch = (query) => {
+  const handleSearch = async (query) => {
     setSearchQuery(query);
+    setPage(1); // Reset to first page on new search
+    await getAllDrivers(query ? query : search, 1, dataLimit); // Fetch data with page reset
   };
 
 
 
+
+
+
+  // ✅ Prevent `getAllLoads` from running when filters are applied
   useEffect(() => {
-    if (!isFiltered) { // Only fetch when not filtered
-      let delaySearch;
-      if (search) {
-        delaySearch = setTimeout(() => {
-          getAllDrivers(search, page, dataLimit);
-        }, 500);
-      } else {
-        getAllDrivers(search, page, dataLimit);
-      }
+    if (!isFiltered && !applyFilterPagination) {
+      let delaySearch = setTimeout(() => {
+        console.log("Fetching all loads (no filter applied)");
+        getAllDrivers(searchQuery ? searchQuery : search, page, dataLimit);
+      }, search ? 500 : 0);
 
       return () => clearTimeout(delaySearch);
     }
-  }, [search, isFiltered]); // Add isFiltered to dependency array
-
-  useEffect(() => {
-    if (!isFiltered) { // Prevent fetching all loads when filtered
-      getAllDrivers(search, page, dataLimit);
-    }
-  }, [page, dataLimit, isFiltered]); // Add isFiltered to dependency array
+  }, [search, page, dataLimit]);
 
 
   const getAllDrivers = async (searchVal, pageNo, limit) => {
 
-    console.log("getAllDrivers")
-    try {
+    if (isFiltered) return
 
-      if (isFiltered && !(searchVal === "" && pageNo === 1 && limit === 10)) {
-        return;
-      }
+    try {
       setShowingDataLoading(true);
 
       const payload = {
         page_no: pageNo,
         data_limit: limit,
-        search_val: searchVal
+        search_val: searchVal,
       };
 
-      console.log("payload", payload)
 
       const response = await axiosInstance.post("/all_driver_details", payload);
 
 
 
       if (response.data.error_code === 0) {
+
+
         const totalCount = response.data.data.all_record_count;
 
         setTotalRecords(Number(totalCount));
@@ -250,6 +248,9 @@ const AvailableDrivers = ({ navigation }) => {
           setDataLimit(10)
         }
 
+
+
+        setisLoadings(false);
         setShowingData(transformedData);
         setDriversData(transformedData);
 
@@ -264,67 +265,21 @@ const AvailableDrivers = ({ navigation }) => {
 
 
 
-  const filteredTrucks = driversData.filter(
-    (truck) =>
-      truck.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.fromLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.toLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.labels[0].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.labels[1].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      truck.labels[2].text.toLowerCase().includes(searchQuery.toLowerCase())
-    // truck.labels[3].text.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // const filteredTrucks = driversData.filter(
+  //   (truck) =>
+  //     truck.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     truck.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     truck.fromLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     truck.toLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     truck.labels[0].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     truck.labels[1].text.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     truck.labels[2].text.toLowerCase().includes(searchQuery.toLowerCase())
+  //   // truck.labels[3].text.toLowerCase().includes(searchQuery.toLowerCase())
+  // );
 
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
   };
-
-  const handleClearFilter = async () => {
-
-    setIsLoading(!isLoading)
-    // Reset modal values and error fields when modal opens/closes
-    setModalValues({
-      driverName: "",
-      fromLocation: "",
-      toLocation: "",
-      vehicleNumber: "",
-      noOfTyres: "",
-      truckBodyType: "",
-      truckName: "",
-    });
-    setSelectedStates([])
-
-    setErrorFields({
-      driverName: false,
-      fromLocation: false,
-      toLocation: false,
-      vehicleNumber: false,
-      noOfTyres: false,
-      truckBodyType: false,
-      truckName: false,
-    });
-
-
-
-    // Reset pagination
-    setPage(1);
-
-    try {
-      // Wait for data to load before closing the modal
-      await getAllDrivers("", 1, 10);
-
-      // Now close the modal only after data is fetched
-      setIsModalVisible(false);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-
-
-
-  }
 
 
 
@@ -465,7 +420,7 @@ const AvailableDrivers = ({ navigation }) => {
   };
 
 
-  const applyFilter = async () => {
+  const applyFilter = async (value, pageNo, limit) => {
 
     setIsFiltered(true); // Enable filtered mode immediately
 
@@ -482,29 +437,36 @@ const AvailableDrivers = ({ navigation }) => {
       "truck_body_type": modalValues.truckBodyType !== "" && modalValues.truckBodyType !== undefined && modalValues.truckBodyType !== null ? modalValues.truckBodyType : "",
       "truck_name": modalValues.truckName !== "" && modalValues.truckName !== undefined && modalValues.truckName !== null ? modalValues.truckName : "",
       "no_of_tyres": modalValues.noOfTyres !== "" && modalValues.noOfTyres !== undefined && modalValues.noOfTyres !== null ? modalValues.noOfTyres : "",
-      "page_no": "0",
-      "data_limit": "10",
+      page_no: pageNo, // Reset to first page when filtering
+      data_limit: limit
 
 
     }
 
-    try {
-      toggleModal(); // Close modal after applying filter
-      setPageLoading(true)
+    console.log("filterParams", filterParams)
 
+    try {
+      if (isModalVisible) {
+        setIsModalVisible(false)
+        // console.log("isModalVisible",isModalVisible)
+        // console.log("value !== initialModal")
+        // toggleModal();
+      }
+
+
+      // setPage(1); // ✅ Reset to first page
+      setPageLoading(true);
       setShowingData([]);
+
 
 
       const response = await axiosInstance.post("/user_driver_details_filter", filterParams)
       if (response.data.error_code === 0) {
+        setApplyFilterPagination(true)
 
-        const totalCount = response.data.data.length;
+
+        const totalCount = response.data.data.length || 0;
         setTotalRecords(Number(totalCount));
-
-
-        console.log("totalCount", totalCount)
-
-        console.log("response.data,filter", response.data)
 
         const transformedData = response.data.data.map((item) => ({
           companyName: item.company_name,
@@ -529,28 +491,81 @@ const AvailableDrivers = ({ navigation }) => {
           }
         }));
         setShowingData(transformedData);
-
         setDriversData(transformedData);
-        setPageLoading(false)
 
       } else {
         console.error(
           "Error fetching all loads:",
           response.data.error_message
         );
-        setShowingData(transformedData);
-
+        setShowingData([]);
+        setTotalRecords(0); // ✅ Set totalRecords to 0 if no results found
         setPageLoading(false)
 
       }
 
     } catch (err) {
-      console.log(err)
-      setPageLoading(false)
+      console.log("Filter Error", err);
+    } finally {
+      setPageLoading(false);
 
+      // ✅ Reset `isFiltered` only after updating totalRecords and showingData
+      setTimeout(() => setIsFiltered(false), 500);
     }
 
   };
+
+
+  const handleClearFilter = async () => {
+
+    setIsLoading(true);
+    setIsFiltered(false); // Exit filtered mode
+    setIsModalVisible(false);
+
+    setApplyFilterPagination(false); // Allow `getAllLoads` to be called again
+
+    // Reset modal values and error fields when modal opens/closes
+    setModalValues({
+      driverName: "",
+      fromLocation: "",
+      toLocation: "",
+      vehicleNumber: "",
+      noOfTyres: "",
+      truckBodyType: "",
+      truckName: "",
+    });
+    setSelectedStates([])
+
+    setErrorFields({
+      driverName: false,
+      fromLocation: false,
+      toLocation: false,
+      vehicleNumber: false,
+      noOfTyres: false,
+      truckBodyType: false,
+      truckName: false,
+    });
+
+
+    // Reset pagination
+    setPage(1);
+
+    try {
+      // Fetch default loads
+      await getAllDrivers("", 1, 10);
+
+      // Reset UI state after clearing filters
+      setSelectedFilterStates([]);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+
+
+  }
+
+
 
   if (isLoadings) {
     return (
@@ -656,15 +671,16 @@ const AvailableDrivers = ({ navigation }) => {
             textColor="white"
           />
         </View>
-        <SearchFilter onSearch={handleSearch} searchQuery={searchQuery} />
+        <SearchFilter handleClearFilter={handleClearFilter} setApplyFilterPagination={setApplyFilterPagination} getAllData={getAllDrivers} onSearch={handleSearch} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         {
           pageLoading === false ?
             <DriverDetails
               navigation={navigation}
-              filteredTrucks={filteredTrucks}
+              filteredTrucks={showingData}
               isMyPost={false}
               getAllData={getAllDrivers}
-              showingData={filteredTrucks}
+              handleClearFilter={handleClearFilter}
+              showingData={showingData}
               setShowingData={setShowingData}
               showingDataLoading={showingDataLoading}
               setShowingDataLoading={setShowingDataLoading}
@@ -675,6 +691,12 @@ const AvailableDrivers = ({ navigation }) => {
               setPage={setPage}
               dataLimit={dataLimit}
               setDataLimit={setDataLimit}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              isFiltered={isFiltered}
+              applyFilter={applyFilter}
+              applyFilterPagination={applyFilterPagination}
+              setApplyFilterPagination={setApplyFilterPagination}
             />
             :
             <View style={styles.ActivityIndicatorContainer}>
@@ -830,7 +852,7 @@ const AvailableDrivers = ({ navigation }) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.applyButton, { width: "48%", backgroundColor: "green" }]}
-                  onPress={applyFilter}
+                  onPress={() => applyFilter("", page, dataLimit)}
                 >
                   <Text style={styles.applyButtonText}>Apply filter</Text>
                 </TouchableOpacity>

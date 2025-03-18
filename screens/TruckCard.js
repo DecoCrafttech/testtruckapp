@@ -149,7 +149,7 @@ const TruckCard = ({
 
         {/* MY post labels */}
         <View style={styles.labelsContainer}>
-          {labels.slice(0, 6).map((label, index) =>
+          {labels?.slice(0, 6).map((label, index) =>
           (
             <View key={index} style={styles.labelRow}>
               {label.icon !== "weight" ?

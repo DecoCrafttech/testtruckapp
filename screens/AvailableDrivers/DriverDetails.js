@@ -11,25 +11,27 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 
 const DriverDetails = ({
-  filteredTrucks,
   navigation,
+  filteredTrucks,
   isMyPost,
+  getAllData,
+  showingData,
+  setShowingData,
+  showingDataLoading,
+  setShowingDataLoading,
+  totalRecords,
   search,
   setSearch,
   page,
   setPage,
   dataLimit,
   setDataLimit,
-  getAllData,
-  showingData,
-  setShowingData,
-  showingDataLoading,
-  setShowingDataLoading,
-  status,
-  selectedValue,
-  handlePagination,
-  totalRecords
-
+  searchQuery,
+  setSearchQuery,
+  isFiltered,
+  applyFilter,
+  applyFilterPagination,
+  setApplyFilterPagination,
 }) => {
 
 
@@ -55,21 +57,29 @@ const DriverDetails = ({
               </TouchableOpacity>
             </View>
           </View>
+
+          
           <PaginationComponent
-            search={search}
-            setSearch={setSearch}
-            page={page}
-            setPage={setPage}
-            dataLimit={dataLimit}
-            setDataLimit={setDataLimit}
-            getAllData={getAllData}
-            showingData={showingData?.reverse()}
-            setShowingData={setShowingData}
-            showingDataLoading={showingDataLoading}
-            setShowingDataLoading={setShowingDataLoading}
-            data1={filteredTrucks?.reverse()}
-            handlePagination={handlePagination}
-            totalRecords={totalRecords}
+             search={search}
+             setSearch={setSearch}
+             page={page}
+             setPage={setPage}
+             dataLimit={dataLimit}
+             setDataLimit={setDataLimit}
+             getAllData={getAllData}
+             showingData={showingData?.reverse()}
+             setShowingData={setShowingData}
+             showingDataLoading={showingDataLoading}
+             setShowingDataLoading={setShowingDataLoading}
+             data1={filteredTrucks?.reverse()} 
+             totalRecords={totalRecords}
+             searchQuery={searchQuery}
+             setSearchQuery={setSearchQuery}
+             isFiltered={isFiltered}
+             applyFilter={applyFilter}
+             applyFilterPagination={applyFilterPagination}
+             setApplyFilterPagination={setApplyFilterPagination}
+
           />
         </>
 

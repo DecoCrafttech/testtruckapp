@@ -29,6 +29,7 @@ import { AntDesign, MaterialIcons as Icon } from '@expo/vector-icons';
 import CustomButtonWithLoading from "../../components/CustomButtonWithLoading";
 
 
+
 import { MultiSelect } from "react-native-element-dropdown";
 
 
@@ -50,7 +51,7 @@ const MarketPlace = ({ navigation }) => {
   } = useContext(LoadNeedsContext)
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [marketPlaceProducts, setMarketPlaceProducts] = useState([]);
+  const [allBuyAndSellData, setAllBuyAndSellData] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isAadhaarModal, setIsAadhaarModal] = useState(false)
   const [modalValues, setModalValues] = useState({
@@ -84,6 +85,20 @@ const MarketPlace = ({ navigation }) => {
 
   const [selectedFilterStates, setSelectedFilterStates] = useState([]);
 
+
+
+  const [showingData, setShowingData] = useState([]);
+  const [showingDataLoading, setShowingDataLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [dataLimit, setDataLimit] = useState(10);
+  const [totalRecords, setTotalRecords] = useState(0)
+  const [isFiltered, setIsFiltered] = useState(false);
+  const [applyFilterPagination, setApplyFilterPagination] = useState(false)
+
+
+
+
   const data = [
     { label: "Select All", value: "select_all" },
     ...statesData.map(state => ({ label: state.name, value: state.id.toString() }))
@@ -98,28 +113,64 @@ const MarketPlace = ({ navigation }) => {
   };
 
 
+  // ✅ Prevent `getAllLoads` from running when filters are applied
   useEffect(() => {
-    const getMarketPlaceProducts = async () => {
-      try {
-        setPageLoading(true)
-        const response = await axiosInstance.get("/all_buy_sell_details");
-        if (response.data.error_code === 0) {
-          setMarketPlaceProducts(response.data.data);
-          setPageLoading(false)
-        } else {
-          setPageLoading(false)
-        }
-      } catch (error) {
-        console.log(error);
+    if (!isFiltered && !applyFilterPagination) {
+      let delaySearch = setTimeout(() => {
+        console.log("Fetching all loads (no filter applied)");
+        getAllBuyAndSellData(searchQuery ? searchQuery : search, page, dataLimit);
+      }, search ? 500 : 0);
+
+      return () => clearTimeout(delaySearch);
+    }
+  }, [search, page, dataLimit]);
+
+
+
+
+  const getAllBuyAndSellData = async (searchVal, pageNo, limit) => {
+
+    if (isFiltered) return
+
+
+    try {
+      setShowingDataLoading(true);
+
+      const payload = {
+        page_no: pageNo,
+        data_limit: limit,
+        search_val: searchVal,
+      };
+
+
+      setPageLoading(true)
+      const response = await axiosInstance.post("/all_buy_sell_details", payload);
+
+      console.log("buy and sell response.data", response.data)
+
+      if (response.data.error_code === 0) {
+        const totalCount = response.data.data.all_record_count;
+
+        setTotalRecords(Number(totalCount));
+
+        setAllBuyAndSellData(response.data.data.result_data);
         setPageLoading(false)
-      } finally {
-        setLoading(false);
+        setShowingData(response.data.data.result_data);
+      } else {
         setPageLoading(false)
       }
-    };
+    } catch (error) {
+      console.log(error);
+      setPageLoading(false)
+    } finally {
+      setLoading(false);
+      setPageLoading(false)
+      setShowingDataLoading(false);
 
-    getMarketPlaceProducts();
-  }, [isLoading]);
+    }
+  };
+
+
 
 
   useEffect(() => {
@@ -163,16 +214,21 @@ const MarketPlace = ({ navigation }) => {
     navigation.navigate("TruckDetails", { item });
   };
 
-  const filteredProducts = marketPlaceProducts.filter((product) =>
-    product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.kms_driven.includes(searchQuery)
-  );
+  // const filteredProducts = allBuyAndSellData.filter((product) =>
+  //   product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //   product.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //   product.kms_driven.includes(searchQuery)
+  // );
 
 
-  const handleSearch = (query) => {
+
+  const handleSearch = async (query) => {
     setSearchQuery(query);
+    setPage(1); // Reset to first page on new search
+    await getAllBuyAndSellData(query ? query : search, 1, dataLimit); // Fetch data with page reset
   };
+
+
 
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
@@ -261,7 +317,12 @@ const MarketPlace = ({ navigation }) => {
     }
   }
 
-  const applyFilter = async () => {
+  const applyFilter = async (value, pageNo, limit) => {
+
+
+    setIsFiltered(true); // Prevent getAllLoads from running
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     const filterParams = {
       "user_id": "",
@@ -278,24 +339,50 @@ const MarketPlace = ({ navigation }) => {
       "no_of_tyres": modalValues.noOfTyres !== "" && modalValues.noOfTyres !== undefined && modalValues.noOfTyres !== null ? modalValues.noOfTyres : "",
       "statelist": statelist,
       "company_name": "",
-      "page_no": "0",
-      "data_limit": "10"
+      "search_val": "",
+      page_no: pageNo, // Reset to first page when filtering
+      data_limit: limit
 
     }
 
+
+
+    console.log("filterParams", filterParams)
+
+
     try {
 
-      toggleModal(); // Close modal after applying filter
-      setPageLoading(true)
+      if (isModalVisible) {
+        setIsModalVisible(false)
+        // console.log("isModalVisible",isModalVisible)
+        // console.log("value !== initialModal")
+        // toggleModal();
+      }
 
+
+      // setPage(1); // ✅ Reset to first page
+      setPageLoading(true);
+      setShowingData([]);
 
       const response = await axiosInstance.post("/user_buy_sell_filter", filterParams)
 
+      console.log("buyseellfilter", response.data)
 
 
       if (response.data.error_code === 0) {
-        setMarketPlaceProducts(response.data.data)
+
+        console.log("buyseellfilter", response.data)
+
+
+        setApplyFilterPagination(true)
+        const totalCount = response.data.data.all_record_count || 0;
+
+        setTotalRecords(Number(totalCount)); // ✅ Update totalRecords correctly
+
+        setAllBuyAndSellData(response.data.data.result_data)
         setPageLoading(false)
+        setShowingData(response.data.data.result_data);
+
 
 
       } else {
@@ -304,13 +391,19 @@ const MarketPlace = ({ navigation }) => {
           response.data.error_message
         );
         setPageLoading(false)
+        setShowingData([]);
+        setTotalRecords(0); // ✅ Set totalRecords to 0 if no results found
+
 
       }
 
     } catch (err) {
-      console.log(err)
-      setPageLoading(false)
+      console.log("Filter Error", err);
+    } finally {
+      setPageLoading(false);
 
+      // ✅ Reset `isFiltered` only after updating totalRecords and showingData
+      setTimeout(() => setIsFiltered(false), 500);
     }
 
   };
@@ -343,8 +436,14 @@ const MarketPlace = ({ navigation }) => {
 
 
 
-  const handleClearFilter = () => {
+  const handleClearFilter = async () => {
     setIsLoading(!isLoading);
+    setIsFiltered(false); // Exit filtered mode
+    setIsModalVisible(false);
+
+    setApplyFilterPagination(false); // Allow `getAllLoads` to be called again
+
+    // Reset filter values
     setModalValues({
       brand: "",
       price: "",
@@ -358,7 +457,23 @@ const MarketPlace = ({ navigation }) => {
     setTruckBodyType("")
     setNumberOfTyres("")
     setStatelist([])
-    toggleModal()
+
+
+    // Reset pagination
+    setPage(1);
+
+    try {
+      // Fetch default loads
+      await getAllLoads("", 1, 10);
+
+      // Reset UI state after clearing filters
+      setSelectedFilterStates([]);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+
   }
 
   const brandData = [
@@ -519,15 +634,33 @@ const MarketPlace = ({ navigation }) => {
             textColor="white"
           />
         </View>
-        <SearchFilter onSearch={handleSearch} />
+        <SearchFilter handleClearFilter={handleClearFilter} setApplyFilterPagination={setApplyFilterPagination} getAllData={getAllBuyAndSellData} onSearch={handleSearch} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         {
           pageLoading === false ?
             <MarketPlaceProducts
               navigation={navigation}
-              searchQuery={searchQuery}
               onPressCategory={onPressCategory}
-              filteredProducts={filteredProducts.reverse()}
+              filteredProducts={showingData?.reverse()}
               loading={loading}
+              isMyPost={false}
+              getAllData={getAllBuyAndSellData}
+              showingData={showingData}
+              setShowingData={setShowingData}
+              showingDataLoading={showingDataLoading}
+              setShowingDataLoading={setShowingDataLoading}
+              totalRecords={totalRecords}
+              search={search}
+              setSearch={setSearch}
+              page={page}
+              setPage={setPage}
+              dataLimit={dataLimit}
+              setDataLimit={setDataLimit}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              isFiltered={isFiltered}
+              applyFilter={applyFilter}
+              applyFilterPagination={applyFilterPagination}
+              setApplyFilterPagination={setApplyFilterPagination}
             />
             :
             <View style={styles.ActivityIndicatorContainer}>
@@ -720,7 +853,10 @@ const MarketPlace = ({ navigation }) => {
                 <TouchableOpacity style={[styles.applyButton, { width: "48%" }]} onPress={handleClearFilter}>
                   <Text style={styles.applyButtonText}>Clear filter</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.applyButton, { width: "48%", backgroundColor: "green" }]} onPress={applyFilter}>
+                <TouchableOpacity
+                  style={[styles.applyButton, { width: "48%", backgroundColor: "green" }]}
+                  onPress={() => applyFilter("", page, dataLimit)}
+                >
                   <Text style={styles.applyButtonText}>Apply filter</Text>
                 </TouchableOpacity>
               </View>
