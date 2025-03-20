@@ -191,7 +191,6 @@ const AvailableTruck = ({ navigation }) => {
   useEffect(() => {
     if (!isFiltered && !applyFilterPagination) {
       let delaySearch = setTimeout(() => {
-        console.log("Fetching all loads (no filter applied)");
         getAllTrucks(searchQuery ? searchQuery : search, page, dataLimit);
       }, search ? 500 : 0);
 
@@ -215,7 +214,6 @@ const AvailableTruck = ({ navigation }) => {
       const response = await axiosInstance.post("/all_truck_details", payload);
 
       if (response.data.error_code === 0) {
-        console.log("truckresponse.data.data",response.data.data)
         const totalCount = response.data.data.all_record_count;
 
         setTotalRecords(Number(totalCount));
@@ -469,9 +467,7 @@ const AvailableTruck = ({ navigation }) => {
 
       if (isModalVisible) {
         setIsModalVisible(false)
-        // console.log("isModalVisible",isModalVisible)
-        // console.log("value !== initialModal")
-        // toggleModal();
+
       }
 
 
@@ -482,7 +478,6 @@ const AvailableTruck = ({ navigation }) => {
 
       const response = await axiosInstance.post("/user_truck_details_filter", filterParams)
       if (response.data.error_code === 0) {
-        console.log("truckfilter",response.data.data)
        
         setApplyFilterPagination(true)
 

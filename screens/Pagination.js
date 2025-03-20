@@ -13,7 +13,6 @@ const Pagination = ({ data1, handlePagination, totalRecords }) => {
     }, [itemsPerPage, page]);
 
 
-    console.log("Current Page:", page, "Items Per Page:", itemsPerPage);
 
 
     return (

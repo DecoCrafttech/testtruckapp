@@ -45,18 +45,10 @@ const PaginationComponent = ({
 
     useEffect(() => {
         if (isFiltered && applyFilterPagination === false) {
-            console.log("useeff")
             setPage(1); // ✅ Reset to first page when search or data limit changes
             getAllData(searchQuery ? searchQuery : search, 1, dataLimit);
         }
     }, [search, dataLimit, totalRecords]); // ✅ Include totalRecords in dependency array
-
-
-
-    // useEffect(() => {
-    //         console.log("Applying filter pagination...");
-    //         applyFilter("")
-    // }, [search, dataLimit, totalRecords]);
 
 
 
@@ -115,7 +107,6 @@ const PaginationComponent = ({
                                 style={styles.entriesPicker}
                                 onValueChange={(itemValue) => {
                                     if (applyFilterPagination) {
-                                        console.log("itemValue", itemValue)
                                         applyFilter("", 1, itemValue)
                                         setDataLimit(itemValue); // ✅ Ensure dataLimit updates before applying filter
 

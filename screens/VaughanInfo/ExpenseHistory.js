@@ -14,9 +14,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { COLORS } from "../../constants";
 import { Ionicons } from "@expo/vector-icons";
 
-
-
-const ExpenseHistory = ({ cashFlowExpenseHistory }) => {
+const ExpenseHistory = ({ cashFlowExpenseHistory,handleEdit,handleDelete }) => {
   const [filteredData, setFilteredData] = useState(cashFlowExpenseHistory);
   const [modalVisible, setModalVisible] = useState(false);
   const [filterType, setFilterType] = useState("");
@@ -39,7 +37,6 @@ const ExpenseHistory = ({ cashFlowExpenseHistory }) => {
     if (filterDescription)
       data = data.filter((item) => item.cash_flow_name.toLowerCase().includes(filterDescription.toLowerCase()));
 
-    // Ensure date conversion is correct
     if (fromDate) {
       data = data.filter((item) => new Date(item.updt).setHours(0, 0, 0, 0) >= new Date(fromDate).setHours(0, 0, 0, 0));
     }
@@ -49,9 +46,6 @@ const ExpenseHistory = ({ cashFlowExpenseHistory }) => {
 
     setFilteredData(data);
   };
-
-
-  console.log("filteredData", filteredData)
 
   const resetFilters = () => {
     setFilterType("");
@@ -82,14 +76,27 @@ const ExpenseHistory = ({ cashFlowExpenseHistory }) => {
           ItemSeparatorComponent={() => <View style={styles.separator} />}
           keyExtractor={(item, index) => (item.id ? item.id.toString() : index.toString())}
           renderItem={({ item }) => (
-            <View style={styles.content}>
-              <Text style={styles.category}>{item.category}</Text>
-              <Text style={styles.name}>{item.cash_flow_name}</Text>
-              <Text style={item.cash_flow_type === "IN" ? styles.addMoney : styles.outMoney}>
-                ₹ {item.amount}
-              </Text>
-              <Text style={styles.time}>{item.updt}</Text>
-              <Text style={styles.closingBlancetext}>Available balance: ₹ {item.closing_balance}</Text>
+            <View style={styles.rowContainer}>
+              {/* Left Side - Text Data */}
+              <View style={styles.content}>
+                <Text style={styles.category}>{item.category}</Text>
+                <Text style={styles.name}>{item.cash_flow_name}</Text>
+                <Text style={item.cash_flow_type === "IN" ? styles.addMoney : styles.outMoney}>
+                  ₹ {item.amount}
+                </Text>
+                <Text style={styles.time}>{item.updt}</Text>
+                <Text style={styles.closingBlancetext}>Available balance: ₹ {item.closing_balance}</Text>
+              </View>
+
+              {/* Right Side - Edit & Delete Icons */}
+              <View style={styles.iconContainer}>
+                <TouchableOpacity onPress={() => handleEdit(item) }>
+                  <Ionicons name="create-outline" size={24} color="blue" style={styles.icon} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleDelete(item)}>
+                  <Ionicons name="trash-outline" size={24} color="red" style={styles.icon} />
+                </TouchableOpacity>
+              </View>
             </View>
           )}
         />
@@ -110,13 +117,6 @@ const ExpenseHistory = ({ cashFlowExpenseHistory }) => {
                     <Picker.Item label="Debit" value="OUT" />
                   </Picker>
                 </View>
-
-                {/* <TextInput
-                  style={styles.input}
-                  placeholder="Enter Description"
-                  value={filterDescription}
-                  onChangeText={setFilterDescription}
-                /> */}
 
                 <TextInput
                   style={styles.input}
@@ -173,6 +173,10 @@ const ExpenseHistory = ({ cashFlowExpenseHistory }) => {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+
+
+  
+
     </View>
   );
 };
@@ -185,7 +189,7 @@ const styles = StyleSheet.create({
   root: { backgroundColor: "#ffffff", marginTop: 12, paddingHorizontal: 15 },
   header: { flexDirection: "row", justifyContent: "space-between", padding: 15 },
   headerText: { fontSize: 18, fontWeight: "bold" },
-  content: { padding: 15, borderBottomWidth: 1, borderBottomColor: "#ddd" },
+  content: { padding: 15, borderBottomWidth: 1, borderBottomColor: "#ddd", },
   separator: { height: 1, backgroundColor: "#CCCCCC" },
   time: { fontSize: 11, color: "#808080" },
   addMoney: { fontSize: 14, color: "green" },
@@ -222,6 +226,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginVertical: 5,
     backgroundColor: "#f9f9f9",
+  },
+  rowContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    marginBottom: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  iconContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  icon: {
+    marginLeft: 10,
   },
 });
 

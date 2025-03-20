@@ -17,6 +17,8 @@ import axiosInstance from "../../services/axiosInstance";
 import { LoadNeedsContext } from "../../hooks/LoadNeedsContext"
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import { Picker } from "@react-native-picker/picker";
+
 
 
 
@@ -27,6 +29,7 @@ const LoadExpenseCalculator = ({ route }) => {
   const { isLoading, setIsLoading } = useContext(LoadNeedsContext)
 
   const [isModalVisible, setIsModalVisible] = useState(false);
+
   const [cashStatus, setCashStatus] = useState("");
   const [modalValues, setModalValues] = useState({
     name: "",
@@ -36,7 +39,16 @@ const LoadExpenseCalculator = ({ route }) => {
   const [errorFields, setErrorFields] = useState({
     name: false,
     amount: false,
-    description : false
+    description: false
+  });
+
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editValues, setEditValues] = useState({
+    id: "",
+    name: "",
+    description: "",
+    amount: "",
+    type: "", // 'IN' for Credit, 'OUT' for Debit
   });
 
   const toggleModal = (cash) => {
@@ -51,7 +63,7 @@ const LoadExpenseCalculator = ({ route }) => {
     setErrorFields({
       name: false,
       amount: false,
-      description : false
+      description: false
 
     });
 
@@ -93,24 +105,113 @@ const LoadExpenseCalculator = ({ route }) => {
 
     getInitialBalance();
 
-    const getFlowCashTrip = async () => {
-      try {
-        const getCashFlowParamter = {
-          load_trip_id: item.load_trip_id,
-        };
-        const response = await axiosInstance.post(
-          "/get_load_trip_cash_flow",
-          getCashFlowParamter
-        );
-        if (response.data.error_code === 0) {
-          setCashFlowExpenseHistory(response.data.data);
-          setIsLoading(!isLoading)
-        }
-      } catch (error) { }
-    };
+
 
     getFlowCashTrip();
   }, [updateCashFlowStatus]);
+
+  const getFlowCashTrip = async () => {
+    try {
+      const getCashFlowParamter = {
+        load_trip_id: item.load_trip_id,
+      };
+      const response = await axiosInstance.post(
+        "/get_load_trip_cash_flow",
+        getCashFlowParamter
+      );
+
+      if (response.data.error_code === 0) {
+        setCashFlowExpenseHistory(response.data.data);
+        setIsLoading(!isLoading)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  };
+
+
+  const handleEdit = (item) => {
+    try {
+      const amount = item.amount;
+      const numericValue = amount.replace(/[^0-9.]/g, "");
+      setEditValues({
+        id: item.cr_id,
+        name: item.cash_flow_name,
+        description: item.description || "",
+        amount: numericValue,
+        type: item.cash_flow_type === "IN" ? "Credit" : "Debit", // IN (Credit) or OUT (Debit)
+      });
+      setEditModalVisible(true);
+    } catch (error) {
+      console.error("Error opening edit modal:", error);
+    }
+  };
+
+  const handleEditInputChange = (field, value) => {
+    setEditValues((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const saveEditChanges = async () => {
+    try {
+
+      const updatingParams = {
+        "cr_id": editValues.id,
+        cash_flow_name: editValues.name,
+        category: "",
+        description: editValues.description,
+        cash_flow_type: editValues.type === "Credit" ? "IN" : "OUT",
+        amount: editValues.amount,
+      };
+
+
+      // Implement edit functionality here
+      const response = await axiosInstance.post("/load_trip_cash_flow_entry", updatingParams)
+      if (response.data.error_code === 0) {
+        setEditModalVisible(false)
+        getFlowCashTrip()
+      } else {
+        console.log(response.data.message)
+      }
+    } catch (error) {
+      console.error("Error editing item:", error);
+    }
+  };
+
+
+  const handleDelete = async (item) => {
+    Alert.alert(
+      "Confirm Delete",
+      "Are you sure you want to delete this item?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          onPress: async () => {
+            try {
+              const deletingParams = { cr_id: item.cr_id };
+
+
+              const response = await axiosInstance.post("/delete_load_trip_cash_flow", deletingParams);
+
+              if (response.data.error_code === 0) {
+                getFlowCashTrip();
+              } else {
+                console.log(response.data.message);
+              }
+            } catch (error) {
+              console.error("Error deleting item:", error);
+            }
+          },
+          style: "destructive", // Red button for delete
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
 
   const handleInputChange = (field, value) => {
     setModalValues({ ...modalValues, [field.toLowerCase()]: value }); // Ensure field is lowercase
@@ -142,10 +243,9 @@ const LoadExpenseCalculator = ({ route }) => {
         load_trip_id: item.load_trip_id,
         cash_flow_name: modalValues.name,
         category: "",
-        description:  modalValues.description,
+        description: modalValues.description,
         cash_flow_type: cashStatus === "Credit entry" ? "IN" : "OUT",
         amount: modalValues.amount,
-
       };
 
       const response = await axiosInstance.post("/load_trip_cash_flow_entry", loadTripCashFlowEntryParameters);
@@ -353,8 +453,11 @@ const LoadExpenseCalculator = ({ route }) => {
             </TouchableOpacity>
           </View>
         </View>
-        <ExpenseHistory cashFlowExpenseHistory={cashFlowExpenseHistory} />
+        <ExpenseHistory handleEdit={handleEdit} handleDelete={handleDelete} cashFlowExpenseHistory={cashFlowExpenseHistory} />
       </View>
+
+
+      {/* Credit/Debit Modal */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -380,7 +483,7 @@ const LoadExpenseCalculator = ({ route }) => {
             />
 
             <TextInput
-              style={[styles.input, errorFields.details && styles.inputError]}
+              style={[styles.input, errorFields.description && styles.inputError]}
               placeholder="Description"
               value={modalValues.description}
               onChangeText={(text) => handleInputChange("description", text)} // Use lowercase
@@ -395,6 +498,67 @@ const LoadExpenseCalculator = ({ route }) => {
           </View>
         </View>
       </Modal>
+
+      {/* Edit Entry Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={editModalVisible}
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Edit Entry</Text>
+
+
+
+
+            <TextInput
+              style={[styles.input, errorFields.name && styles.inputError]}
+              placeholder="Name"
+              value={editValues.name || ""}
+              onChangeText={(text) => handleEditInputChange("name", text)}
+            />
+
+            <TextInput
+              style={[styles.input, errorFields.amount && styles.inputError]}
+              placeholder="Amount"
+              keyboardType="number-pad"
+              value={editValues.amount || ""}
+              onChangeText={(text) => handleEditInputChange("amount", text)}
+            />
+
+            <TextInput
+              style={[styles.input, errorFields.description && styles.inputError]}
+              placeholder="Description"
+              value={editValues.description || ""}
+              onChangeText={(text) => handleEditInputChange("description", text)}
+            />
+
+            <View style={[styles.input, { justifyContent: 'center', paddingHorizontal: 0 }]}>
+              <Picker
+                selectedValue={editValues.type}
+                onValueChange={(value) => handleEditInputChange("type", value)}
+                style={{ height: 40, width: '100%' }}
+                itemStyle={{ textAlign: 'start', fontSize: 16 }} // Ensure text is centered
+              >
+                <Picker.Item label="Credit" value="Credit" />
+                <Picker.Item label="Debit" value="Debit" />
+              </Picker>
+            </View>
+
+
+            <TouchableOpacity style={[styles.applyButton, { backgroundColor: "#24a0ed" }]} onPress={saveEditChanges}>
+              <Text style={styles.applyButtonText}>Save</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.closeButton} onPress={() => setEditModalVisible(false)}>
+              <Text style={styles.applyButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
     </SafeAreaView>
   );
 };

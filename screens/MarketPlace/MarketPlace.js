@@ -117,7 +117,6 @@ const MarketPlace = ({ navigation }) => {
   useEffect(() => {
     if (!isFiltered && !applyFilterPagination) {
       let delaySearch = setTimeout(() => {
-        console.log("Fetching all loads (no filter applied)");
         getAllBuyAndSellData(searchQuery ? searchQuery : search, page, dataLimit);
       }, search ? 500 : 0);
 
@@ -146,7 +145,6 @@ const MarketPlace = ({ navigation }) => {
       setPageLoading(true)
       const response = await axiosInstance.post("/all_buy_sell_details", payload);
 
-      console.log("buy and sell response.data", response.data)
 
       if (response.data.error_code === 0) {
         const totalCount = response.data.data.all_record_count;
@@ -347,16 +345,10 @@ const MarketPlace = ({ navigation }) => {
 
 
 
-    console.log("filterParams", filterParams)
-
-
     try {
 
       if (isModalVisible) {
         setIsModalVisible(false)
-        // console.log("isModalVisible",isModalVisible)
-        // console.log("value !== initialModal")
-        // toggleModal();
       }
 
 
@@ -366,12 +358,10 @@ const MarketPlace = ({ navigation }) => {
 
       const response = await axiosInstance.post("/user_buy_sell_filter", filterParams)
 
-      console.log("buyseellfilter", response.data)
 
 
       if (response.data.error_code === 0) {
 
-        console.log("buyseellfilter", response.data)
 
 
         setApplyFilterPagination(true)

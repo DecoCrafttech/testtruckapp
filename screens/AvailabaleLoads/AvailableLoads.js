@@ -207,7 +207,6 @@ const AvailableLoads = ({ navigation }) => {
   useEffect(() => {
     if (!isFiltered && !applyFilterPagination) {
       let delaySearch = setTimeout(() => {
-        console.log("Fetching all loads (no filter applied)");
         getAllLoads(searchQuery ? searchQuery : search, page, dataLimit);
       }, search ? 500 : 0);
 
@@ -488,9 +487,6 @@ const AvailableLoads = ({ navigation }) => {
     try {
       if (isModalVisible) {
         setIsModalVisible(false)
-        // console.log("isModalVisible",isModalVisible)
-        // console.log("value !== initialModal")
-        // toggleModal();
       }
 
 

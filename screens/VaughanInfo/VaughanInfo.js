@@ -162,7 +162,6 @@ const VaughanInfo = ({ navigation }) => {
         "/load_trip_entry",
         addLoadTripDetailsParamters
       );
-      console.log(response);
       if (response.data.error_code === 0) {
         setUpdate(!update);
       } else {

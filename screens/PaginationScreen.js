@@ -7,17 +7,10 @@ const PaginationScreen = ({ data, totalRecords, handlePagination }) => {
   const [itemsPerPage, setItemsPerPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Debugging Logs
-  useEffect(() => {
-    console.log("Total Records:", totalRecords);
-    console.log("Total Pages:", totalPages);
-  }, [totalRecords, totalPages]);
-
   // Update total pages when totalRecords or itemsPerPage changes
   useEffect(() => {
     if (totalRecords > 0) {
       const newTotalPages = Math.ceil(totalRecords / itemsPerPage);
-      console.log("New Total Pages:", newTotalPages);
       setTotalPages(newTotalPages);
     } else {
       setTotalPages(0);

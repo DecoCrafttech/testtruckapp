@@ -146,7 +146,6 @@ const Refer = () => {
         "vehicle_number": editedDetails.vehicleNumber,
       }
 
-      console.log("editingParams", editingParams)
 
       try {
         const response = await axiosInstance.post(

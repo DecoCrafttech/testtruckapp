@@ -29,7 +29,7 @@ const TruckDetail = ({ route }) => {
 
   const {
     setMessageReceiver,
-    
+
   } = useContext(LoadNeedsContext)
   const navigation = useNavigation("")
 
@@ -107,7 +107,7 @@ const TruckDetail = ({ route }) => {
             <Text>No Image Available</Text>
           )}
         </View>
-  
+
         {/* Scrollable Thumbnails */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.smallImagesScroll}>
           <View style={styles.smallImagesContainer}>
@@ -126,7 +126,7 @@ const TruckDetail = ({ route }) => {
       </View>
     );
   };
-  
+
 
   if (!fullProductDetails.brand) {
     return (
@@ -169,11 +169,11 @@ const TruckDetail = ({ route }) => {
               <View style={styles.starsContainer}>
                 {[...Array(5)].map((_, index) => (
                   <FontAwesome
-                  key={index}
-                  name={index > 2 ? "star-o" : "star"}
-                  size={13}
-                  color="#FFD700"
-                 />
+                    key={index}
+                    name={index > 2 ? "star-o" : "star"}
+                    size={13}
+                    color="#FFD700"
+                  />
                   // <FontAwesome
                   //   key={index}
                   //   name={index > 2 ? "star-o" : "star"}
@@ -249,7 +249,7 @@ const TruckDetail = ({ route }) => {
             </View>
             <View style={styles.cardContent}>
               <Text style={styles.description}>
-              ₹ {fullProductDetails.price}
+                ₹ {fullProductDetails.price}
               </Text>
             </View>
 
@@ -394,15 +394,15 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     color: "#000",
-    fontSize : 14,
-    fontStyle:'italic',
-    
+    fontSize: 14,
+    fontStyle: 'italic',
+
   },
   description: {
     fontSize: 17,
     color: "#000",
-    fontWeight : "700",
-    marginTop : -5
+    fontWeight: "700",
+    marginTop: -5
   },
   shareButton: {
     marginTop: 10,
