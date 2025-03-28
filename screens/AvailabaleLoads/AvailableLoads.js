@@ -23,6 +23,8 @@ import CustomButtonWithLoading from "../../components/CustomButtonWithLoading";
 import { MultiSelect } from "react-native-element-dropdown";
 import { statesData } from "../../constants/cityAndState";
 import PaginationComponent from "../PaginationComponent";
+import CheckBox from "expo-checkbox";
+
 
 
 
@@ -83,6 +85,8 @@ const AvailableLoads = ({ navigation }) => {
   const [loadingKey, setLoadingKey] = useState(null); // Single loading state
 
   const [selectedFilterStates, setSelectedFilterStates] = useState([]);
+  const [selectAllToLocationModalStates, setSelectAllAllToLocationModalStates] = useState(false);
+
 
   const [showingData, setShowingData] = useState([]);
   const [showingDataLoading, setShowingDataLoading] = useState(false);
@@ -96,24 +100,36 @@ const AvailableLoads = ({ navigation }) => {
 
 
 
-  const data = [
-    { label: "Select All", value: "select_all" },
-    ...statesData.map(state => ({ label: state.name, value: state.name }))
-  ];
+  const filterModalToLocationStatesData = statesData.map(state => (
+    { label: state.name, value: state.name })
+  );
 
+
+  // const handleFilterStates = (values) => {
+  //   if (values.includes("select_all")) {
+  //     // Select all or deselect all logic
+  //     setSelectedFilterStates(
+  //       selectedFilterStates.length === statesData.length
+  //         ? []
+  //         : statesData.map(item => item.name) // Ensure correct field name
+  //     );
+  //   } else {
+  //     // Remove "select_all" if selected and update selected states
+  //     setSelectedFilterStates(values.filter(v => v !== "select_all"));
+  //   }
+  // };
 
   const handleFilterStates = (values) => {
-    if (values.includes("select_all")) {
-      // Select all or deselect all logic
-      setSelectedFilterStates(
-        selectedFilterStates.length === statesData.length
-          ? []
-          : statesData.map(item => item.name) // Ensure correct field name
-      );
+    setSelectedFilterStates(values);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectAllToLocationModalStates) {
+      setSelectedFilterStates([]); // Deselect all
     } else {
-      // Remove "select_all" if selected and update selected states
-      setSelectedFilterStates(values.filter(v => v !== "select_all"));
+      setSelectedFilterStates(statesData.map((item) => item.name)); // Select all states
     }
+    setSelectAllAllToLocationModalStates(!selectAllToLocationModalStates);
   };
 
 
@@ -208,6 +224,7 @@ const AvailableLoads = ({ navigation }) => {
     if (!isFiltered && !applyFilterPagination) {
       let delaySearch = setTimeout(() => {
         getAllLoads(searchQuery ? searchQuery : search, page, dataLimit);
+
       }, search ? 500 : 0);
 
       return () => clearTimeout(delaySearch);
@@ -462,8 +479,7 @@ const AvailableLoads = ({ navigation }) => {
     setFilteredStates(selectedStateNames)
   };
 
-  const applyFilter = async (value,pageNo,limit) => {
-
+  const applyFilter = async (value, pageNo, limit) => {
 
 
     setIsFiltered(true); // Prevent getAllLoads from running
@@ -488,7 +504,6 @@ const AvailableLoads = ({ navigation }) => {
       if (isModalVisible) {
         setIsModalVisible(false)
       }
-
 
       // setPage(1); // ✅ Reset to first page
       setPageLoading(true);
@@ -652,7 +667,7 @@ const AvailableLoads = ({ navigation }) => {
   };
 
   const handleFind = () => {
-    applyFilter("initialModal","","")
+    applyFilter("initialModal", page, dataLimit)
     setDoNotAskModalModal(false)
   }
 
@@ -694,13 +709,13 @@ const AvailableLoads = ({ navigation }) => {
             textColor="white"
           />
         </View>
-        <SearchFilter 
-        setApplyFilterPagination={setApplyFilterPagination} 
-        getAllData={getAllLoads} 
-        handleClearFilter={handleClearFilter}
-        onSearch={handleSearch} 
-        searchQuery={searchQuery} 
-        setSearchQuery={setSearchQuery} />
+        <SearchFilter
+          setApplyFilterPagination={setApplyFilterPagination}
+          getAllData={getAllLoads}
+          handleClearFilter={handleClearFilter}
+          onSearch={handleSearch}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery} />
         {
           pageLoading == false ?
             <>
@@ -799,6 +814,58 @@ const AvailableLoads = ({ navigation }) => {
                 }}
               />
 
+
+              <View style={{ marginBottom: 10 }}>
+
+                {/* Show dropdown only if not all states are selected */}
+                {!selectAllToLocationModalStates && (
+                  <MultiSelect
+                    style={{
+                      borderColor: "#ccc",
+                      borderWidth: 1,
+                      padding: 12,
+                      borderRadius: 5,
+                      marginBottom: 10,
+                      fontSize: 16,
+                      backgroundColor: "white",
+                    }}
+                    data={filterModalToLocationStatesData} // Use actual states data
+                    labelField="label" // Ensure correct field names
+                    valueField="value"
+                    placeholder={selectedFilterStates.length ? `${selectedFilterStates.length} states selected` : "To Location"}
+                    value={selectedFilterStates}
+                    onChange={handleFilterStates}
+                    placeholderStyle={{ fontSize: 16 }}
+                  />
+                )}
+
+                {
+                  selectAllToLocationModalStates &&
+                  <TextInput
+                    style={{
+                      borderColor: "#ccc",
+                      borderWidth: 1,
+                      padding: 10,
+                      borderRadius: 5,
+                      marginBottom: 10,
+                      fontSize: 16
+                    }}
+                    value="To Location(all states)"
+                    editable={false}
+                  />
+                }
+
+                {/* Select All Checkbox */}
+                <View >
+                  <TouchableOpacity onPress={toggleSelectAll} style={{ flexDirection: "row", alignItems: "center", marginVertical: 10 }}>
+                    <CheckBox value={selectAllToLocationModalStates} onValueChange={toggleSelectAll} />
+                    <Text style={{ marginLeft: 8 }}>Select All States</Text>
+                  </TouchableOpacity>
+                </View>
+
+              </View>
+
+              {/* 
               <View style={{ marginBottom: 10 }}>
                 <MultiSelect
                   style={{ borderColor: "#ccc", borderWidth: 1, padding: 12, borderRadius: 5 }}
@@ -810,7 +877,7 @@ const AvailableLoads = ({ navigation }) => {
                   onChange={handleFilterStates}
                   placeholderStyle={{ fontSize: 16 }}
                 />
-              </View>
+              </View> */}
 
 
               <View style={{ borderColor: "#ccc", borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
@@ -869,7 +936,7 @@ const AvailableLoads = ({ navigation }) => {
                 <TouchableOpacity style={[styles.applyButton, { width: "48%" }]} onPress={handleClearFilter}>
                   <Text style={styles.applyButtonText}>Clear filter</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.applyButton, { width: "48%", backgroundColor: "green" }]} onPress={() => applyFilter("",page,dataLimit)}>
+                <TouchableOpacity style={[styles.applyButton, { width: "48%", backgroundColor: "green" }]} onPress={() => applyFilter("", page, dataLimit)}>
                   <Text style={styles.applyButtonText}>Apply filter</Text>
                 </TouchableOpacity>
               </View>
@@ -1119,9 +1186,60 @@ const AvailableLoads = ({ navigation }) => {
               />
 
               <View style={{ marginBottom: 10 }}>
+
+                {/* Show dropdown only if not all states are selected */}
+                {!selectAllToLocationModalStates && (
+                  <MultiSelect
+                    style={{
+                      borderColor: "#ccc",
+                      borderWidth: 1,
+                      padding: 12,
+                      borderRadius: 5,
+                      marginBottom: 10,
+                      fontSize: 16,
+                      backgroundColor: "white",
+                    }}
+                    data={filterModalToLocationStatesData} // Use actual states data
+                    labelField="label" // Ensure correct field names
+                    valueField="value"
+                    placeholder={selectedFilterStates.length ? `${selectedFilterStates.length} states selected` : "To Location"}
+                    value={selectedFilterStates}
+                    onChange={handleFilterStates}
+                    placeholderStyle={{ fontSize: 16 }}
+                  />
+                )}
+
+                {
+                  selectAllToLocationModalStates &&
+                  <TextInput
+                    style={{
+                      borderColor: "#ccc",
+                      borderWidth: 1,
+                      padding: 10,
+                      borderRadius: 5,
+                      marginBottom: 10,
+                      fontSize: 16
+                    }}
+                    value="To Location(all states)"
+                    editable={false}
+                  />
+                }
+
+                {/* Select All Checkbox */}
+                <View >
+                  <TouchableOpacity onPress={toggleSelectAll} style={{ flexDirection: "row", alignItems: "center", marginVertical: 10 }}>
+                    <CheckBox value={selectAllToLocationModalStates} onValueChange={toggleSelectAll} />
+                    <Text style={{ marginLeft: 8 }}>Select All States</Text>
+                  </TouchableOpacity>
+                </View>
+
+              </View>
+
+
+              {/* <View style={{ marginBottom: 10 }}>
                 <MultiSelect
                   style={{ borderColor: "#ccc", borderWidth: 1, padding: 12, borderRadius: 5 }}
-                  data={data}
+                  data={filterModalToLocationStatesData}
                   labelField="label"
                   valueField="value"
                   placeholder="To Location"
@@ -1129,7 +1247,7 @@ const AvailableLoads = ({ navigation }) => {
                   onChange={handleFindLoadStates}
                   placeholderStyle={{ fontSize: 16 }}
                 />
-              </View>
+              </View> */}
 
               <View style={{ marginTop: 20, alignItems: 'center' }}>
                 <TouchableOpacity

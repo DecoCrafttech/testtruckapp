@@ -32,6 +32,7 @@ import CustomButtonWithLoading from "../../components/CustomButtonWithLoading";
 
 import { MultiSelect } from "react-native-element-dropdown";
 import { statesData } from "../../constants/cityAndState";
+import Checkbox from "expo-checkbox";
 
 
 
@@ -96,36 +97,47 @@ const AvailableTruck = ({ navigation }) => {
   const [toLocationModal, setToLocationModal] = useState(false)
   const [pageLoading, setPageLoading] = useState(false)
 
-
   const [selectedFilterStates, setSelectedFilterStates] = useState([]);
+  const [selectAllToLocationModalStates, setSelectAllAllToLocationModalStates] = useState(false);
+
+
+  const [showingData, setShowingData] = useState([]);
+  const [showingDataLoading, setShowingDataLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [dataLimit, setDataLimit] = useState(10);
+  const [totalRecords, setTotalRecords] = useState(0)
+  const [isFiltered, setIsFiltered] = useState(false);
+  const [applyFilterPagination, setApplyFilterPagination] = useState(false)
 
 
 
 
-    const [showingData, setShowingData] = useState([]);
-    const [showingDataLoading, setShowingDataLoading] = useState(false);
-    const [search, setSearch] = useState("");
-    const [page, setPage] = useState(1);
-    const [dataLimit, setDataLimit] = useState(10);
-    const [totalRecords, setTotalRecords] = useState(0)
-    const [isFiltered, setIsFiltered] = useState(false);
-    const [applyFilterPagination, setApplyFilterPagination] = useState(false)
-  
-  
-  
-  
 
-  const data = [
-    { label: "Select All", value: "select_all" },
-    ...statesData.map(state => ({ label: state.name, value: state.id.toString() }))
-  ];
+  const filterModalToLocationStatesData = statesData.map(state => (
+    { label: state.name, value: state.name })
+  );
+
+
+  // const handleFilterStates = (values) => {
+  //   if (values.includes("select_all")) {
+  //     setSelectedFilterStates(selectedFilterStates.length === data.length - 1 ? [] : data.map(item => item.value).filter(v => v !== "select_all"));
+  //   } else {
+  //     setSelectedFilterStates(values.filter(v => v !== "select_all"));
+  //   }
+  // };
 
   const handleFilterStates = (values) => {
-    if (values.includes("select_all")) {
-      setSelectedFilterStates(selectedFilterStates.length === data.length - 1 ? [] : data.map(item => item.value).filter(v => v !== "select_all"));
+    setSelectedFilterStates(values);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectAllToLocationModalStates) {
+      setSelectedFilterStates([]); // Deselect all
     } else {
-      setSelectedFilterStates(values.filter(v => v !== "select_all"));
+      setSelectedFilterStates(statesData.map((item) => item.name)); // Select all states
     }
+    setSelectAllAllToLocationModalStates(!selectAllToLocationModalStates);
   };
 
 
@@ -200,7 +212,7 @@ const AvailableTruck = ({ navigation }) => {
 
 
   const getAllTrucks = async (searchVal, pageNo, limit) => {
-    
+
     if (isFiltered) return
     try {
 
@@ -438,7 +450,7 @@ const AvailableTruck = ({ navigation }) => {
     setToLocationModal(false)
   };
 
-  const applyFilter = async (value,pageNo,limit) => {
+  const applyFilter = async (value, pageNo, limit) => {
 
 
 
@@ -451,7 +463,7 @@ const AvailableTruck = ({ navigation }) => {
       "vehicle_number": "",
       "company_name": "",
       "from_location": modalValues.fromLocation,
-      "to_location": filteredStates,
+      "to_location": selectedFilterStates,
       "truck_name": modalValues.truckName !== "" && modalValues.truckName !== undefined && modalValues.truckName !== null ? modalValues.truckName : "",
       "truck_brand_name": modalValues.truckName !== "" && modalValues.truckName !== undefined && modalValues.truckName !== null ? modalValues.truckName : "",
       "truck_body_type": modalValues.truckBodyType !== "" && modalValues.truckBodyType !== undefined && modalValues.truckBodyType !== null ? modalValues.truckBodyType : "",
@@ -460,7 +472,6 @@ const AvailableTruck = ({ navigation }) => {
       page_no: pageNo, // Reset to first page when filtering
       data_limit: limit
     }
-
 
 
     try {
@@ -478,7 +489,7 @@ const AvailableTruck = ({ navigation }) => {
 
       const response = await axiosInstance.post("/user_truck_details_filter", filterParams)
       if (response.data.error_code === 0) {
-       
+
         setApplyFilterPagination(true)
 
         const totalCount = response.data.data.all_record_count || 0;
@@ -518,7 +529,7 @@ const AvailableTruck = ({ navigation }) => {
         setAllTrucksData(transformedData);
         setPageLoading(false)
         setShowingData(transformedData);
-      }else {
+      } else {
         setShowingData([]);
         setTotalRecords(0); // ✅ Set totalRecords to 0 if no results found
         setPageLoading(false)
@@ -564,7 +575,7 @@ const AvailableTruck = ({ navigation }) => {
       tons: false,
       truckBodyType: false,
     });
-    
+
     // Reset pagination
     setPage(1);
 
@@ -698,29 +709,29 @@ const AvailableTruck = ({ navigation }) => {
         {
           pageLoading === false ?
             <TruckDetails
-            isMyPost={false}
-            getAllData={getAllTrucks}
-            showingData={showingData}
-            setShowingData={setShowingData}
-            showingDataLoading={showingDataLoading}
-            setShowingDataLoading={setShowingDataLoading}
-            navigation={navigation}
-            filteredTrucks={showingData}
-            totalRecords={totalRecords}
-            search={search}
-            setSearch={setSearch}
-            page={page}
-            setPage={setPage}
-            dataLimit={dataLimit}
-            setDataLimit={setDataLimit}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            isFiltered={isFiltered}
-            applyFilter={applyFilter}
-            applyFilterPagination={applyFilterPagination}
-            setApplyFilterPagination={setApplyFilterPagination}
-            availableTruckPage="true"
-             />
+              isMyPost={false}
+              getAllData={getAllTrucks}
+              showingData={showingData}
+              setShowingData={setShowingData}
+              showingDataLoading={showingDataLoading}
+              setShowingDataLoading={setShowingDataLoading}
+              navigation={navigation}
+              filteredTrucks={showingData}
+              totalRecords={totalRecords}
+              search={search}
+              setSearch={setSearch}
+              page={page}
+              setPage={setPage}
+              dataLimit={dataLimit}
+              setDataLimit={setDataLimit}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              isFiltered={isFiltered}
+              applyFilter={applyFilter}
+              applyFilterPagination={applyFilterPagination}
+              setApplyFilterPagination={setApplyFilterPagination}
+              availableTruckPage="true"
+            />
             :
             <View style={styles.ActivityIndicatorContainer}>
               <ActivityIndicator size="large" color={COLORS.primary} />
@@ -799,16 +810,53 @@ const AvailableTruck = ({ navigation }) => {
 
 
               <View style={{ marginBottom: 10 }}>
-                <MultiSelect
-                  style={{ borderColor: "#ccc", borderWidth: 1, padding: 12, borderRadius: 5 }}
-                  data={data}
-                  labelField="label"
-                  valueField="value"
-                  placeholder="To Location"
-                  value={selectedFilterStates}
-                  onChange={handleFilterStates}
-                  placeholderStyle={{ fontSize: 16 }}
-                />
+
+                {/* Show dropdown only if not all states are selected */}
+                {!selectAllToLocationModalStates && (
+                  <MultiSelect
+                    style={{
+                      borderColor: "#ccc",
+                      borderWidth: 1,
+                      padding: 12,
+                      borderRadius: 5,
+                      marginBottom: 10,
+                      fontSize: 16,
+                      backgroundColor: "white",
+                    }}
+                    data={filterModalToLocationStatesData} // Use actual states data
+                    labelField="label" // Ensure correct field names
+                    valueField="value"
+                    placeholder={selectedFilterStates.length ? `${selectedFilterStates.length} states selected` : "To Location"}
+                    value={selectedFilterStates}
+                    onChange={handleFilterStates}
+                    placeholderStyle={{ fontSize: 16 }}
+                  />
+                )}
+
+                {
+                  selectAllToLocationModalStates &&
+                  <TextInput
+                    style={{
+                      borderColor: "#ccc",
+                      borderWidth: 1,
+                      padding: 10,
+                      borderRadius: 5,
+                      marginBottom: 10,
+                      fontSize: 16
+                    }}
+                    value="To Location(all states)"
+                    editable={false}
+                  />
+                }
+
+                {/* Select All Checkbox */}
+                <View >
+                  <TouchableOpacity onPress={toggleSelectAll} style={{ flexDirection: "row", alignItems: "center", marginVertical: 10 }}>
+                    <Checkbox value={selectAllToLocationModalStates} onValueChange={toggleSelectAll} />
+                    <Text style={{ marginLeft: 8 }}>Select All States</Text>
+                  </TouchableOpacity>
+                </View>
+
               </View>
 
               {/* <View style={{ width: "auto", marginBottom: 5 }}>
@@ -904,7 +952,7 @@ const AvailableTruck = ({ navigation }) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.applyButton, { width: "48%", backgroundColor: "green" }]}
-                  onPress={() => applyFilter("",page,dataLimit)}
+                  onPress={() => applyFilter("", page, dataLimit)}
                 >
                   <Text style={styles.applyButtonText}>Apply filter</Text>
                 </TouchableOpacity>

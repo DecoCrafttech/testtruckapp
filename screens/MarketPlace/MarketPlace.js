@@ -759,7 +759,7 @@ const MarketPlace = ({ navigation }) => {
               /> */}
 
 
-              <View style={{ marginBottom: 10 }}>
+              {/* <View style={{ marginBottom: 10 }}>
                 <MultiSelect
                   style={{ borderColor: "#ccc", borderWidth: 1, padding: 12, borderRadius: 5 }}
                   data={data}
@@ -770,7 +770,7 @@ const MarketPlace = ({ navigation }) => {
                   onChange={handleFilterStates}
                   placeholderStyle={{ fontSize: 16 }}
                 />
-              </View>
+              </View> */}
 
               <View style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
                 <RNPickerSelect

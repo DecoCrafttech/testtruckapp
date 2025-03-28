@@ -65,19 +65,19 @@ const VaughanInfo = ({ navigation }) => {
     return (
       <>
         <TouchableOpacity
-          style={[styles.button,{backgroundColor :'green'}]}
+          style={[styles.button,{backgroundColor :'green',width:'45%'}]}
           onPress={() => handleDetailsPress(item)}
         >
-          <Text style={[styles.buttonText,]}>View Full Details</Text>
+          <Text style={[styles.buttonText,{textAlign:'center'}]}>View Full Details</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.deleteButton}
+          style={[styles.deleteButton,{width:'45%'}]}
           onPress={() => {
             setDeleteModal(true)
             setDeleteItem(item)
           }}
         >
-          <Text style={styles.buttonText}>Delete</Text>
+          <Text style={[styles.buttonText,{textAlign:'center'}]}>Delete</Text>
         </TouchableOpacity>
       </>
     );
@@ -193,15 +193,15 @@ const VaughanInfo = ({ navigation }) => {
               <Text style={styles.tableValue}>{item.to_location}</Text>
             </View>
             <View style={styles.tableRow}>
-              <Text style={styles.tableLabel}>Credit amount:</Text>
+              <Text style={[styles.tableLabel,{marginLeft:8}]}>Credit amount:</Text>
               <Text style={styles.tableValue}>₹ {item.load_price}</Text>
             </View>
             <View style={styles.tableRow}>
-              <Text style={styles.tableLabel}>Debit amount:</Text>
+              <Text style={[styles.tableLabel,{marginLeft:8}]}>Debit amount:</Text>
               <Text style={styles.tableValue}>₹ {item.spend_amount}</Text>
             </View>
             <View style={styles.tableRow}>
-              <Text style={styles.tableLabel}>Available balance:</Text>
+              <Text style={[styles.tableLabel,{marginLeft:8}]}>Available balance:</Text>
               <Text style={styles.tableValue}>₹ {item.balance_amount}</Text>
             </View>
           </View>
@@ -511,8 +511,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 14,
   },
   addButton: {
     backgroundColor: COLORS.primary,
@@ -523,7 +522,7 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     color: "#fff",
-    fontSize: 12,
+    fontSize: 14,
   },
   modalContainer: {
     flex: 1,

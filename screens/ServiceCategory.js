@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList, Modal } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList, Modal, ScrollView } from 'react-native';
 import { icons, COLORS } from "../constants";
 import { useNavigation } from '@react-navigation/native';
 import Constants from 'expo-constants';
@@ -73,48 +73,41 @@ export default function ServiceCategory() {
 
   return (
     <>
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         {/* Image Carousel */}
         <View style={{ marginBottom: 20 }}>
-          <FlatList
-            data={images}
-            horizontal
-            keyExtractor={item => item.id}
-            renderItem={({ item }) => (
-              <TouchableOpacity onPress={() => handlePress(item.screen)}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {images.map(item => (
+              <TouchableOpacity key={item.id} onPress={() => handlePress(item.screen)}>
                 <Image source={{ uri: item.uri }} style={styles.image} />
               </TouchableOpacity>
-            )}
-            showsHorizontalScrollIndicator={false}
-          />
+            ))}
+          </ScrollView>
         </View>
 
         {/* Add Post Button */}
         <View>
           <TouchableOpacity style={styles.addPostButton} onPress={() => setAddPostModal(true)}>
-            <Text style={styles.addPostText}>+ Add Post</Text>
+            <Text style={styles.addPostText}>+ Add your Post</Text>
           </TouchableOpacity>
         </View>
 
         {/* Services Grid */}
-        <FlatList
-          style={styles.list}
-          contentContainerStyle={styles.listContainer}
-          data={options}
-          numColumns={3}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.card}
-              onPress={() => handlePress(item.screen)}
-              activeOpacity={0.7}
-            >
-              <Image style={styles.cardImage} source={item.image.source} />
-              <Text style={styles.title}>{item.title}</Text>
-            </TouchableOpacity>
-          )}
-        />
-      </View>
+        <View style={styles.grid}>
+  {options.map((item, index) => (
+    <TouchableOpacity
+      key={item.id.toString()}
+      style={styles.card}
+      onPress={() => handlePress(item.screen)}
+      activeOpacity={0.7}
+    >
+      <Image style={styles.cardImage} source={item.image.source} />
+      <Text style={styles.title}>{item.title}</Text>
+    </TouchableOpacity>
+  ))}
+</View>
+
+      </ScrollView>
 
       {/* Add Post Modal */}
       <Modal animationType="slide" transparent={true} visible={addPostModal} onRequestClose={() => setAddPostModal(false)}>
@@ -122,7 +115,7 @@ export default function ServiceCategory() {
           <View style={styles.modalContent}>
             {/* Header */}
             <View style={styles.header}>
-              <Text style={styles.modalTitle}>Add Post</Text>
+              <Text style={[styles.modalTitle]}>Add Post</Text>
               <AntDesign onPress={() => setAddPostModal(false)} name="close" size={25} color="black" />
             </View>
 
@@ -131,7 +124,7 @@ export default function ServiceCategory() {
               data={postOptions}
               keyExtractor={(item, index) => index.toString()}
               renderItem={({ item }) => (
-                <TouchableOpacity style={styles.postCard} onPress={() => handlePostType(item.type)}>
+                <TouchableOpacity activeOpacity={0.1} style={styles.postCard} onPress={() => handlePostType(item.type)}>
                   <Text style={styles.postCardText}>{item.label}</Text>
                 </TouchableOpacity>
               )}
@@ -158,17 +151,19 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   addPostButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor:"#0d6efd",
     paddingVertical: 12,
-    paddingHorizontal: 20,
+    paddingHorizontal: 0,
     borderRadius: 8,
     alignSelf: "center",
-    marginBottom: 15,
+    marginBottom: 20,
+    width: "95%",
   },
   addPostText: {
     color: "white",
     fontSize: 16,
     fontWeight: "bold",
+    textAlign:'center'
   },
   card: {
     backgroundColor: '#F6F8FF',
@@ -216,7 +211,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     textAlign: "center",
-    flex: 1,
   },
   postCard: {
     backgroundColor: "#f0f0f0",
@@ -228,6 +222,24 @@ const styles = StyleSheet.create({
   postCardText: {
     fontSize: 16,
     fontWeight: "500",
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap", // Wrap items to next line
+    justifyContent: "space-between", // Even spacing
+    paddingHorizontal: 10,
+    paddingBottom:100
+  },
+  card: {
+    width: "30%", // Ensures 3 cards in a row
+    backgroundColor: "#F6F8FF",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 15, // Space between rows
+    padding: 15,
+    borderRadius: 10,
+    elevation: 5,
+    height: 110,
   },
 });
 

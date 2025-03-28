@@ -28,6 +28,7 @@ const TruckCard = ({
 
 }) => {
 
+
   const [formattedTime, setFormattedTime] = useState("")
 
   useEffect(() => {

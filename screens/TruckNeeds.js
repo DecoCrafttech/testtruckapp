@@ -22,7 +22,7 @@ import { useNavigation } from "@react-navigation/native";
 import Constants from 'expo-constants'
 import SectionedMultiSelect from "react-native-sectioned-multi-select";
 import { MaterialIcons as Icon } from '@expo/vector-icons';
-import { statesData } from "../constants/cityAndState"; 
+import { statesData } from "../constants/cityAndState";
 import { MultiSelect } from "react-native-element-dropdown";
 
 
@@ -51,6 +51,7 @@ const TruckNeeds = () => {
   // const [toLocation, setToLocation] = useState("");
   const [ton, setTon] = useState("");
   const [truckSize, setTruckSize] = useState("");
+
   const [truckName, setTruckName] = useState("");
   const [truckBodyType, setTruckBodyType] = useState("");
   const [numberOfTyres, setNumberOfTyres] = useState("");
@@ -347,13 +348,10 @@ const TruckNeeds = () => {
           <View style={styles.textInputContainer}>
 
 
-
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={styles.label}>Vehicle Number</Text>
               <Text style={{ textAlign: 'right', textDecorationLine: 'underline', color: 'blue' }} onPress={() => navigation.navigate("Profile")}>Add Truck</Text>
             </View>
-
-
 
 
             <TextInput
@@ -406,7 +404,7 @@ const TruckNeeds = () => {
                 !contactNumberValid && { borderColor: "red" },
               ]}
               placeholder="Contact Number"
-              onChangeText={setContactNumber}
+              onChangeText={(text) => setContactNumber(text)} // Ensure only Contact Number state updates
               value={contactNumber}
               keyboardType="number-pad"
               maxLength={10}
@@ -434,12 +432,14 @@ const TruckNeeds = () => {
 
             <Text style={styles.label}>Truck size</Text>
             <TextInput
-              style={[styles.textInput, !truckSizeValid && { borderColor: "red" }]}
-              placeholder="Example : 10ft"
-              onChangeText={setTruckSize}
+              style={[
+                styles.textInput,
+                !truckSizeValid && { borderColor: "red" },
+              ]}
+              placeholder="Example: 10ft"
+              onChangeText={(text) => setTruckSize(text)} // Ensure only Truck Size state updates
               value={truckSize}
-              keyboardType="number-pad"
-
+              keyboardType="numeric"
             />
 
             <Text style={styles.label}>Brand Name</Text>

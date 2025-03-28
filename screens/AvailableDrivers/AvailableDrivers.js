@@ -32,6 +32,7 @@ import CustomButtonWithLoading from "../../components/CustomButtonWithLoading";
 
 import { MultiSelect } from "react-native-element-dropdown";
 import { statesData } from "../../constants/cityAndState";
+import Checkbox from "expo-checkbox";
 
 
 
@@ -92,7 +93,9 @@ const AvailableDrivers = ({ navigation }) => {
   const [pageLoading, setPageLoading] = useState(false)
   const [loadingKey, setLoadingKey] = useState(null); // Single loading state
 
+
   const [selectedFilterStates, setSelectedFilterStates] = useState([]);
+  const [selectAllToLocationModalStates, setSelectAllAllToLocationModalStates] = useState(false);
 
   const [showingData, setShowingData] = useState([]);
   const [showingDataLoading, setShowingDataLoading] = useState(false);
@@ -107,19 +110,33 @@ const AvailableDrivers = ({ navigation }) => {
 
 
 
-  const data = [
-    { label: "Select All", value: "select_all" },
-    ...statesData.map(state => ({ label: state.name, value: state.id.toString() }))
-  ];
+
+
+  const filterModalToLocationStatesData = statesData.map(state => (
+    { label: state.name, value: state.name })
+  );
+
+
+  // const handleFilterStates = (values) => {
+  //   if (values.includes("select_all")) {
+  //     setSelectedFilterStates(selectedFilterStates.length === data.length - 1 ? [] : data.map(item => item.value).filter(v => v !== "select_all"));
+  //   } else {
+  //     setSelectedFilterStates(values.filter(v => v !== "select_all"));
+  //   }
+  // };
 
   const handleFilterStates = (values) => {
-    if (values.includes("select_all")) {
-      setSelectedFilterStates(selectedFilterStates.length === data.length - 1 ? [] : data.map(item => item.value).filter(v => v !== "select_all"));
-    } else {
-      setSelectedFilterStates(values.filter(v => v !== "select_all"));
-    }
+    setSelectedFilterStates(values);
   };
 
+  const toggleSelectAll = () => {
+    if (selectAllToLocationModalStates) {
+      setSelectedFilterStates([]); // Deselect all
+    } else {
+      setSelectedFilterStates(statesData.map((item) => item.name)); // Select all states
+    }
+    setSelectAllAllToLocationModalStates(!selectAllToLocationModalStates);
+  };
 
 
 
@@ -432,7 +449,7 @@ const AvailableDrivers = ({ navigation }) => {
       "vehicle_number": "",
       "company_name": "",
       "from_location": modalValues.fromLocation,
-      "to_location": filteredStates,
+      "to_location": selectedFilterStates,
       "truck_body_type": modalValues.truckBodyType !== "" && modalValues.truckBodyType !== undefined && modalValues.truckBodyType !== null ? modalValues.truckBodyType : "",
       "truck_name": modalValues.truckName !== "" && modalValues.truckName !== undefined && modalValues.truckName !== null ? modalValues.truckName : "",
       "no_of_tyres": modalValues.noOfTyres !== "" && modalValues.noOfTyres !== undefined && modalValues.noOfTyres !== null ? modalValues.noOfTyres : "",
@@ -441,6 +458,7 @@ const AvailableDrivers = ({ navigation }) => {
 
 
     }
+
 
 
     try {
@@ -796,18 +814,56 @@ const AvailableDrivers = ({ navigation }) => {
                 />
               </View> */}
 
-              <View style={{ marginBottom: 10 }}>
-                <MultiSelect
-                  style={{ borderColor: "#ccc", borderWidth: 1, padding: 12, borderRadius: 5 }}
-                  data={data}
-                  labelField="label"
-                  valueField="value"
-                  placeholder="To Location"
-                  value={selectedFilterStates}
-                  onChange={handleFilterStates}
-                  placeholderStyle={{ fontSize: 16 }}
-                />
-              </View>
+           
+                         <View style={{ marginBottom: 10 }}>
+           
+                           {/* Show dropdown only if not all states are selected */}
+                           {!selectAllToLocationModalStates && (
+                             <MultiSelect
+                               style={{
+                                 borderColor: "#ccc",
+                                 borderWidth: 1,
+                                 padding: 12,
+                                 borderRadius: 5,
+                                 marginBottom: 10,
+                                 fontSize: 16,
+                                 backgroundColor: "white",
+                               }}
+                               data={filterModalToLocationStatesData} // Use actual states data
+                               labelField="label" // Ensure correct field names
+                               valueField="value"
+                               placeholder={selectedFilterStates.length ? `${selectedFilterStates.length} states selected` : "To Location"}
+                               value={selectedFilterStates}
+                               onChange={handleFilterStates}
+                               placeholderStyle={{ fontSize: 16 }}
+                             />
+                           )}
+           
+                           {
+                             selectAllToLocationModalStates &&
+                             <TextInput
+                               style={{
+                                 borderColor: "#ccc",
+                                 borderWidth: 1,
+                                 padding: 10,
+                                 borderRadius: 5,
+                                 marginBottom: 10,
+                                 fontSize: 16
+                               }}
+                               value="To Location(all states)"
+                               editable={false}
+                             />
+                           }
+           
+                           {/* Select All Checkbox */}
+                           <View >
+                             <TouchableOpacity onPress={toggleSelectAll} style={{ flexDirection: "row", alignItems: "center", marginVertical: 10 }}>
+                               <Checkbox value={selectAllToLocationModalStates} onValueChange={toggleSelectAll} />
+                               <Text style={{ marginLeft: 8 }}>Select All States</Text>
+                             </TouchableOpacity>
+                           </View>
+           
+                         </View>
 
 
 

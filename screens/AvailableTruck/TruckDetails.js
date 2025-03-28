@@ -57,7 +57,7 @@ const TruckDetails = ({
               <Foundation name="results" size={20} color="green" />
               <Text style={{ fontSize: 16, fontWeight: 500 }}>Showing {`${showingData.length}`} of {`${totalRecords}`} </Text>
             </View>
-            <View style={{ margin: 10, flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+            {/* <View style={{ margin: 10, flexDirection: 'row', gap: 10, alignItems: 'center' }}>
               <TouchableOpacity
                 onPress={async () => {
                   setApplyFilterPagination(false); // Allow `getAllLoads` to be called again
@@ -67,7 +67,7 @@ const TruckDetails = ({
                 }}>
                 <MaterialIcons name="replay" size={20} color="black" />
               </TouchableOpacity>
-            </View>
+            </View> */}
           </View>
           <PaginationComponent
             search={search}

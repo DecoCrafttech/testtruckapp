@@ -27,7 +27,6 @@ import PetrolBunkMyPosts from "../Petrolbunks/PetrolBunkMyPosts";
 const Refer = () => {
 
 
-
   const [selectedValue, setSelectedValue] = useState(null);
   const [allLoadData, setAllLoadData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -128,7 +127,7 @@ const Refer = () => {
         console.error("Error:", error);
       }
 
-      
+
 
     } else if (selectedValue === "user_driver_details") {
       editingParams = {
@@ -348,8 +347,8 @@ const Refer = () => {
               onButton2Press: () =>
                 handleFeedBackModal(item, "load", "user_load_details"),
             }));
-            setAllLoadData(transformedData);
 
+            setAllLoadData(transformedData);
             break;
           case "user_driver_details":
             setAllLoadData([]);
@@ -462,6 +461,7 @@ const Refer = () => {
             <PetrolBunkMyPosts allData={allLoadData} editedDetails={editedDetails} fetchData={fetchData} />
           ) : (
             <LoadDetails
+              isMyPost={true}
               filteredTrucks={allLoadData}
               status="editAndDelete"
               handleEdit={handleEdit}

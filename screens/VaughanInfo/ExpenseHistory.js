@@ -8,13 +8,14 @@ import {
   Modal,
   TextInput,
   TouchableWithoutFeedback,
+  ScrollView,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { COLORS } from "../../constants";
 import { Ionicons } from "@expo/vector-icons";
 
-const ExpenseHistory = ({ cashFlowExpenseHistory,handleEdit,handleDelete }) => {
+const ExpenseHistory = ({ cashFlowExpenseHistory, handleEdit, handleDelete }) => {
   const [filteredData, setFilteredData] = useState(cashFlowExpenseHistory);
   const [modalVisible, setModalVisible] = useState(false);
   const [filterType, setFilterType] = useState("");
@@ -66,40 +67,41 @@ const ExpenseHistory = ({ cashFlowExpenseHistory,handleEdit,handleDelete }) => {
       </View>
 
       {filteredData.length === 0 ? (
-        <View style={styles.centeredView}>
+        <View style={[styles.centeredView,{flex:1,justifyContent:'center',alignItems:'center'}]}>
           <Text style={styles.centeredText}>No Transaction History found</Text>
         </View>
       ) : (
-        <FlatList
-          style={styles.root}
-          data={filteredData}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
-          keyExtractor={(item, index) => (item.id ? item.id.toString() : index.toString())}
-          renderItem={({ item }) => (
-            <View style={styles.rowContainer}>
-              {/* Left Side - Text Data */}
-              <View style={styles.content}>
-                <Text style={styles.category}>{item.category}</Text>
-                <Text style={styles.name}>{item.cash_flow_name}</Text>
-                <Text style={item.cash_flow_type === "IN" ? styles.addMoney : styles.outMoney}>
-                  ₹ {item.amount}
-                </Text>
-                <Text style={styles.time}>{item.updt}</Text>
-                <Text style={styles.closingBlancetext}>Available balance: ₹ {item.closing_balance}</Text>
+        <ScrollView style={styles.root}>
+          {filteredData.map((item, index) => (
+            <View key={item.id ? item.id.toString() : index.toString()}>
+              <View style={styles.rowContainer}>
+                {/* Left Side - Text Data */}
+                <View style={styles.content}>
+                  <Text style={styles.category}>{item.category}</Text>
+                  <Text style={styles.name}>{item.cash_flow_name}</Text>
+                  <Text style={item.cash_flow_type === "IN" ? styles.addMoney : styles.outMoney}>
+                    ₹ {item.amount}
+                  </Text>
+                  <Text style={styles.time}>{item.updt}</Text>
+                  <Text style={styles.closingBlancetext}>Available balance: ₹ {item.closing_balance}</Text>
+                </View>
+
+                {/* Right Side - Edit & Delete Icons */}
+                <View style={styles.iconContainer}>
+                  <TouchableOpacity onPress={() => handleEdit(item)}>
+                    <Ionicons name="create-outline" size={24} color="blue" style={styles.icon} />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => handleDelete(item)}>
+                    <Ionicons name="trash-outline" size={24} color="red" style={styles.icon} />
+                  </TouchableOpacity>
+                </View>
               </View>
 
-              {/* Right Side - Edit & Delete Icons */}
-              <View style={styles.iconContainer}>
-                <TouchableOpacity onPress={() => handleEdit(item) }>
-                  <Ionicons name="create-outline" size={24} color="blue" style={styles.icon} />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleDelete(item)}>
-                  <Ionicons name="trash-outline" size={24} color="red" style={styles.icon} />
-                </TouchableOpacity>
-              </View>
+              {/* Separator */}
+              <View style={styles.separator} />
             </View>
-          )}
-        />
+          ))}
+        </ScrollView>
       )}
 
       {/* Filter Modal */}
@@ -175,7 +177,7 @@ const ExpenseHistory = ({ cashFlowExpenseHistory,handleEdit,handleDelete }) => {
       </Modal>
 
 
-  
+
 
     </View>
   );
@@ -186,17 +188,17 @@ const ExpenseHistory = ({ cashFlowExpenseHistory,handleEdit,handleDelete }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  root: { backgroundColor: "#ffffff", marginTop: 12, paddingHorizontal: 15 },
-  header: { flexDirection: "row", justifyContent: "space-between", padding: 15 },
-  headerText: { fontSize: 18, fontWeight: "bold" },
-  content: { padding: 15, borderBottomWidth: 1, borderBottomColor: "#ddd", },
+  root: { backgroundColor: "#ffffff",  paddingHorizontal: 15 },
+  header: { flexDirection: "row", justifyContent: "space-between", borderBottomColor:'#000',borderBottomWidth:0.5,paddingHorizontal: 25,paddingVertical:15,paddingTop:20 },
+  headerText: { fontSize: 18, fontWeight: "bold", },
+  content: { paddingHorizontal: 0,  },
   separator: { height: 1, backgroundColor: "#CCCCCC" },
   time: { fontSize: 11, color: "#808080" },
   addMoney: { fontSize: 14, color: "green" },
   outMoney: { fontSize: 14, color: "red" },
   category: { fontSize: 16, fontWeight: "bold", color: COLORS.primary },
   closingBlancetext: { color: "#0080FF" },
-  centeredView: { flex: 1, justifyContent: "center", alignItems: "center" },
+  centeredView: { flex: 1, justifyContent: "center", alignItems: "center",marginTop:100 },
   centeredText: { fontSize: 18, color: "#808080" },
   modalContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "rgba(0,0,0,0.5)" },
   modalContent: { width: "80%", padding: 20, backgroundColor: "white", borderRadius: 10 },
@@ -214,10 +216,10 @@ const styles = StyleSheet.create({
     width: "100%",
   }, datePicker: { padding: 12, backgroundColor: "#f0f0f0", borderRadius: 5, marginVertical: 5 },
   dateText: { textAlign: "center" },
-  buttonContainer: { flexDirection: "row", justifyContent: "space-between", marginTop: 10 },
-  buttonReset: { backgroundColor: "red", padding: 10, borderRadius: 5 },
-  buttonApply: { backgroundColor: "green", padding: 10, borderRadius: 5 },
-  buttonText: { color: "white", fontWeight: "bold" },
+  buttonContainer: { flexDirection: "row", justifyContent: "space-between",marginTop: 10 },
+  buttonReset: { backgroundColor: "red", padding: 10, borderRadius: 5,width:'45%', },
+  buttonApply: { backgroundColor: "green", padding: 10, borderRadius: 5,width:'45%', },
+  buttonText: { color: "white", fontWeight: "bold",textAlign:'center' },
   input: {
     height: 40,
     borderColor: "#ccc",
@@ -231,16 +233,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    paddingHorizontal: 15,
+    // borderBottomWidth: 1,
+    // borderBottomColor: "#ddd",
     backgroundColor: "#fff",
     borderRadius: 10,
     marginBottom: 5,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
+    // shadowColor: "#000",
+    // shadowOpacity: 0.1,
+    // shadowRadius: 5,
+    // elevation: 3,
   },
   iconContainer: {
     flexDirection: "row",

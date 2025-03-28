@@ -7,6 +7,7 @@ import {
   Modal,
   TextInput,
   Alert,
+  ScrollView,
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -18,6 +19,7 @@ import { LoadNeedsContext } from "../../hooks/LoadNeedsContext"
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { Picker } from "@react-native-picker/picker";
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 
 
@@ -33,20 +35,20 @@ const LoadExpenseCalculator = ({ route }) => {
   const [cashStatus, setCashStatus] = useState("");
   const [modalValues, setModalValues] = useState({
     name: "",
-    description: "",
+    // description: "",
     amount: "",
   });
   const [errorFields, setErrorFields] = useState({
     name: false,
     amount: false,
-    description: false
+    // description: false
   });
 
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editValues, setEditValues] = useState({
     id: "",
     name: "",
-    description: "",
+    // description: "",
     amount: "",
     type: "", // 'IN' for Credit, 'OUT' for Debit
   });
@@ -57,17 +59,15 @@ const LoadExpenseCalculator = ({ route }) => {
     setModalValues({
       name: "",
       amount: "",
-      description: "",
+      // description: "",
 
     });
     setErrorFields({
       name: false,
       amount: false,
-      description: false
+      // description: false
 
     });
-
-
   };
 
   const [cashFlowExpenseHistory, setCashFlowExpenseHistory] = useState([]);
@@ -89,7 +89,6 @@ const LoadExpenseCalculator = ({ route }) => {
           "/initial_cash_in_out",
           getCashFlowParamter
         );
-
 
         if (response.data.error_code === 0) {
           setInitialCash({
@@ -248,6 +247,7 @@ const LoadExpenseCalculator = ({ route }) => {
         amount: modalValues.amount,
       };
 
+
       const response = await axiosInstance.post("/load_trip_cash_flow_entry", loadTripCashFlowEntryParameters);
 
       if (response.data.error_code === 0) {
@@ -403,22 +403,23 @@ const LoadExpenseCalculator = ({ route }) => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
-      <View style={{ flex: 1, backgroundColor: COLORS.white }}>
-        <HeaderWithOutBS title="Load Expense Calculator" />
+      <HeaderWithOutBS title="Load Expense Calculator" />
+      <ScrollView style={{ flex: 1, backgroundColor: COLORS.white }}>
 
         <View style={styles.container}>
-          {/* Other components */}
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: "blue" }]}
-            onPress={generatePDF}
-          >
-            <Text style={styles.buttonText}>Download PDF</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.container}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>{item.load_name}</Text>
+          <View style={[styles.titleContainer, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
+            <Text style={[styles.title, { marginLeft: 10, width: '50%' }]}>{item.load_name}</Text>
+            <TouchableOpacity
+              style={[styles.button, {
+                backgroundColor: "#f6f6f6", paddingVertical: 8,
+                paddingHorizontal: 20,
+              }]}
+              onPress={generatePDF}
+            >
+              <Text style={[styles.buttonText]}>
+                <FontAwesome6 name="file-pdf" size={24} color="black" />
+              </Text>
+            </TouchableOpacity>
           </View>
           <View style={styles.balanceContainer}>
             <View style={[styles.box, { marginRight: 10 }]}>
@@ -440,7 +441,7 @@ const LoadExpenseCalculator = ({ route }) => {
           </View>
           <View style={styles.buttonContainer}>
             <TouchableOpacity
-              style={[styles.button, { backgroundColor: 'green' }]}
+              style={[styles.button, { backgroundColor: 'green', width: "50%", marginHorizontal: 10 }]}
               onPress={() => handleButtonPress("Credit entry")}
             >
               <Text style={styles.buttonText}>Credit</Text>
@@ -453,8 +454,11 @@ const LoadExpenseCalculator = ({ route }) => {
             </TouchableOpacity>
           </View>
         </View>
-        <ExpenseHistory handleEdit={handleEdit} handleDelete={handleDelete} cashFlowExpenseHistory={cashFlowExpenseHistory} />
-      </View>
+        <ExpenseHistory
+          handleEdit={handleEdit}
+          handleDelete={handleDelete}
+          cashFlowExpenseHistory={cashFlowExpenseHistory} />
+      </ScrollView>
 
 
       {/* Credit/Debit Modal */}
@@ -469,7 +473,7 @@ const LoadExpenseCalculator = ({ route }) => {
             <Text style={styles.modalTitle}>{cashStatus}</Text>
             <TextInput
               style={[styles.input, errorFields.name && styles.inputError]}
-              placeholder="Name"
+              placeholder="Description"
               value={modalValues.name}
               onChangeText={(text) => handleInputChange("name", text)} // Use lowercase
             />
@@ -482,12 +486,12 @@ const LoadExpenseCalculator = ({ route }) => {
               onChangeText={(text) => handleInputChange("amount", text)} // Use lowercase
             />
 
-            <TextInput
+            {/* <TextInput
               style={[styles.input, errorFields.description && styles.inputError]}
               placeholder="Description"
               value={modalValues.description}
               onChangeText={(text) => handleInputChange("description", text)} // Use lowercase
-            />
+            /> */}
 
             <TouchableOpacity style={[styles.applyButton, { backgroundColor: "#24a0ed" }]} onPress={handleCashInOut}>
               <Text style={styles.applyButtonText}>Add</Text>
@@ -515,7 +519,7 @@ const LoadExpenseCalculator = ({ route }) => {
 
             <TextInput
               style={[styles.input, errorFields.name && styles.inputError]}
-              placeholder="Name"
+              placeholder="Description"
               value={editValues.name || ""}
               onChangeText={(text) => handleEditInputChange("name", text)}
             />
@@ -528,12 +532,12 @@ const LoadExpenseCalculator = ({ route }) => {
               onChangeText={(text) => handleEditInputChange("amount", text)}
             />
 
-            <TextInput
+            {/* <TextInput
               style={[styles.input, errorFields.description && styles.inputError]}
               placeholder="Description"
               value={editValues.description || ""}
               onChangeText={(text) => handleEditInputChange("description", text)}
-            />
+            /> */}
 
             <View style={[styles.input, { justifyContent: 'center', paddingHorizontal: 0 }]}>
               <Picker
@@ -605,7 +609,8 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row", // Arrange children horizontally
     justifyContent: "center", // Center children horizontally
-    marginTop: 20,
+    marginTop: 10,
+    marginHorizontal: 10,
 
   },
   button: {
@@ -614,6 +619,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 50,
     marginHorizontal: 10,
+
   },
   button1: {
     backgroundColor: COLORS.brand,
@@ -621,11 +627,12 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 50,
     marginHorizontal: 10,
+    width: "50%",
+
   },
   buttonText: {
     color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 14,
     textAlign: "center",
   },
   modalContainer: {
@@ -685,7 +692,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff", // Change to desired background color
     padding: 10, // Add padding
     borderRadius: 5, // Optional: Add border radius
-    marginBottom: 10, // Add some margin below the title
+    // marginBottom: 10, // Add some margin below the title
 
   },
 });
