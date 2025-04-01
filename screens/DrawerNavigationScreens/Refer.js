@@ -22,6 +22,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import PetrolBunkMyPosts from "../Petrolbunks/PetrolBunkMyPosts";
+import { statesData } from "../../constants/cityAndState";
 
 
 const Refer = () => {
@@ -34,7 +35,6 @@ const Refer = () => {
   const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [editedDetails, setEditedDetails] = useState(null);
-  const [selectedStates, setSelectedStates] = useState([])
 
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState([
@@ -44,6 +44,16 @@ const Refer = () => {
     { label: "Buy and Sell Posts", value: "user_buy_sell_details" },
     { label: "Petrol Bunks", value: "petrol_bunks" },
   ]);
+
+
+
+  const [selectedToLocationModalStates, setSelectedToLocationModalStates] = useState([]);
+  const [selectAllToLocationModalStates, setSelectAllToLocationModalStates] = useState(false);
+
+
+
+
+
 
   useFocusEffect(
     React.useCallback(() => {
@@ -71,6 +81,26 @@ const Refer = () => {
     )
     return true
   }
+
+
+  const filterModalToLocationStatesData = statesData.map(state => (
+    { label: state.name, value: state.name })
+  );
+
+
+  const handleFilterStates = (values) => {
+    setSelectedToLocationModalStates(values);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectAllToLocationModalStates) {
+      setSelectedToLocationModalStates([]); // Deselect all
+    } else {
+      setSelectedToLocationModalStates(statesData.map((item) => item.name)); // Select all states
+    }
+    setSelectAllToLocationModalStates(!selectAllToLocationModalStates);
+  };
+
 
 
   const handleEdit = (item) => {
@@ -109,8 +139,11 @@ const Refer = () => {
         "user_id": editedDetails.userId,
         "user_post": editedDetails.userPost,
         "from": editedDetails.fromLocation,
-        "to": editedDetails.toLocation
+        "to": editedDetails.toLocation,
+        "truck_size": editedDetails.truckSize
       }
+
+
 
       try {
 
@@ -137,7 +170,7 @@ const Refer = () => {
         "driver_id": editedDetails.driverId,
         "driver_name": editedDetails.driverName,
         "from": editedDetails.fromLocation,
-        "to": selectedStates,
+        "to": selectedToLocationModalStates,
         "no_of_tyres": editedDetails.numberOfTyres,
         "truck_body_type": editedDetails.truckBodyType,
         "truck_name": editedDetails.truckName,
@@ -170,8 +203,8 @@ const Refer = () => {
         "name_of_the_transport": editedDetails.transportName,
         "no_of_tyres": editedDetails.numberOfTyres,
         "profile_name": editedDetails.profileName,
-        "to": selectedStates,
-        "to": selectedStates,
+        "to": selectedToLocationModalStates,
+        "to_location": selectedToLocationModalStates,
         "tone": editedDetails.ton,
         "truck_body_type": editedDetails.truckBodyType,
         "truck_brand_name": editedDetails.truckBrandName,
@@ -183,6 +216,8 @@ const Refer = () => {
         "vehicle_number": editedDetails.vehicleNumber,
         "truck_size": editedDetails.truckSize
       }
+
+
 
       try {
         const response = await axiosInstance.post(
@@ -326,7 +361,9 @@ const Refer = () => {
         switch (selectedValue) {
           case "user_load_details":
 
+
             const transformedData = response.data.data.map((item) => ({
+              
               companyName: item.company_name,
               contactNumber: item.contact_number,
               truckBodyType: item.truck_body_type,
@@ -335,11 +372,13 @@ const Refer = () => {
               fromLocation: item.from_location,
               toLocation: item.to_location,
               ownerName: item.profile_name,
+              truckSize :item.truck_size,
               labels: [
                 { icon: "table-view", text: item.material },
                 { icon: "attractions", text: `${item.no_of_tyres} wheels` },
                 { icon: "monitor-weight", text: `${item.tone} tons` },
                 { icon: "local-shipping", text: item.truck_body_type },
+                { icon: "fire-truck",text: `${item.truck_size} ft` },
                 { icon: "person", text: item.profile_name },
               ],
               description: item.description,
@@ -385,12 +424,12 @@ const Refer = () => {
               transportName: item.name_of_the_transport,
               truckSize: item.truck_size,
               labels: [
-                { icon: "table-view", text: `${item.truck_size} ft` },
-                { icon: "directions-bus", text: item.vehicle_number },
-                { icon: "attractions", text: `${item.no_of_tyres} wheels` },
-                { icon: "local-shipping", text: item.truck_body_type },
                 { icon: "line-weight", text: `${item.tone} tons` },
-                { icon: "attractions", text: item.vehicle_number },
+                { icon: "local-shipping", text: item.truck_body_type },
+                { icon: "attractions", text: `${item.no_of_tyres} wheels` },
+                { icon: "directions-bus", text: item.truck_brand_name },
+                { icon: "fire-truck", text: item.vehicle_number },
+                { icon: "table-view", text: `${item.truck_size} ft` },
               ],
               description: item.description,
               onButton1Press: () => handleEdit(item),
@@ -469,6 +508,8 @@ const Refer = () => {
             />
           )}
         </View>
+
+        {/* My Post Edit modal */}
         <EditModal
           visible={editModalVisible}
           onClose={() => setEditModalVisible(false)}
@@ -477,8 +518,11 @@ const Refer = () => {
           selectedValue={selectedValue}
           editedDetails={editedDetails}
           setEditedDetails={setEditedDetails}
-          selectedStates={selectedStates}
-          setSelectedStates={setSelectedStates}
+          selectedToLocationModalStates={selectedToLocationModalStates}
+          selectAllToLocationModalStates={selectAllToLocationModalStates}
+          handleFilterStates={handleFilterStates}
+          toggleSelectAll={toggleSelectAll}
+          filterModalToLocationStatesData={filterModalToLocationStatesData}
         />
 
         <Modal

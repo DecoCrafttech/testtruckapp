@@ -10,7 +10,10 @@ import {
 import React, { useState, useEffect } from "react";
 import { Picker } from "@react-native-picker/picker";
 import { MaterialIcons } from "@expo/vector-icons"; // For clear icon
-import TruckCard from "./TruckCard";
+// import TruckCard from "./TruckCard";
+
+const TruckCard = React.lazy(() => import("./TruckCard"));
+
 
 
 
@@ -38,6 +41,8 @@ const PaginationComponent = ({
     applyFilter,
     setApplyFilterPagination,
     availableTruckPage,
+    availableLoadsPage,
+    availableDriversPage,
     isBuyAndSellShowingData,
     renderBuyAndSellData
 }) => {
@@ -87,6 +92,8 @@ const PaginationComponent = ({
                                         updatedTime={item.updatedTime}
                                         isAadhaarVerified={item.isAadhaarVerified}
                                         availableTruckPage={availableTruckPage}
+                                        availableLoadsPage={availableLoadsPage}
+                                        availableDriversPage={availableDriversPage}
                                         truckSize={item.truckSize}
                                         nameOfTheTransport={item.nameOfTheTransport}
                                     />

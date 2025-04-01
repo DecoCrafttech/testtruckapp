@@ -2,7 +2,6 @@ import { View, Text, TouchableOpacity, Image, StyleSheet, Linking } from "react-
 import React from "react";
 import { useNavigation } from "@react-navigation/native";
 import { COLORS, icons } from "../constants";
-import AntDesign from '@expo/vector-icons/AntDesign';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Ionicons from '@expo/vector-icons/Ionicons';
 

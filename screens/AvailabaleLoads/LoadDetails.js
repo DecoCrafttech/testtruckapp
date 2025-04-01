@@ -36,7 +36,8 @@ const LoadDetails = ({
   isFiltered,
   applyFilter,
   applyFilterPagination,
-  setApplyFilterPagination
+  setApplyFilterPagination,
+  availableLoadsPage
 
 }) => {
 
@@ -92,6 +93,7 @@ const LoadDetails = ({
             applyFilter={applyFilter}
             applyFilterPagination={applyFilterPagination}
             setApplyFilterPagination={setApplyFilterPagination}
+            availableLoadsPage={availableLoadsPage}
           />
         </>
 

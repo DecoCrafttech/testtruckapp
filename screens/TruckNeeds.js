@@ -20,10 +20,9 @@ import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplet
 import RNPickerSelect from 'react-native-picker-select';
 import { useNavigation } from "@react-navigation/native";
 import Constants from 'expo-constants'
-import SectionedMultiSelect from "react-native-sectioned-multi-select";
-import { MaterialIcons as Icon } from '@expo/vector-icons';
 import { statesData } from "../constants/cityAndState";
 import { MultiSelect } from "react-native-element-dropdown";
+import Checkbox from "expo-checkbox";
 
 
 
@@ -48,7 +47,6 @@ const TruckNeeds = () => {
   const [contactNumber, setContactNumber] = useState("");
   const [transportName, setTransportName] = useState("")
   const [fromLocation, setFromLocation] = useState("");
-  // const [toLocation, setToLocation] = useState("");
   const [ton, setTon] = useState("");
   const [truckSize, setTruckSize] = useState("");
 
@@ -63,7 +61,6 @@ const TruckNeeds = () => {
   const [contactNumberValid, setContactNumberValid] = useState(true);
   const [transportNameValid, setTransportNameValid] = useState(true)
   const [fromLocationValid, setFromLocationValid] = useState(true);
-  // const [toLocationValid, setToLocationValid] = useState(true);
   const [tonValid, setTonValid] = useState(true);
   const [truckSizeValid, setTruckSizeValid] = useState(true);
   const [truckNameValid, setTruckNameValid] = useState(true);
@@ -72,27 +69,19 @@ const TruckNeeds = () => {
   const [descriptionValid, setDescriptionValid] = useState(true);
 
   const [fromLocationModal, setFromLocationModal] = useState(false)
-  const [toLocationModal, setToLocationModal] = useState(false)
 
   const [vehicleListData, setVehicleListData] = useState([])
   const [vehicleFromDropdown, setVehicleFromDropdown] = useState("")
 
 
-  const [editSelectedStates, setEditSelectedStates] = useState([])
-  const [editStates, setEditStates] = useState([])
-  const [editStatesClick, setEditStatesClick] = useState(false)
-  const [updateSelectedStates, setUpdateSelectedStates] = useState([])
-
-
-  const [selectedStates, setSelectedStates] = useState([]);
-
+  const [selectedToLocationStates, setSelectedToLocationStates] = useState([]);
+  const [selectAllToLocationStates, setSelectAllToLocationStates] = useState(false);
 
 
 
   useEffect(() => {
 
     const getVehicleList = async () => {
-
       const vehicleListParams = {
         user_id: `${await AsyncStorage.getItem("user_id")}`
       }
@@ -120,6 +109,10 @@ const TruckNeeds = () => {
 
   }, [])
 
+  const toLocationStatesData = statesData.map(state => (
+    { label: state.name, value: state.name })
+  );
+
 
 
   const handlePostAdd = async () => {
@@ -130,7 +123,6 @@ const TruckNeeds = () => {
       contactNumber.trim() === "" ||
       transportName.trim() === "" ||
       fromLocation.trim() === "" ||
-      // toLocation.trim() === "" ||
       ton.trim() === "" ||
       truckSize.trim() === "" ||
       truckName.trim() === "" ||
@@ -143,7 +135,6 @@ const TruckNeeds = () => {
       setContactNumberValid(contactNumber.trim() !== "");
       setTransportNameValid(transportName.trim() !== "")
       setFromLocationValid(fromLocation.trim() !== "");
-      // setToLocationValid(toLocation.trim() !== "");
       setTonValid(ton.trim() !== "");
       setTruckSizeValid(truckSize.trim() !== "");
       setTruckNameValid(truckName.trim() !== "");
@@ -160,7 +151,7 @@ const TruckNeeds = () => {
       description: description,
       from: fromLocation,
       // to: toLocation,
-      to: selectedStates,
+      to: selectedToLocationStates,
       vehicle_number: vehicleNumber !== "" ? vehicleNumber : vehicleFromDropdown,
       name_of_the_transport: transportName,
       no_of_tyres: numberOfTyres,
@@ -171,6 +162,7 @@ const TruckNeeds = () => {
       truck_body_type: truckBodyType,
       user_id: await AsyncStorage.getItem("user_id")
     };
+
 
     try {
 
@@ -183,13 +175,14 @@ const TruckNeeds = () => {
         setContactNumber("");
         setFromLocation("");
         setTransportName("")
-        // setToLocation("");
         setTon("");
         setTruckSize("")
         setTruckName("");
         setTruckBodyType("");
         setNumberOfTyres("");
         setDescription("");
+        setSelectAllToLocationStates(false)
+        setSelectedToLocationStates([])
         Alert.alert("Post added successfully!");
         navigation.goBack()
       } else {
@@ -235,49 +228,8 @@ const TruckNeeds = () => {
     // You can use the extracted details as needed
   };
 
-  const handleEditStatesChange = async (selectedItemIds) => {
-    // Log previously selected states
-    const prevSelectedStateNames = editSelectedStates.map(id => {
-      const state = statesData.find(state => state.id === id);
-      return state ? state.name : null;
-    }).filter(name => name !== null);
 
 
-    // Update selected states
-    setEditSelectedStates(selectedItemIds);
-
-    // Log currently selected states
-    const selectedStateNames = selectedItemIds.map(id => {
-      const state = statesData.find(state => state.id === id);
-      return state ? state.name : null;
-    }).filter(name => name !== null);
-    setUpdateSelectedStates(selectedStateNames)
-  };
-
-
-
-  // const handleToLocation = (data, details) => {
-  //   let country = '';
-  //   let state = '';
-  //   let city = '';
-
-  //   if (details.address_components) {
-  //     details.address_components.forEach(component => {
-  //       if (component.types.includes('country')) {
-  //         country = component.long_name;
-  //       }
-  //       if (component.types.includes('administrative_area_level_1')) {
-  //         state = component.long_name;
-  //       }
-  //       if (component.types.includes('locality')) {
-  //         city = component.long_name;
-  //       }
-  //     });
-  //   }
-  //   setToLocation(`${city}, ${state}`)
-  //   setToLocationModal(false)
-  //   // You can use the extracted details as needed
-  // };
 
   const brandData = [
     { label: 'Ashok Leyland', value: 'Ashok Leyland' },
@@ -318,25 +270,21 @@ const TruckNeeds = () => {
   ];
 
 
-  const data = [
-    { label: "Select All", value: "select_all" },
-    ...statesData.map(state => ({ label: state.name, value: state.name }))
-  ];
 
-
-  const handleSelectedStates = (values) => {
-    if (values.includes("select_all")) {
-      // Select all or deselect all logic
-      setSelectedStates(
-        selectedStates.length === statesData.length
-          ? []
-          : statesData.map(item => item.name) // Ensure correct field name
-      );
-    } else {
-      // Remove "select_all" if selected and update selected states
-      setSelectedStates(values.filter(v => v !== "select_all"));
-    }
+  const handleFilterStates = (values) => {
+    setSelectedToLocationStates(values);
   };
+
+  const toggleSelectAll = () => {
+    if (selectAllToLocationStates) {
+      setSelectedToLocationStates([]); // Deselect all
+    } else {
+      setSelectedToLocationStates(statesData.map((item) => item.name)); // Select all states
+    }
+    setSelectAllToLocationStates(!selectAllToLocationStates);
+  };
+
+
 
 
   return (
@@ -469,35 +417,58 @@ const TruckNeeds = () => {
             />
 
 
+            <View style={{ marginBottom: 10 }}>
+              <Text style={styles.label}>To</Text>
 
+              {/* Show dropdown only if not all states are selected */}
+              {!selectAllToLocationStates && (
+                <MultiSelect
+                  style={{
+                    borderColor: "#ccc",
+                    borderWidth: 1,
+                    padding: 12,
+                    borderRadius: 5,
+                    marginBottom: 10,
+                    fontSize: 16,
+                    backgroundColor: "white",
+                  }}
+                  data={toLocationStatesData} // Use actual states data
+                  labelField="label" // Ensure correct field names
+                  valueField="value"
+                  placeholder={selectedToLocationStates.length ? `${selectedToLocationStates.length} states selected` : "To Location"}
+                  value={selectedToLocationStates}
+                  onChange={handleFilterStates}
+                  placeholderStyle={{ fontSize: 16 }}
+                />
+              )}
 
+              {
+                selectAllToLocationStates &&
+                <TextInput
+                  style={{
+                    borderColor: "#ccc",
+                    borderWidth: 1,
+                    padding: 10,
+                    borderRadius: 5,
+                    marginBottom: 10,
+                    fontSize: 16
+                  }}
+                  value="To Location (All states selected)"
+                  editable={false}
+                />
+              }
+
+              {/* Select All Checkbox */}
+              <View >
+                <TouchableOpacity onPress={toggleSelectAll} style={{ flexDirection: "row", alignItems: "center", marginVertical: 10 }}>
+                  <Checkbox value={selectAllToLocationStates} onValueChange={toggleSelectAll} />
+                  <Text style={{ marginLeft: 8 }}>Select All States</Text>
+                </TouchableOpacity>
+              </View>
+
+            </View>
 
             {/* <Text style={styles.label}>To</Text>
-            <View style={{ width: "auto", marginBottom: 5 }}>
-              <SectionedMultiSelect
-                items={statesData}
-                IconRenderer={Icon}
-                uniqueKey="id"
-                searchPlaceholderText="Search state"
-                selectedText="selected"
-                selectText="Select"
-                confirmText="Done"
-                onSelectedItemsChange={handleEditStatesChange}  // Call to update selected items
-                selectedItems={editSelectedStates}  // Initialize with current user states
-                styles={{
-                  backdrop: styles.multiSelectBackdrop,
-                  selectToggle: styles.multiSelectBox,
-                  chipContainer: styles.multiSelectChipContainer,
-                  chipText: styles.multiSelectChipText,
-                  selectToggleText: styles.selectToggleText,
-                  selectedItemText: styles.selectedItemText,
-                  selectText: styles.selectText,
-                  button: { backgroundColor: '#CE093A' },
-                }}
-              />
-            </View> */}
-
-            <Text style={styles.label}>To</Text>
             <View style={{ marginBottom: 10 }}>
               <MultiSelect
                 style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 15, borderRadius: 5 }}
@@ -509,7 +480,7 @@ const TruckNeeds = () => {
                 onChange={handleSelectedStates}
                 placeholderStyle={{ fontSize: 16 }}
               />
-            </View>
+            </View> */}
 
 
 

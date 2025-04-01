@@ -48,17 +48,12 @@ const AvailableTruck = ({ navigation }) => {
     setIsLoading,
     aadhaarOTP,
     setMessageReceiver,
-    userStatesFromProfile,
 
   } = useContext(LoadNeedsContext)
 
   const [searchQuery, setSearchQuery] = useState("");
   const [allTrucksData, setAllTrucksData] = useState([]);
   const [isLoadings, setisLoadings] = useState(true);
-
-  const [selectedStates, setSelectedStates] = useState([]);
-  const [filteredStates, setFilteredStates] = useState([])
-  const [userToLocationStatesData, setUserToLocationStatesData] = useState({})
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isAadhaarModal, setIsAadhaarModal] = useState(false)
@@ -74,6 +69,7 @@ const AvailableTruck = ({ navigation }) => {
     toLocation: "",
     material: "",
     noOfTyres: "",
+    truckSize: "",
     truckName: "",
     tons: "",
     truckBodyType: "",
@@ -84,6 +80,7 @@ const AvailableTruck = ({ navigation }) => {
     toLocation: false,
     material: false,
     noOfTyres: false,
+    truckSize: false,
     tons: false,
     truckBodyType: false,
     truckName: false
@@ -94,11 +91,11 @@ const AvailableTruck = ({ navigation }) => {
   const [timeLeft, setTimeLeft] = useState(null);
 
   const [fromLocationModal, setFromLocationModal] = useState(false)
-  const [toLocationModal, setToLocationModal] = useState(false)
   const [pageLoading, setPageLoading] = useState(false)
 
-  const [selectedFilterStates, setSelectedFilterStates] = useState([]);
-  const [selectAllToLocationModalStates, setSelectAllAllToLocationModalStates] = useState(false);
+  const [selectedToLocationModalStates, setSelectedToLocationModalStates] = useState([]);
+  const [selectAllToLocationModalStates, setSelectAllToLocationModalStates] = useState(false);
+
 
 
   const [showingData, setShowingData] = useState([]);
@@ -119,25 +116,19 @@ const AvailableTruck = ({ navigation }) => {
   );
 
 
-  // const handleFilterStates = (values) => {
-  //   if (values.includes("select_all")) {
-  //     setSelectedFilterStates(selectedFilterStates.length === data.length - 1 ? [] : data.map(item => item.value).filter(v => v !== "select_all"));
-  //   } else {
-  //     setSelectedFilterStates(values.filter(v => v !== "select_all"));
-  //   }
-  // };
+
 
   const handleFilterStates = (values) => {
-    setSelectedFilterStates(values);
+    setSelectedToLocationModalStates(values);
   };
 
   const toggleSelectAll = () => {
     if (selectAllToLocationModalStates) {
-      setSelectedFilterStates([]); // Deselect all
+      setSelectedToLocationModalStates([]); // Deselect all
     } else {
-      setSelectedFilterStates(statesData.map((item) => item.name)); // Select all states
+      setSelectedToLocationModalStates(statesData.map((item) => item.name)); // Select all states
     }
-    setSelectAllAllToLocationModalStates(!selectAllToLocationModalStates);
+    setSelectAllToLocationModalStates(!selectAllToLocationModalStates);
   };
 
 
@@ -155,17 +146,6 @@ const AvailableTruck = ({ navigation }) => {
     return () => clearInterval(intervalId);
   }, [timeLeft]);
 
-
-
-
-  useEffect(() => {
-    setUserToLocationStatesData(
-      userStatesFromProfile.map((state, index) => ({
-        id: index + 1,
-        name: state
-      }))
-    )
-  }, [])
 
 
   const navigateToSellYourTruck = async () => {
@@ -249,7 +229,6 @@ const AvailableTruck = ({ navigation }) => {
             { icon: "directions-bus", text: item.truck_brand_name },
             { icon: "table-view", text: item.company_name },
             { icon: "fire-truck", text: item.truckSize },
-            { icon: "verified", text: "RC verified" },
           ],
           description: item.description,
           onButton1Press: () => Linking.openURL(`tel:${item.contact_no}`),
@@ -424,34 +403,8 @@ const AvailableTruck = ({ navigation }) => {
     setFromLocationModal(false)
   };
 
-  const handleToLocation = (data, details) => {
-    let country = '';
-    let state = '';
-    let city = '';
-
-    if (details.address_components) {
-      details.address_components.forEach(component => {
-        if (component.types.includes('country')) {
-          country = component.long_name;
-        }
-        if (component.types.includes('administrative_area_level_1')) {
-          state = component.long_name;
-        }
-        if (component.types.includes('locality')) {
-          city = component.long_name;
-        }
-      });
-    }
-
-
-    setModalValues((prevState) => ({
-      ...prevState, toLocation: (`${city}, ${state}`)
-    }))
-    setToLocationModal(false)
-  };
 
   const applyFilter = async (value, pageNo, limit) => {
-
 
 
     setIsFiltered(true); // Prevent getAllLoads from running
@@ -463,16 +416,18 @@ const AvailableTruck = ({ navigation }) => {
       "vehicle_number": "",
       "company_name": "",
       "from_location": modalValues.fromLocation,
-      "to_location": selectedFilterStates,
+      "to_location": selectedToLocationModalStates,
       "truck_name": modalValues.truckName !== "" && modalValues.truckName !== undefined && modalValues.truckName !== null ? modalValues.truckName : "",
       "truck_brand_name": modalValues.truckName !== "" && modalValues.truckName !== undefined && modalValues.truckName !== null ? modalValues.truckName : "",
       "truck_body_type": modalValues.truckBodyType !== "" && modalValues.truckBodyType !== undefined && modalValues.truckBodyType !== null ? modalValues.truckBodyType : "",
       "no_of_tyres": modalValues.noOfTyres !== "" && modalValues.noOfTyres !== undefined && modalValues.noOfTyres !== null ? modalValues.noOfTyres : "",
+      truck_size: modalValues.truckSize || "",
       "tone": modalValues.tons !== "" && modalValues.tons !== undefined && modalValues.tons !== null ? modalValues.tons : "",
       page_no: pageNo, // Reset to first page when filtering
       data_limit: limit
     }
 
+console.log("truck filterParams",filterParams)
 
     try {
 
@@ -488,6 +443,10 @@ const AvailableTruck = ({ navigation }) => {
 
 
       const response = await axiosInstance.post("/user_truck_details_filter", filterParams)
+
+      console.log("response.data", response.data)
+
+
       if (response.data.error_code === 0) {
 
         setApplyFilterPagination(true)
@@ -513,10 +472,8 @@ const AvailableTruck = ({ navigation }) => {
             { icon: "local-shipping", text: item.truck_body_type },
             { icon: "attractions", text: `${item.no_of_tyres} wheels` },
             { icon: "directions-bus", text: item.truck_brand_name },
-            { icon: "table-view", text: item.vehicle_number },
-            { icon: "fire-truck", text: item.name_of_the_transport },
+            { icon: "table-view", text: item.company_name },
             { icon: "fire-truck", text: item.truckSize },
-            { icon: "verified", text: "RC verified" },
           ],
           description: item.description,
           onButton1Press: () => Linking.openURL(`tel:${item.contact_no}`),
@@ -564,7 +521,6 @@ const AvailableTruck = ({ navigation }) => {
       truckBodyType: "",
       truckName: ""
     });
-    setSelectedStates([])
 
     setErrorFields({
       companyName: false,
@@ -576,6 +532,10 @@ const AvailableTruck = ({ navigation }) => {
       truckBodyType: false,
     });
 
+    setSelectedToLocationModalStates([])
+    setSelectAllToLocationModalStates(false)
+
+
     // Reset pagination
     setPage(1);
 
@@ -584,7 +544,7 @@ const AvailableTruck = ({ navigation }) => {
       await getAllTrucks("", 1, 10);
 
       // Reset UI state after clearing filters
-      setSelectedFilterStates([]);
+      setSelectedToLocationModalStates([]);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -650,25 +610,6 @@ const AvailableTruck = ({ navigation }) => {
     { label: "Above 40 Ton", value: "Above 40 Ton" },
   ]
 
-
-  const handleSelectStates = async (selectedItemIds) => {
-    // Log previously selected states
-    const prevSelectedStateNames = selectedStates.map(id => {
-      const state = userToLocationStatesData.find(state => state.id === id);
-      return state ? state.name : null;
-    }).filter(name => name !== null);
-
-
-    // Update selected states
-    setSelectedStates(selectedItemIds);
-
-    // Log currently selected states
-    const selectedStateNames = selectedItemIds.map(id => {
-      const state = userToLocationStatesData.find(state => state.id === id);
-      return state ? state.name : null;
-    }).filter(name => name !== null);
-    setFilteredStates(selectedStateNames)
-  };
 
 
   const handleClose = () => {
@@ -786,7 +727,7 @@ const AvailableTruck = ({ navigation }) => {
                   Filter Options
                 </Text>
                 <AntDesign name="close" size={24} color="black" onPress={() => {
-                  setSelectedFilterStates([])
+                  setSelectedToLocationModalStates([])
                   toggleModal()
                 }} />
               </View>
@@ -826,8 +767,8 @@ const AvailableTruck = ({ navigation }) => {
                     data={filterModalToLocationStatesData} // Use actual states data
                     labelField="label" // Ensure correct field names
                     valueField="value"
-                    placeholder={selectedFilterStates.length ? `${selectedFilterStates.length} states selected` : "To Location"}
-                    value={selectedFilterStates}
+                    placeholder={selectedToLocationModalStates.length ? `${selectedToLocationModalStates.length} states selected` : "To Location"}
+                    value={selectedToLocationModalStates}
                     onChange={handleFilterStates}
                     placeholderStyle={{ fontSize: 16 }}
                   />
@@ -844,7 +785,7 @@ const AvailableTruck = ({ navigation }) => {
                       marginBottom: 10,
                       fontSize: 16
                     }}
-                    value="To Location(all states)"
+                    value="To Location (All states selected)"
                     editable={false}
                   />
                 }
@@ -923,6 +864,20 @@ const AvailableTruck = ({ navigation }) => {
                 />
               </View>
 
+              <TextInput
+                style={{
+                  borderColor: "#ccc",
+                  borderWidth: 1,
+                  padding: 10,
+                  borderRadius: 5,
+                  marginBottom: 10,
+                }}
+                placeholder="Truck size (example: 10ft)"
+                onChangeText={(text) => handleInputChange('truckSize', text)}
+                value={modalValues.truckSize}
+                keyboardType="numeric"
+              />
+
               {/* <TextInput
               style={[styles.input, errorFields.tons && styles.inputError]}
               placeholder="Example: 2 tones"
@@ -930,6 +885,7 @@ const AvailableTruck = ({ navigation }) => {
               value={modalValues.tons}
               onChangeText={(text) => handleInputChange('tons', text)}
             /> */}
+
               <View style={{ borderColor: "#ccc", borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
                 <RNPickerSelect
                   onValueChange={(value) => setModalValues({ ...modalValues, tons: value })}
@@ -1114,44 +1070,6 @@ const AvailableTruck = ({ navigation }) => {
         </View>
       </Modal>
 
-      {/*To Location Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={toLocationModal}
-      >
-        <View style={styles.locationModalContainer}>
-          <View style={styles.locationModalContent}>
-            <Text style={styles.modalTitle}>To Location</Text>
-
-
-            <View style={styles.locationContainer}>
-              <GooglePlacesAutocomplete
-                placeholder="Search location"
-                onPress={handleToLocation}
-                textInputProps={{
-                  autoFocus: true,
-                }}
-                query={{
-                  key: googleApiKey, // Use your hardcoded key if Config is not working
-                  language: 'en',
-                  components: 'country:in',
-                }}
-                fetchDetails={true} // This ensures that you get more detailed information about the selected location
-                styles={{
-                  textInputContainer: styles.locationTextInputContainer,
-                  textInput: styles.locationTextInput
-                }}
-              />
-            </View>
-
-
-            <TouchableOpacity style={styles.closeButton} onPress={() => setToLocationModal(false)}>
-              <Text style={styles.applyButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
 
       {/* Send Message Modal */}
       <Modal

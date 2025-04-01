@@ -21,6 +21,7 @@ import RNPickerSelect from 'react-native-picker-select';
 import Constants from 'expo-constants'
 import { statesData } from "../../constants/cityAndState";
 import { MultiSelect } from "react-native-element-dropdown";
+import Checkbox from "expo-checkbox";
 
 
 
@@ -44,7 +45,6 @@ const DriverNeeds = ({ navigation }) => {
   const [companyName, setCompanyName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [fromLocation, setFromLocation] = useState("");
-  const [toLocation, setToLocation] = useState("");
   const [truckName, setTruckName] = useState("");
   const [truckBodyType, setTruckBodyType] = useState("");
   const [numberOfTyres, setNumberOfTyres] = useState("");
@@ -62,14 +62,17 @@ const DriverNeeds = ({ navigation }) => {
   const [companyNameValid, setCompanyNameValid] = useState(true);
   const [contactNumberValid, setContactNumberValid] = useState(true);
   const [fromLocationValid, setFromLocationValid] = useState(true);
-  const [toLocationValid, setToLocationValid] = useState(true);
   const [truckNameValid, setTruckNameValid] = useState(true);
   const [truckBodyTypeValid, setTruckBodyTypeValid] = useState(true);
   const [numberOfTyresValid, setNumberOfTyresValid] = useState(true);
   const [descriptionValid, setDescriptionValid] = useState(true);
 
-  const [selectedStates, setSelectedStates] = useState([]);
 
+    const [selectedToLocationStates, setSelectedToLocationStates] = useState([]);
+    const [selectAllToLocationStates, setSelectAllToLocationStates] = useState(false);
+  
+  
+  
 
 
   useEffect(() => {
@@ -104,6 +107,11 @@ const DriverNeeds = ({ navigation }) => {
   }, [])
 
 
+   const toLocationStatesData = statesData.map(state => (
+      { label: state.name, value: state.name })
+    );
+  
+
 
   const handlePostAdd = async () => {
     setSpinner(true); // Show spinner while making API call
@@ -124,7 +132,6 @@ const DriverNeeds = ({ navigation }) => {
       setCompanyNameValid(companyName.trim() !== "");
       setContactNumberValid(contactNumber.trim() !== "");
       setFromLocationValid(fromLocation.trim() !== "");
-      setToLocationValid(toLocation.trim() !== "");
       setTruckNameValid(truckName.trim() !== "");
       setTruckBodyTypeValid(truckBodyType.trim() !== "");
       setNumberOfTyresValid(numberOfTyres.trim() !== "");
@@ -138,7 +145,7 @@ const DriverNeeds = ({ navigation }) => {
       company_name: companyName,
       contact_no: contactNumber,
       from: fromLocation,
-      to: selectedStates,
+      to: selectedToLocationStates,
       truck_name: truckName,
       truck_body_type: truckBodyType,
       no_of_tyres: numberOfTyres,
@@ -175,6 +182,8 @@ const DriverNeeds = ({ navigation }) => {
         setTruckBodyTypeValid(true);
         setNumberOfTyresValid(true);
         setDescriptionValid(true);
+        setSelectAllToLocationStates(false)
+        setSelectedToLocationStates([])
         Alert.alert("Post added successfully!");
         navigation.navigate("AvailableDrivers")
       } else {
@@ -215,30 +224,6 @@ const DriverNeeds = ({ navigation }) => {
   };
 
 
-  const handleToLocation = (data, details) => {
-    let country = '';
-    let state = '';
-    let city = '';
-
-    if (details.address_components) {
-      details.address_components.forEach(component => {
-        if (component.types.includes('country')) {
-          country = component.long_name;
-        }
-        if (component.types.includes('administrative_area_level_1')) {
-          state = component.long_name;
-        }
-        if (component.types.includes('locality')) {
-          city = component.long_name;
-        }
-      });
-    }
-
-    setToLocation(`${city}, ${state}`)
-    setToLocationModal(false)
-
-    // You can use the extracted details as needed
-  };
 
   const bodyTypeData = [
     { label: 'Open body', value: 'Open body' },
@@ -262,25 +247,21 @@ const DriverNeeds = ({ navigation }) => {
   ];
 
 
-  const data = [
-    { label: "Select All", value: "select_all" },
-    ...statesData.map(state => ({ label: state.name, value: state.name }))
-  ];
 
-
-  const handleSelectedStates = (values) => {
-    if (values.includes("select_all")) {
-      // Select all or deselect all logic
-      setSelectedStates(
-        selectedStates.length === statesData.length
-          ? []
-          : statesData.map(item => item.name) // Ensure correct field name
-      );
-    } else {
-      // Remove "select_all" if selected and update selected states
-      setSelectedStates(values.filter(v => v !== "select_all"));
-    }
-  };
+    const handleFilterStates = (values) => {
+      setSelectedToLocationStates(values);
+    };
+  
+    const toggleSelectAll = () => {
+      if (selectAllToLocationStates) {
+        setSelectedToLocationStates([]); // Deselect all
+      } else {
+        setSelectedToLocationStates(statesData.map((item) => item.name)); // Select all states
+      }
+      setSelectAllToLocationStates(!selectAllToLocationStates);
+    };
+  
+  
 
 
   return (
@@ -385,7 +366,58 @@ const DriverNeeds = ({ navigation }) => {
               onPress={() => setToLocationModal(true)}
             /> */}
 
-            <Text style={styles.label}>To</Text>
+   <View style={{ marginBottom: 10 }}>
+              <Text style={styles.label}>To</Text>
+
+              {/* Show dropdown only if not all states are selected */}
+              {!selectAllToLocationStates && (
+                <MultiSelect
+                  style={{
+                    borderColor: "#ccc",
+                    borderWidth: 1,
+                    padding: 12,
+                    borderRadius: 5,
+                    marginBottom: 10,
+                    fontSize: 16,
+                    backgroundColor: "white",
+                  }}
+                  data={toLocationStatesData} // Use actual states data
+                  labelField="label" // Ensure correct field names
+                  valueField="value"
+                  placeholder={selectedToLocationStates.length ? `${selectedToLocationStates.length} states selected` : "To Location"}
+                  value={selectedToLocationStates}
+                  onChange={handleFilterStates}
+                  placeholderStyle={{ fontSize: 16 }}
+                />
+              )}
+
+              {
+                selectAllToLocationStates &&
+                <TextInput
+                  style={{
+                    borderColor: "#ccc",
+                    borderWidth: 1,
+                    padding: 10,
+                    borderRadius: 5,
+                    marginBottom: 10,
+                    fontSize: 16
+                  }}
+                  value="To Location (All states selected)"
+                  editable={false}
+                />
+              }
+
+              {/* Select All Checkbox */}
+              <View >
+                <TouchableOpacity onPress={toggleSelectAll} style={{ flexDirection: "row", alignItems: "center", marginVertical: 10 }}>
+                  <Checkbox value={selectAllToLocationStates} onValueChange={toggleSelectAll} />
+                  <Text style={{ marginLeft: 8 }}>Select All States</Text>
+                </TouchableOpacity>
+              </View>
+
+            </View>
+
+            {/* <Text style={styles.label}>To</Text>
             <View style={{ marginBottom: 10 }}>
               <MultiSelect
                 style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 15, borderRadius: 5 }}
@@ -397,7 +429,7 @@ const DriverNeeds = ({ navigation }) => {
                 onChange={handleSelectedStates}
                 placeholderStyle={{ fontSize: 16 }}
               />
-            </View>
+            </View> */}
 
 
             <Text style={styles.label}>Truck Body Type</Text>
@@ -490,46 +522,6 @@ const DriverNeeds = ({ navigation }) => {
 
 
             <TouchableOpacity style={styles.closeButton} onPress={() => setFromLocationModal(false)}>
-              <Text style={styles.applyButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-
-      {/* To Location Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={toLocationModal}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>To Location</Text>
-
-
-            <View style={styles.locationContainer}>
-              <GooglePlacesAutocomplete
-                placeholder="Search location"
-                onPress={handleToLocation}
-                textInputProps={{
-                  autoFocus: true,
-                }}
-                query={{
-                  key: googleApiKey, // Use your hardcoded key if Config is not working
-                  language: 'en',
-                  components: 'country:in',
-                }}
-                fetchDetails={true} // This ensures that you get more detailed information about the selected location
-                styles={{
-                  textInputContainer: styles.locationTextInputContainer,
-                  textInput: styles.locationTextInput
-                }}
-              />
-            </View>
-
-
-            <TouchableOpacity style={styles.closeButton} onPress={() => setToLocationModal(false)}>
               <Text style={styles.applyButtonText}>Close</Text>
             </TouchableOpacity>
           </View>

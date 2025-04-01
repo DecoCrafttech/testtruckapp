@@ -43,6 +43,7 @@ const LoadNeeds = () => {
   const [ton, setTon] = useState("");
   const [truckBodyType, setTruckBodyType] = useState("");
   const [numberOfTyres, setNumberOfTyres] = useState("");
+    const [truckSize, setTruckSize] = useState("");
   const [description, setDescription] = useState("");
 
   // State variables to track input field validity
@@ -54,6 +55,8 @@ const LoadNeeds = () => {
   const [tonValid, setTonValid] = useState(true);
   const [truckBodyTypeValid, setTruckBodyTypeValid] = useState(true);
   const [numberOfTyresValid, setNumberOfTyresValid] = useState(true);
+    const [truckSizeValid, setTruckSizeValid] = useState(true);
+  
 
   const [fromLocationModal, setFromLocationModal] = useState(false)
   const [toLocationModal, setToLocationModal] = useState(false)
@@ -68,7 +71,9 @@ const LoadNeeds = () => {
       material.trim() === "" ||
       ton.trim() === "" ||
       truckBodyType.trim() === "" ||
-      numberOfTyres.trim() === "" 
+      numberOfTyres.trim() === "" ||
+      truckSize.trim() === ""
+
     ) {
       Alert.alert("Please fill in all the fields.");
       setCompanyNameValid(companyName.trim() !== "");
@@ -79,6 +84,7 @@ const LoadNeeds = () => {
       setTonValid(ton.trim() !== "");
       setTruckBodyTypeValid(truckBodyType.trim() !== "");
       setNumberOfTyresValid(numberOfTyres.trim() !== "");
+      setTruckSizeValid(truckSize.trim() === "")
       setSpinner(false)
       return;
     }
@@ -93,12 +99,13 @@ const LoadNeeds = () => {
       tone: ton,
       truck_body_type: truckBodyType,
       no_of_tyres: numberOfTyres,
+      truck_size: truckSize,
       description: description,
       user_id: await AsyncStorage.getItem("user_id"),
     };
 
     try {
-          setSpinner(true);
+      setSpinner(true);
 
       // Make API call using Axios instance (replace with your actual endpoint)
       const response = await axiosInstance.post("/load_details", postData);
@@ -116,6 +123,7 @@ const LoadNeeds = () => {
         setTon("");
         setTruckBodyType("");
         setNumberOfTyres("");
+        setTruckSize("")
         setDescription("");
       } else {
         Alert.alert("Failed to add post. Please try again later.");
@@ -208,7 +216,7 @@ const LoadNeeds = () => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
       <View style={{ flex: 1, backgroundColor: COLORS.white }}>
-        <HeaderWithOutBS title="Add Load"  />
+        <HeaderWithOutBS title="Add Load" />
 
         <ScrollView contentContainerStyle={styles.contentContainer}>
           <View style={styles.textInputContainer}>
@@ -302,6 +310,19 @@ const LoadNeeds = () => {
                 }}
               />
             </View>
+
+            <Text style={styles.label}>Truck size</Text>
+            <TextInput
+              style={[
+                styles.textInput,
+                !truckSizeValid && { borderColor: "red" },
+              ]}
+              placeholder="Example: 10ft"
+              onChangeText={(text) => setTruckSize(text)} // Ensure only Truck Size state updates
+              value={truckSize}
+              keyboardType="numeric"
+            />
+
             <Text style={styles.label}>Description(Optional)</Text>
             <TextInput
               style={[

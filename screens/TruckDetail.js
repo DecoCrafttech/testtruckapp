@@ -395,8 +395,6 @@ const styles = StyleSheet.create({
   cardTitle: {
     color: "#000",
     fontSize: 14,
-    fontStyle: 'italic',
-
   },
   description: {
     fontSize: 17,

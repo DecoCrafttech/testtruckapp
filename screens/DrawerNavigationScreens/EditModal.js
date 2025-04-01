@@ -12,15 +12,30 @@ import { COLORS } from "../../constants";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import RNPickerSelect from 'react-native-picker-select';
 import Constants from 'expo-constants'
-import SectionedMultiSelect from "react-native-sectioned-multi-select";
-import { MaterialIcons as Icon } from '@expo/vector-icons';
 import { statesData } from "../../constants/cityAndState";
 import { MultiSelect } from "react-native-element-dropdown";
+import Checkbox from "expo-checkbox";
 
 
 
 
-const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, editedDetails, setEditedDetails,selectedStates,setSelectedStates }) => {
+const EditModal = ({
+  visible,
+  onClose,
+  onSave,
+  loadDetails,
+  selectedValue,
+  editedDetails,
+  setEditedDetails,
+  selectedStates,
+  setSelectedStates,
+  selectedToLocationModalStates,
+  selectAllToLocationModalStates,
+  handleFilterStates,
+  toggleSelectAll,
+  filterModalToLocationStatesData,
+
+}) => {
 
 
   // google api key
@@ -30,17 +45,6 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
 
   const [fromLocationModal, setFromLocationModal] = useState(false)
   const [toLocationModal, setToLocationModal] = useState(false)
-
-
-  const [editSelectedStates, setEditSelectedStates] = useState([])
-  const [updateSelectedStates, setUpdateSelectedStates] = useState([])
-
-
-
-
-
-
-
 
   useEffect(() => {
 
@@ -185,28 +189,6 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
     };
 
 
-
-    const handleEditStatesChange = async (selectedItemIds) => {
-      // Log previously selected states
-      const prevSelectedStateNames = editSelectedStates.map(id => {
-        const state = statesData.find(state => state.id === id);
-        return state ? state.name : null;
-      }).filter(name => name !== null);
-
-
-      // Update selected states
-      setEditSelectedStates(selectedItemIds);
-
-      // Log currently selected states
-      const selectedStateNames = selectedItemIds.map(id => {
-        const state = statesData.find(state => state.id === id);
-        return state ? state.name : null;
-      }).filter(name => name !== null);
-      setUpdateSelectedStates(selectedStateNames)
-      setEditedDetails({ ...editedDetails, toLocation: selectedStateNames })
-    };
-
-
     const bodyTypeData = [
       { label: 'Open body', value: 'Open body' },
       { label: 'Container', value: 'Container' },
@@ -274,26 +256,6 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
     const yearsData = years
 
 
-    const data = [
-      { label: "Select All", value: "select_all" },
-      ...statesData.map(state => ({ label: state.name, value: state.name }))
-    ];
-
-
-    const handleSelectedStates = (values) => {
-      if (values.includes("select_all")) {
-        // Select all or deselect all logic
-        setSelectedStates(
-          selectedStates.length === statesData.length
-            ? []
-            : statesData.map(item => item.name) // Ensure correct field name
-        );
-      } else {
-        // Remove "select_all" if selected and update selected states
-        setSelectedStates(values.filter(v => v !== "select_all"));
-      }
-    };
-
 
     const renderEditModalFields = (selectedValue) => {
 
@@ -354,7 +316,16 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
                 }
                 placeholder="Ton"
                 keyboardType="number-pad"
-
+              />
+              
+              <TextInput
+                style={styles.input}
+                value={editedDetails.truckSize}
+                onChangeText={(text) =>
+                  setEditedDetails({ ...editedDetails, truckSize: text })
+                }
+                placeholder="Truck size"
+                keyboardType="number-pad"
               />
 
               <View style={{ borderColor: COLORS.gray, borderWidth: 1, width: "100%", padding: 0, borderRadius: 5, marginVertical: 8 }}>
@@ -436,15 +407,8 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
                 onPress={() => setFromLocationModal(true)}
               />
 
-              {/* <TextInput
-                style={styles.input}
 
-                placeholder="To Location"
-                value={editedDetails.toLocation}
-                onPress={() => setToLocationModal(true)}
-              /> */}
-
-              <MultiSelect
+              {/* <MultiSelect
                 style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 15, borderRadius: 5 }}
                 data={data}
                 labelField="label"
@@ -452,8 +416,58 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
                 placeholder="To Location"
                 value={selectedStates}
                 onChange={handleSelectedStates}
-                placeholderStyle={{ fontSize: 14 }} // Adjust placeholder font size
-              />
+                placeholderStyle={{ fontSize: 14 }}
+              /> */}
+
+              <View style={{ marginTop: 5 }}>
+
+                {/* Show dropdown only if not all states are selected */}
+                {!selectAllToLocationModalStates && (
+                  <MultiSelect
+                    style={{
+                      borderColor: "#ccc",
+                      borderWidth: 1,
+                      padding: 15, // Same as TextInput
+                      borderRadius: 5,
+                      marginBottom: 10, // Same as TextInput
+                      fontSize: 16, // Apply fontSize for consistency
+                    }}
+                    data={filterModalToLocationStatesData} // Use actual states data
+                    labelField="label" // Ensure correct field names
+                    valueField="value"
+                    placeholder={selectedToLocationModalStates.length ? `${selectedToLocationModalStates.length} states selected` : "To Location"}
+                    value={selectedToLocationModalStates}
+                    onChange={handleFilterStates}
+                    placeholderStyle={{ fontSize: 14 }}
+                  />
+                )}
+
+                {
+                  selectAllToLocationModalStates &&
+                  <TextInput
+                    style={{
+                      borderColor: "#ccc",
+                      borderWidth: 1,
+                      padding: 10,
+                      borderRadius: 5,
+                      marginBottom: 10,
+                      fontSize: 16
+                    }}
+                    value="To Location (All states selected)"
+                    editable={false}
+                  />
+                }
+
+                {/* Select All Checkbox */}
+                <View >
+                  <TouchableOpacity onPress={toggleSelectAll} style={{ flexDirection: "row", alignItems: "center", marginVertical: 8 }}>
+                    <Checkbox value={selectAllToLocationModalStates} onValueChange={toggleSelectAll} />
+                    <Text style={{ marginLeft: 8 }}>Select All States</Text>
+                  </TouchableOpacity>
+                </View>
+
+              </View>
+
 
               {/* <TextInput
                 style={styles.input}
@@ -578,47 +592,55 @@ const EditModal = ({ visible, onClose, onSave, loadDetails, selectedValue, edite
                 onPress={() => setFromLocationModal(true)}
               />
 
-              {/* <TextInput
-                style={styles.input}
-                placeholder="To Location"
-                value={editedDetails.toLocation}
-                onPress={() => setToLocationModal(true)}
-              /> */}
+              <View style={{ marginBottom: 10 }}>
+                {/* Show dropdown only if not all states are selected */}
+                {!selectAllToLocationModalStates && (
+                  <MultiSelect
+                    style={{
+                      borderColor: "#ccc",
+                      borderWidth: 1,
+                      padding: 15, // Same as TextInput
+                      borderRadius: 5,
+                      marginBottom: 10, // Same as TextInput
+                      fontSize: 16, // Apply fontSize for consistency
+                    }}
+                    data={filterModalToLocationStatesData} // Use actual states data
+                    labelField="label" // Ensure correct field names
+                    valueField="value"
+                    placeholder={selectedToLocationModalStates.length ? `${selectedToLocationModalStates.length} states selected` : "To Location"}
+                    value={selectedToLocationModalStates}
+                    onChange={handleFilterStates}
+                    placeholderStyle={{ fontSize: 14 }}
+                  />
+                )}
 
-              {/* <View style={{ width: "auto", marginBottom: 5 }}>
-                <SectionedMultiSelect
-                  items={statesData}
-                  IconRenderer={Icon}
-                  uniqueKey="id"
-                  searchPlaceholderText="Search state"
-                  selectedText="selected"
-                  selectText="Select"
-                  confirmText="Done"
-                  onSelectedItemsChange={handleEditStatesChange}
-                  selectedItems={editSelectedStates}
-                  styles={{
-                    backdrop: styles.multiSelectBackdrop,
-                    selectToggle: styles.multiSelectBox,
-                    chipContainer: styles.multiSelectChipContainer,
-                    chipText: styles.multiSelectChipText,
-                    selectToggleText: styles.selectToggleText,
-                    selectedItemText: styles.selectedItemText,
-                    selectText: styles.selectText,
-                    button: { backgroundColor: '#CE093A' },
-                  }}
-                />
-              </View> */}
+                {
+                  selectAllToLocationModalStates &&
+                  <TextInput
+                    style={{
+                      borderColor: "#ccc",
+                      borderWidth: 1,
+                      padding: 10,
+                      borderRadius: 5,
+                      marginBottom: 10,
+                      fontSize: 16
+                    }}
+                    value="To Location (All states selected)"
+                    editable={false}
+                  />
+                }
 
-              <MultiSelect
-                style={{ borderColor: COLORS.gray, borderWidth: 1, padding: 15, borderRadius: 5 }}
-                data={data}
-                labelField="label"
-                valueField="value"
-                placeholder="To Location"
-                value={selectedStates}
-                onChange={handleSelectedStates}
-                placeholderStyle={{ fontSize: 14 }} // Adjust placeholder font size
-                />
+                {/* Select All Checkbox */}
+                <View >
+                  <TouchableOpacity onPress={toggleSelectAll} style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
+                    <Checkbox value={selectAllToLocationModalStates} onValueChange={toggleSelectAll} />
+                    <Text style={{ marginLeft: 8 }}>Select All States</Text>
+                  </TouchableOpacity>
+                </View>
+
+              </View>
+
+
 
               <TextInput
                 style={styles.input}

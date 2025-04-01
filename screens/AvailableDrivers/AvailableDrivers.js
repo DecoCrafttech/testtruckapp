@@ -56,9 +56,6 @@ const AvailableDrivers = ({ navigation }) => {
   const [driversData, setDriversData] = useState([]);
   const [isLoadings, setisLoadings] = useState(true);
 
-  const [selectedStates, setSelectedStates] = useState([]);
-  const [filteredStates, setFilteredStates] = useState([])
-  const [userToLocationStatesData, setUserToLocationStatesData] = useState({})
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isAadhaarModal, setIsAadhaarModal] = useState(false)
@@ -94,8 +91,8 @@ const AvailableDrivers = ({ navigation }) => {
   const [loadingKey, setLoadingKey] = useState(null); // Single loading state
 
 
-  const [selectedFilterStates, setSelectedFilterStates] = useState([]);
-  const [selectAllToLocationModalStates, setSelectAllAllToLocationModalStates] = useState(false);
+  const [selectedToLocationModalStates, setSelectedToLocationModalStates] = useState([]);
+  const [selectAllToLocationModalStates, setSelectAllToLocationModalStates] = useState(false);
 
   const [showingData, setShowingData] = useState([]);
   const [showingDataLoading, setShowingDataLoading] = useState(false);
@@ -107,47 +104,25 @@ const AvailableDrivers = ({ navigation }) => {
   const [applyFilterPagination, setApplyFilterPagination] = useState(false)
 
 
-
-
-
-
-
   const filterModalToLocationStatesData = statesData.map(state => (
     { label: state.name, value: state.name })
   );
 
 
-  // const handleFilterStates = (values) => {
-  //   if (values.includes("select_all")) {
-  //     setSelectedFilterStates(selectedFilterStates.length === data.length - 1 ? [] : data.map(item => item.value).filter(v => v !== "select_all"));
-  //   } else {
-  //     setSelectedFilterStates(values.filter(v => v !== "select_all"));
-  //   }
-  // };
-
   const handleFilterStates = (values) => {
-    setSelectedFilterStates(values);
+    setSelectedToLocationModalStates(values);
   };
 
   const toggleSelectAll = () => {
     if (selectAllToLocationModalStates) {
-      setSelectedFilterStates([]); // Deselect all
+      setSelectedToLocationModalStates([]); // Deselect all
     } else {
-      setSelectedFilterStates(statesData.map((item) => item.name)); // Select all states
+      setSelectedToLocationModalStates(statesData.map((item) => item.name)); // Select all states
     }
-    setSelectAllAllToLocationModalStates(!selectAllToLocationModalStates);
+    setSelectAllToLocationModalStates(!selectAllToLocationModalStates);
   };
 
 
-
-  useEffect(() => {
-    setUserToLocationStatesData(
-      userStatesFromProfile.map((state, index) => ({
-        id: index + 1,
-        name: state
-      }))
-    )
-  }, [])
 
 
 
@@ -409,31 +384,6 @@ const AvailableDrivers = ({ navigation }) => {
     setFromLocationModal(false)
   };
 
-  const handleToLocation = (data, details) => {
-    let country = '';
-    let state = '';
-    let city = '';
-
-    if (details.address_components) {
-      details.address_components.forEach(component => {
-        if (component.types.includes('country')) {
-          country = component.long_name;
-        }
-        if (component.types.includes('administrative_area_level_1')) {
-          state = component.long_name;
-        }
-        if (component.types.includes('locality')) {
-          city = component.long_name;
-        }
-      });
-    }
-
-
-    setModalValues((prevState) => ({
-      ...prevState, toLocation: (`${city}, ${state}`)
-    }))
-    setToLocationModal(false)
-  };
 
 
   const applyFilter = async (value, pageNo, limit) => {
@@ -449,7 +399,7 @@ const AvailableDrivers = ({ navigation }) => {
       "vehicle_number": "",
       "company_name": "",
       "from_location": modalValues.fromLocation,
-      "to_location": selectedFilterStates,
+      "to_location": selectedToLocationModalStates,
       "truck_body_type": modalValues.truckBodyType !== "" && modalValues.truckBodyType !== undefined && modalValues.truckBodyType !== null ? modalValues.truckBodyType : "",
       "truck_name": modalValues.truckName !== "" && modalValues.truckName !== undefined && modalValues.truckName !== null ? modalValues.truckName : "",
       "no_of_tyres": modalValues.noOfTyres !== "" && modalValues.noOfTyres !== undefined && modalValues.noOfTyres !== null ? modalValues.noOfTyres : "",
@@ -548,7 +498,6 @@ const AvailableDrivers = ({ navigation }) => {
       truckBodyType: "",
       truckName: "",
     });
-    setSelectedStates([])
 
     setErrorFields({
       driverName: false,
@@ -560,6 +509,9 @@ const AvailableDrivers = ({ navigation }) => {
       truckName: false,
     });
 
+    setSelectedToLocationModalStates([])
+    setSelectAllToLocationModalStates(false)
+
 
     // Reset pagination
     setPage(1);
@@ -569,7 +521,7 @@ const AvailableDrivers = ({ navigation }) => {
       await getAllDrivers("", 1, 10);
 
       // Reset UI state after clearing filters
-      setSelectedFilterStates([]);
+      setSelectedToLocationModalStates([]);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -629,31 +581,10 @@ const AvailableDrivers = ({ navigation }) => {
   ];
 
 
-
-  const handleSelectStates = async (selectedItemIds) => {
-    // Log previously selected states
-    const prevSelectedStateNames = selectedStates.map(id => {
-      const state = userToLocationStatesData.find(state => state.id === id);
-      return state ? state.name : null;
-    }).filter(name => name !== null);
-
-
-    // Update selected states
-    setSelectedStates(selectedItemIds);
-
-    // Log currently selected states
-    const selectedStateNames = selectedItemIds.map(id => {
-      const state = userToLocationStatesData.find(state => state.id === id);
-      return state ? state.name : null;
-    }).filter(name => name !== null);
-    setFilteredStates(selectedStateNames)
-  };
-
   const handleClose = () => {
     setShowOTPInputBox(false)
     setIsAadhaarModal(false)
   }
-
 
 
 
@@ -711,6 +642,8 @@ const AvailableDrivers = ({ navigation }) => {
               applyFilter={applyFilter}
               applyFilterPagination={applyFilterPagination}
               setApplyFilterPagination={setApplyFilterPagination}
+              availableDriversPage="true"
+
             />
             :
             <View style={styles.ActivityIndicatorContainer}>
@@ -768,7 +701,7 @@ const AvailableDrivers = ({ navigation }) => {
                   Filter Options
                 </Text>
                 <AntDesign name="close" size={24} color="black" onPress={() => {
-                  setSelectedFilterStates([])
+                  setSelectedToLocationModalStates([])
                   toggleModal()
                 }} />
               </View>
@@ -814,56 +747,56 @@ const AvailableDrivers = ({ navigation }) => {
                 />
               </View> */}
 
-           
-                         <View style={{ marginBottom: 10 }}>
-           
-                           {/* Show dropdown only if not all states are selected */}
-                           {!selectAllToLocationModalStates && (
-                             <MultiSelect
-                               style={{
-                                 borderColor: "#ccc",
-                                 borderWidth: 1,
-                                 padding: 12,
-                                 borderRadius: 5,
-                                 marginBottom: 10,
-                                 fontSize: 16,
-                                 backgroundColor: "white",
-                               }}
-                               data={filterModalToLocationStatesData} // Use actual states data
-                               labelField="label" // Ensure correct field names
-                               valueField="value"
-                               placeholder={selectedFilterStates.length ? `${selectedFilterStates.length} states selected` : "To Location"}
-                               value={selectedFilterStates}
-                               onChange={handleFilterStates}
-                               placeholderStyle={{ fontSize: 16 }}
-                             />
-                           )}
-           
-                           {
-                             selectAllToLocationModalStates &&
-                             <TextInput
-                               style={{
-                                 borderColor: "#ccc",
-                                 borderWidth: 1,
-                                 padding: 10,
-                                 borderRadius: 5,
-                                 marginBottom: 10,
-                                 fontSize: 16
-                               }}
-                               value="To Location(all states)"
-                               editable={false}
-                             />
-                           }
-           
-                           {/* Select All Checkbox */}
-                           <View >
-                             <TouchableOpacity onPress={toggleSelectAll} style={{ flexDirection: "row", alignItems: "center", marginVertical: 10 }}>
-                               <Checkbox value={selectAllToLocationModalStates} onValueChange={toggleSelectAll} />
-                               <Text style={{ marginLeft: 8 }}>Select All States</Text>
-                             </TouchableOpacity>
-                           </View>
-           
-                         </View>
+
+              <View style={{ marginBottom: 10 }}>
+
+                {/* Show dropdown only if not all states are selected */}
+                {!selectAllToLocationModalStates && (
+                  <MultiSelect
+                    style={{
+                      borderColor: "#ccc",
+                      borderWidth: 1,
+                      padding: 12,
+                      borderRadius: 5,
+                      marginBottom: 10,
+                      fontSize: 16,
+                      backgroundColor: "white",
+                    }}
+                    data={filterModalToLocationStatesData} // Use actual states data
+                    labelField="label" // Ensure correct field names
+                    valueField="value"
+                    placeholder={selectedToLocationModalStates.length ? `${selectedToLocationModalStates.length} states selected` : "To Location"}
+                    value={selectedToLocationModalStates}
+                    onChange={handleFilterStates}
+                    placeholderStyle={{ fontSize: 16 }}
+                  />
+                )}
+
+                {
+                  selectAllToLocationModalStates &&
+                  <TextInput
+                    style={{
+                      borderColor: "#ccc",
+                      borderWidth: 1,
+                      padding: 10,
+                      borderRadius: 5,
+                      marginBottom: 10,
+                      fontSize: 16
+                    }}
+                    value="To Location (All states selected)"
+                    editable={false}
+                  />
+                }
+
+                {/* Select All Checkbox */}
+                <View >
+                  <TouchableOpacity onPress={toggleSelectAll} style={{ flexDirection: "row", alignItems: "center", marginVertical: 10 }}>
+                    <Checkbox value={selectAllToLocationModalStates} onValueChange={toggleSelectAll} />
+                    <Text style={{ marginLeft: 8 }}>Select All States</Text>
+                  </TouchableOpacity>
+                </View>
+
+              </View>
 
 
 
@@ -1067,44 +1000,6 @@ const AvailableDrivers = ({ navigation }) => {
         </View>
       </Modal>
 
-      {/*To Location Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={toLocationModal}
-      >
-        <View style={styles.locationModalContainer}>
-          <View style={styles.locationModalContent}>
-            <Text style={styles.modalTitle}>To Location</Text>
-
-
-            <View style={styles.locationContainer}>
-              <GooglePlacesAutocomplete
-                placeholder="Search location"
-                onPress={handleToLocation}
-                textInputProps={{
-                  autoFocus: true,
-                }}
-                query={{
-                  key: googleApiKey, // Use your hardcoded key if Config is not working
-                  language: 'en',
-                  components: 'country:in',
-                }}
-                fetchDetails={true} // This ensures that you get more detailed information about the selected location
-                styles={{
-                  textInputContainer: styles.locationTextInputContainer,
-                  textInput: styles.locationTextInput
-                }}
-              />
-            </View>
-
-
-            <TouchableOpacity style={styles.closeButton} onPress={() => setToLocationModal(false)}>
-              <Text style={styles.applyButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
 
 
       {/* Send Message Modal */}

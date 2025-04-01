@@ -21,6 +21,8 @@ const TruckCard = ({
   selectedValue,
   updatedTime,
   availableTruckPage,
+  availableLoadsPage,
+  availableDriversPage,
   transportName,
   isAadhaarVerified,
   truckSize,
@@ -30,6 +32,9 @@ const TruckCard = ({
 
 
   const [formattedTime, setFormattedTime] = useState("")
+  const [expanded, setExpanded] = useState(false);
+
+
 
   useEffect(() => {
 
@@ -55,13 +60,9 @@ const TruckCard = ({
   }, [])
 
 
-
-
   return (
     <>
       <View style={styles.card}>
-
-
 
         {
           selectedValue === "user_load_details" ||
@@ -126,21 +127,60 @@ const TruckCard = ({
                         labels[5].text || nameOfTheTransport :
                         companyName
                     }
+                    {
+                      availableLoadsPage === 'true' ?
+                        labels[4]?.text || nameOfTheTransport :
+                        companyName
+                    }
                   </Text>
                 </View>
               </>
           }
 
         </View>
-        <View style={styles.locationContainer}>
+        <View style={[styles.locationContainer, { marginRight: 10 }]}>
           <Icon name="place" size={24} color={COLORS.iconPickup} />
           <Text style={styles.location}>{fromLocation}</Text>
         </View>
-        <View style={styles.locationContainer}>
+        <View style={[styles.locationContainer, { marginRight: 10 }]}>
           <Icon name="place" size={24} color={COLORS.iconDrop} />
-          <Text style={styles.location}>
-            {selectedValue === "user_truck_details" ? toLocation.join(", ") : toLocation}
-          </Text>
+
+          {
+
+            // Available Drivers and Available Truck and Mypost Drivers and Truck  location
+            availableTruckPage === 'true' ||
+              availableDriversPage === 'true' ||
+              selectedValue === "user_truck_details" ||
+              selectedValue === "user_driver_details"
+              ?
+              <TouchableOpacity onPress={() => setExpanded(!expanded)}>
+                <Text style={styles.location}>
+                  {toLocation.length > 3 ? (
+                    expanded ? (
+                      <>
+                        {toLocation.join(", ")}
+                        <Text style={{ fontWeight: "bold", color: "#3194d6" }}> ...Hide</Text>
+                      </>
+                    ) : (
+                      <>
+                        {toLocation.slice(0, 3).join(", ")}
+                        <Text style={{ fontWeight: "bold", color: "#3194d6", }}>{" \n"} ...See more</Text>
+                      </>
+                    )
+                  ) : (
+                    toLocation.join(", ")
+                  )}
+                </Text>
+              </TouchableOpacity>
+              :
+              // Available Loads location
+              <Text style={styles.location}>
+                {toLocation}
+              </Text>
+          }
+
+
+
         </View>
         <View style={styles.locationContainer}>
           <Icon name="calendar-month" size={24} color={COLORS.secondary} />
@@ -158,14 +198,12 @@ const TruckCard = ({
                 :
                 <Icon2 name={label.icon} size={20} color={COLORS.black} />
               }
-
               <Text style={styles.label}>
-                {
-                  index === 5 ? availableTruckPage === 'true' ? `${truckSize} ft` : companyName || truckSize : label.text
-                }
+                {label.text}
               </Text>
             </View>
-          ))}
+          )
+          )}
         </View>
 
         <View>

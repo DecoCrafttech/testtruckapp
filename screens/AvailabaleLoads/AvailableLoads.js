@@ -13,16 +13,12 @@ import Container, { Toast } from 'toastify-react-native';
 import AadhaarOTPVerification from "../AadhaarOTPVerification";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import RNPickerSelect from 'react-native-picker-select';
-import SectionedMultiSelect from "react-native-sectioned-multi-select";
-import { MaterialIcons as Icon } from '@expo/vector-icons';
 import SendMessageModal from "../SendMessageModal";
 import Constants from 'expo-constants'
 import AntDesign from '@expo/vector-icons/AntDesign';
 import CustomButtonWithLoading from "../../components/CustomButtonWithLoading";
-
 import { MultiSelect } from "react-native-element-dropdown";
 import { statesData } from "../../constants/cityAndState";
-import PaginationComponent from "../PaginationComponent";
 import CheckBox from "expo-checkbox";
 
 
@@ -54,6 +50,7 @@ const AvailableLoads = ({ navigation }) => {
     toLocation: "",
     material: "",
     noOfTyres: "",
+    truckSize: "",
     tons: "",
     truckBodyType: ""
   });
@@ -63,30 +60,24 @@ const AvailableLoads = ({ navigation }) => {
     toLocation: false,
     material: false,
     noOfTyres: false,
+    truckSize: false,
     tons: false,
     truckBodyType: false
   });
-  const [isChecked, setIsChecked] = useState(false)
   const [aadhaar, setAadhaar] = useState("")
   const [aadhaarError, setAadhaarError] = useState("")
   const [showOTPInputBox, setShowOTPInputBox] = useState(false)
   const [timeLeft, setTimeLeft] = useState(null);
 
   const [fromLocationModal, setFromLocationModal] = useState(false)
-  const [toLocationModal, setToLocationModal] = useState(false)
-
-  const [selectedStates, setSelectedStates] = useState([]);
-  const [filteredStates, setFilteredStates] = useState([])
-  const [userToLocationStatesData, setUserToLocationStatesData] = useState({})
 
   const [sendMessageModal, setSendMessageModal] = useState(false)
   const [doNotAskModal, setDoNotAskModalModal] = useState(false)
   const [pageLoading, setPageLoading] = useState(false)
   const [loadingKey, setLoadingKey] = useState(null); // Single loading state
 
-  const [selectedFilterStates, setSelectedFilterStates] = useState([]);
-  const [selectAllToLocationModalStates, setSelectAllAllToLocationModalStates] = useState(false);
-
+  const [selectedToLocationModalStates, setSelectedToLocationModalStates] = useState([]);
+  const [selectAllToLocationModalStates, setSelectAllToLocationModalStates] = useState(false);
 
   const [showingData, setShowingData] = useState([]);
   const [showingDataLoading, setShowingDataLoading] = useState(false);
@@ -99,62 +90,26 @@ const AvailableLoads = ({ navigation }) => {
 
 
 
-
   const filterModalToLocationStatesData = statesData.map(state => (
     { label: state.name, value: state.name })
   );
 
 
-  // const handleFilterStates = (values) => {
-  //   if (values.includes("select_all")) {
-  //     // Select all or deselect all logic
-  //     setSelectedFilterStates(
-  //       selectedFilterStates.length === statesData.length
-  //         ? []
-  //         : statesData.map(item => item.name) // Ensure correct field name
-  //     );
-  //   } else {
-  //     // Remove "select_all" if selected and update selected states
-  //     setSelectedFilterStates(values.filter(v => v !== "select_all"));
-  //   }
-  // };
-
   const handleFilterStates = (values) => {
-    setSelectedFilterStates(values);
+    setSelectedToLocationModalStates(values);
   };
 
   const toggleSelectAll = () => {
     if (selectAllToLocationModalStates) {
-      setSelectedFilterStates([]); // Deselect all
+      setSelectedToLocationModalStates([]); // Deselect all
     } else {
-      setSelectedFilterStates(statesData.map((item) => item.name)); // Select all states
+      setSelectedToLocationModalStates(statesData.map((item) => item.name)); // Select all states
     }
-    setSelectAllAllToLocationModalStates(!selectAllToLocationModalStates);
-  };
-
-
-  const handleFindLoadStates = (values) => {
-    if (values.includes("select_all")) {
-      setSelectedStates(
-        selectedStates.length === statesData.length
-          ? [] // Deselect all if already selected
-          : statesData.map(item => item.name) // Ensure correct property name
-      );
-    } else {
-      setSelectedStates(values.filter(v => v !== "select_all"));
-    }
+    setSelectAllToLocationModalStates(!selectAllToLocationModalStates);
   };
 
 
 
-  useEffect(() => {
-    setUserToLocationStatesData(
-      userStatesFromProfile.map((state, index) => ({
-        id: index + 1,
-        name: state
-      }))
-    )
-  }, [])
 
   useEffect(() => {
     if (timeLeft === 0) {
@@ -187,7 +142,8 @@ const AvailableLoads = ({ navigation }) => {
             tons: "",
             truckBodyType: ""
           });
-          setSelectedStates([])
+          setSelectAllToLocationModalStates(false)
+          setSelectedToLocationModalStates([])
           navigation.navigate("LoadNeeds");
         } else {
           setIsAadhaarModal(true)
@@ -247,6 +203,8 @@ const AvailableLoads = ({ navigation }) => {
 
       const response = await axiosInstance.post("/all_load_details", payload);
 
+      console.log("response.data.data",response.data.data.load_data[0])
+
       if (response.data.error_code === 0) {
         const totalCount = response.data.data.all_record_count;
 
@@ -261,11 +219,14 @@ const AvailableLoads = ({ navigation }) => {
           fromLocation: item.from_location,
           toLocation: item.to_location,
           isAadhaarVerified: item.aadhaar_verified,
+          truckSize: item.truck_size,
+
           labels: [
             { icon: "table-view", text: item.material },
             { icon: "attractions", text: `${item.no_of_tyres} wheels` },
             { icon: "monitor-weight", text: `${item.tone} tons` },
             { icon: "local-shipping", text: item.truck_body_type },
+            { icon: "fire-truck", text: `${item.truck_size} ft` },
           ],
           description: item.description,
           onButton1Press: () => Linking.openURL(`tel: ${item.contact_no}`),
@@ -432,55 +393,8 @@ const AvailableLoads = ({ navigation }) => {
     setFromLocationModal(false)
   };
 
-  const handleToLocation = (data, details) => {
-    let country = '';
-    let state = '';
-    let city = '';
-
-    if (details.address_components) {
-      details.address_components.forEach(component => {
-        if (component.types.includes('country')) {
-          country = component.long_name;
-        }
-        if (component.types.includes('administrative_area_level_1')) {
-          state = component.long_name;
-        }
-        if (component.types.includes('locality')) {
-          city = component.long_name;
-        }
-      });
-    }
-
-
-    setModalValues({
-      ...modalValues, toLocation: (`${city}, ${state}`)
-    })
-    setToLocationModal(false)
-  };
-
-
-
-  const handleSelectStates = async (selectedItemIds) => {
-    // Log previously selected states
-    const prevSelectedStateNames = selectedStates.map(id => {
-      const state = userToLocationStatesData.find(state => state.id === id);
-      return state ? state.name : null;
-    }).filter(name => name !== null);
-
-
-    // Update selected states
-    setSelectedStates(selectedItemIds);
-
-    // Log currently selected states
-    const selectedStateNames = selectedItemIds.map(id => {
-      const state = userToLocationStatesData.find(state => state.id === id);
-      return state ? state.name : null;
-    }).filter(name => name !== null);
-    setFilteredStates(selectedStateNames)
-  };
 
   const applyFilter = async (value, pageNo, limit) => {
-
 
     setIsFiltered(true); // Prevent getAllLoads from running
 
@@ -491,13 +405,16 @@ const AvailableLoads = ({ navigation }) => {
       from_location: modalValues.fromLocation,
       material: modalValues.material,
       no_of_tyres: modalValues.noOfTyres || "",
-      to_location: selectedFilterStates,
+      truck_size: modalValues.truckSize || "",
+      to_location: selectedToLocationModalStates,
       tone: modalValues.tons || "",
       truck_body_type: modalValues.truckBodyType || "",
       user_id: "",
       page_no: pageNo, // Reset to first page when filtering
       data_limit: limit
     };
+
+    console.log("filterParams", filterParams)
 
 
     try {
@@ -511,7 +428,7 @@ const AvailableLoads = ({ navigation }) => {
 
       const response = await axiosInstance.post("/user_load_details_filter", filterParams);
 
-
+      console.log("response", response.data)
 
       if (response.data.error_code === 0) {
 
@@ -536,6 +453,7 @@ const AvailableLoads = ({ navigation }) => {
             { icon: "attractions", text: `${item.no_of_tyres} wheels` },
             { icon: "monitor-weight", text: `${item.tone} tons` },
             { icon: "local-shipping", text: item.truck_body_type },
+            { icon: "fire-truck", text: `${item.truck_size} ft` },
           ],
           description: item.description,
           onButton1Press: () => Linking.openURL(`tel:${item.contact_no}`),
@@ -544,6 +462,12 @@ const AvailableLoads = ({ navigation }) => {
             setSendMessageModal(true);
           },
         }));
+
+        if (value === "findLoadsModal") {
+          setModalValues({toLocation : ""})
+          setSelectedToLocationModalStates([])
+          setSelectAllToLocationModalStates(false)
+        }
 
         setShowingData(transformedData);
         setAllLoadData(transformedData);
@@ -563,6 +487,7 @@ const AvailableLoads = ({ navigation }) => {
     }
   };
 
+
   const handleClearFilter = async () => {
     setIsLoading(true);
     setIsFiltered(false); // Exit filtered mode
@@ -577,11 +502,14 @@ const AvailableLoads = ({ navigation }) => {
       toLocation: "",
       material: "",
       noOfTyres: "",
+      truckSize: "",
       tons: "",
       truckBodyType: ""
     });
 
-    setSelectedStates([]);
+    setSelectedToLocationModalStates([])
+    setSelectAllToLocationModalStates(false)
+
 
     setErrorFields({
       companyName: false,
@@ -589,6 +517,7 @@ const AvailableLoads = ({ navigation }) => {
       toLocation: false,
       material: false,
       noOfTyres: false,
+      truckSize: false,
       tons: false,
       truckBodyType: false
     });
@@ -601,7 +530,7 @@ const AvailableLoads = ({ navigation }) => {
       await getAllLoads("", 1, 10);
 
       // Reset UI state after clearing filters
-      setSelectedFilterStates([]);
+      setSelectedToLocationModalStates([]);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -667,14 +596,9 @@ const AvailableLoads = ({ navigation }) => {
   };
 
   const handleFind = () => {
-    applyFilter("initialModal", page, dataLimit)
+    applyFilter("findLoadsModal", page, dataLimit)
     setDoNotAskModalModal(false)
   }
-
-  const handleCheckBox = () => {
-    setIsChecked(!isChecked)
-  }
-
 
 
   return (
@@ -741,6 +665,7 @@ const AvailableLoads = ({ navigation }) => {
                 applyFilter={applyFilter}
                 applyFilterPagination={applyFilterPagination}
                 setApplyFilterPagination={setApplyFilterPagination}
+                availableLoadsPage="true"
               />
 
             </>
@@ -789,7 +714,7 @@ const AvailableLoads = ({ navigation }) => {
                   size={24}
                   color="black"
                   onPress={() => {
-                    setSelectedFilterStates([])
+                    setSelectedToLocationModalStates([])
                     toggleModal()
                   }} />
               </View>
@@ -832,8 +757,8 @@ const AvailableLoads = ({ navigation }) => {
                     data={filterModalToLocationStatesData} // Use actual states data
                     labelField="label" // Ensure correct field names
                     valueField="value"
-                    placeholder={selectedFilterStates.length ? `${selectedFilterStates.length} states selected` : "To Location"}
-                    value={selectedFilterStates}
+                    placeholder={selectedToLocationModalStates.length ? `${selectedToLocationModalStates.length} states selected` : "To Location"}
+                    value={selectedToLocationModalStates}
                     onChange={handleFilterStates}
                     placeholderStyle={{ fontSize: 16 }}
                   />
@@ -850,7 +775,7 @@ const AvailableLoads = ({ navigation }) => {
                       marginBottom: 10,
                       fontSize: 16
                     }}
-                    value="To Location(all states)"
+                    value="To Location (All states selected)"
                     editable={false}
                   />
                 }
@@ -873,7 +798,7 @@ const AvailableLoads = ({ navigation }) => {
                   labelField="label"
                   valueField="value"
                   placeholder="To Location"
-                  value={selectedFilterStates}
+                  value={selectedToLocationModalStates}
                   onChange={handleFilterStates}
                   placeholderStyle={{ fontSize: 16 }}
                 />
@@ -905,6 +830,20 @@ const AvailableLoads = ({ navigation }) => {
                   }}
                 />
               </View>
+
+              <TextInput
+                style={{
+                  borderColor: "#ccc",
+                  borderWidth: 1,
+                  padding: 10,
+                  borderRadius: 5,
+                  marginBottom: 10,
+                }}
+                placeholder="Truck size (example: 10ft)"
+                onChangeText={(text) => handleInputChange('truckSize', text)}
+                value={modalValues.truckSize}
+                keyboardType="numeric"
+              />
 
               <TextInput
                 style={{
@@ -1077,45 +1016,7 @@ const AvailableLoads = ({ navigation }) => {
         </View>
       </Modal>
 
-      {/*To Location Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={toLocationModal}
-      >
-        <View style={styles.locationModalContainer}>
-          <View style={styles.locationModalContent}>
-            <Text style={styles.modalTitle}>To Location</Text>
-
-
-            <View style={styles.locationContainer}>
-              <GooglePlacesAutocomplete
-                placeholder="Search location"
-                onPress={handleToLocation}
-                textInputProps={{
-                  autoFocus: true,
-                }}
-                query={{
-                  key: googleApiKey, // Use your hardcoded key if Config is not working
-                  language: 'en',
-                  components: 'country:in',
-                }}
-                fetchDetails={true} // This ensures that you get more detailed information about the selected location
-                styles={{
-                  textInputContainer: styles.locationTextInputContainer,
-                  textInput: styles.locationTextInput
-                }}
-              />
-            </View>
-
-
-            <TouchableOpacity style={styles.closeButton} onPress={() => setToLocationModal(false)}>
-              <Text style={styles.applyButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
+    
 
 
       {/* Send Message Modal */}
@@ -1202,8 +1103,8 @@ const AvailableLoads = ({ navigation }) => {
                     data={filterModalToLocationStatesData} // Use actual states data
                     labelField="label" // Ensure correct field names
                     valueField="value"
-                    placeholder={selectedFilterStates.length ? `${selectedFilterStates.length} states selected` : "To Location"}
-                    value={selectedFilterStates}
+                    placeholder={selectedToLocationModalStates.length ? `${selectedToLocationModalStates.length} states selected` : "To Location"}
+                    value={selectedToLocationModalStates}
                     onChange={handleFilterStates}
                     placeholderStyle={{ fontSize: 16 }}
                   />
@@ -1220,7 +1121,7 @@ const AvailableLoads = ({ navigation }) => {
                       marginBottom: 10,
                       fontSize: 16
                     }}
-                    value="To Location(all states)"
+                    value="To Location (All states selected)"
                     editable={false}
                   />
                 }

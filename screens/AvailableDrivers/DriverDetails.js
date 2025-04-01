@@ -32,6 +32,7 @@ const DriverDetails = ({
   applyFilter,
   applyFilterPagination,
   setApplyFilterPagination,
+  availableDriversPage
 }) => {
 
 
@@ -79,7 +80,7 @@ const DriverDetails = ({
              applyFilter={applyFilter}
              applyFilterPagination={applyFilterPagination}
              setApplyFilterPagination={setApplyFilterPagination}
-
+             availableDriversPage={availableDriversPage}
           />
         </>
 

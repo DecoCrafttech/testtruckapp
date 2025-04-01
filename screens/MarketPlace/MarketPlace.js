@@ -27,9 +27,6 @@ import Constants from 'expo-constants'
 import { statesData } from "../../constants/cityAndState";
 import { AntDesign, MaterialIcons as Icon } from '@expo/vector-icons';
 import CustomButtonWithLoading from "../../components/CustomButtonWithLoading";
-
-
-
 import { MultiSelect } from "react-native-element-dropdown";
 
 
