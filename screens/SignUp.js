@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Image, Alert } from 'react-native'
+import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Image, Alert, Linking } from 'react-native'
 import React, { useContext, useState, useEffect } from 'react'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons';
@@ -357,7 +357,7 @@ const SignUp = () => {
                                 <View>
                                     <Text style={styles.label}>Phone Number</Text>
                                 </View>
-                                <View style={styles.mobileNumberInputBox}>
+                                <View style={styles.categoryInputBox}>
                                     <TextInput
                                         placeholder='+91'
                                         placeholderTextColor='grey'
@@ -399,7 +399,7 @@ const SignUp = () => {
                                 <View>
                                     <Text style={styles.label}>Category</Text>
                                 </View>
-                                <View style={styles.mobileNumberInputBox}>
+                                <View style={styles.categoryInputBox}>
                                     <Dropdown
                                         style={styles.dropdown}
                                         placeholderStyle={styles.placeholderStyle}
@@ -506,7 +506,17 @@ const SignUp = () => {
                                 <Text
                                     onPress={handleCheckBox}
                                     style={{ paddingLeft: 12 }}
-                                >I agree to the terms and conditions</Text>
+                                >I agree to the
+                                    <Text
+                                        style={{ color: '#4285F4', fontWeight: 'bold', textDecorationLine: 'underline' }}
+                                        onPress={() => Linking.openURL('https://truckmessage.com/privacy-policy-2/')}
+                                    > Privacy policy</Text>{" "}
+                                    and
+                                    <Text
+                                        style={{ color: '#4285F4', fontWeight: 'bold', textDecorationLine: 'underline' }}
+                                        onPress={() => Linking.openURL('https://truckmessage.com/terms-and-conditions/')}
+                                    > T & C</Text>
+                                </Text>
                             </View>
 
                             <CustomButton title="Register" onPress={handleRegisterClick} />
@@ -587,7 +597,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingLeft: 15,
     },
-    mobileNumberInputBox: {
+    categoryInputBox: {
         width: "100%",
         height: 48,
         backgroundColor: "#fff",

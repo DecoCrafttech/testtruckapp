@@ -247,7 +247,7 @@ const DrawerNavigation = () => {
           listeners={{
             drawerItemPress: (e) => {
               e.preventDefault();
-              Linking.openURL('https://blog.truckmessage.com/') // Open the external URL
+              Linking.openURL('https://truckmessage.com/blogs/') // Open the external URL
                 .catch((err) => console.error('Failed to open URL:', err));
             }
           }}
@@ -301,7 +301,7 @@ const DrawerNavigation = () => {
           listeners={{
             drawerItemPress: (e) => {
               e.preventDefault();
-              Linking.openURL('https://webapp.truckmessage.com/terms-conditions/') // Open the external URL
+              Linking.openURL('https://truckmessage.com/terms-and-conditions/') // Open the external URL
                 .catch((err) => console.error('Failed to open URL:', err));
             }
           }}

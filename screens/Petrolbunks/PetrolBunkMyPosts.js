@@ -313,7 +313,7 @@ const PetrolBunkMyPosts = ({ allData, fetchData }) => {
     return (
         <View style={styles.container}>
             <FlatList
-                data={[...allData].reverse()} // Create a new array to avoid mutating state
+                data={[...allData]} // Create a new array to avoid mutating state
                 renderItem={renderItem}
                 keyExtractor={(item, index) => item.id ? item.id.toString() : index.toString()}
             />

@@ -191,7 +191,7 @@ const VehicleProfileDetails = () => {
                   </View>
                   :
                   <>
-                    {users.reverse().map((user, index) => (
+                    {users.map((user, index) => (
                       <View key={index} style={styles.userCard}>
                         <View style={[styles.userInfo]}>
                           <Text style={styles.vehicleNumber}>{user.vehicle_no}</Text>

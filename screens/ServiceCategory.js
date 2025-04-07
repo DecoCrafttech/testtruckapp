@@ -23,9 +23,10 @@ export default function ServiceCategory() {
 
   const images = [
     { id: '1', uri: `${cdnLink}/load (1).png`, screen: "AvailableLoads" },
-    { id: '2', uri: `${cdnLink}/truck.png`, screen: "AvailableTrucks" },
-    { id: '3', uri: `${cdnLink}/driver.png`, screen: "AvailableDrivers" },
-    { id: '4', uri: `${cdnLink}/buy&sell.png`, screen: "MarketPlace" },
+    { id: '2', uri: `${cdnLink}/Prime_Petrol_Bunk_App_Banner.png`, screen: "PetrolBunk" },
+    { id: '3', uri: `${cdnLink}/truck.png`, screen: "AvailableTrucks" },
+    { id: '4', uri: `${cdnLink}/driver.png`, screen: "AvailableDrivers" },
+    { id: '5', uri: `${cdnLink}/buy&sell.png`, screen: "MarketPlace" },
   ];
 
   const data = [

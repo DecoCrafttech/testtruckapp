@@ -224,11 +224,13 @@ const AvailableTruck = ({ navigation }) => {
 
           labels: [
             { icon: "weight", text: `${item.tone} tons` },
+            { icon: "layers", text: item.vehicle_number },
             { icon: "local-shipping", text: item.truck_body_type },
             { icon: "attractions", text: `${item.no_of_tyres} wheels` },
             { icon: "directions-bus", text: item.truck_brand_name },
             { icon: "table-view", text: item.company_name },
             { icon: "fire-truck", text: item.truckSize },
+
           ],
           description: item.description,
           onButton1Press: () => Linking.openURL(`tel:${item.contact_no}`),
@@ -469,6 +471,7 @@ console.log("truck filterParams",filterParams)
 
           labels: [
             { icon: "weight", text: `${item.tone} tons` },
+            { icon: "layers", text: item.vehicle_number },
             { icon: "local-shipping", text: item.truck_body_type },
             { icon: "attractions", text: `${item.no_of_tyres} wheels` },
             { icon: "directions-bus", text: item.truck_brand_name },
@@ -602,12 +605,11 @@ console.log("truck filterParams",filterParams)
   ];
 
   const tonsData = [
-    { label: "1 Ton - 2.5 Ton", value: "1 Ton - 2.5 Ton" },
-    { label: "2.5 Ton - 5 Ton", value: "2.5 Ton - 5 Ton" },
-    { label: "5 Ton - 10 Ton", value: "5 Ton - 10 Ton" },
-    { label: "10 Ton - 20 Ton", value: "10 Ton - 20 Ton" },
-    { label: "20 Ton - 40 Ton", value: "20 Ton - 40 Ton" },
-    { label: "Above 40 Ton", value: "Above 40 Ton" },
+    { label: "1 Ton - 5 Ton", value: "1 Ton - 5 Ton" },
+    { label: "6 Ton - 10 Ton", value: "6 Ton - 10 Ton" },
+    { label: "11 Ton - 15 Ton", value: "11 Ton - 15 Ton" },
+    { label: "16 Ton - 20 Ton", value: "16 Ton - 20 Ton" },
+    { label: "Above 20 Ton", value: "Above 20 Ton" },
   ]
 
 

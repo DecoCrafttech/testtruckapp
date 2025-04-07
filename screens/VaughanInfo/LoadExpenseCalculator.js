@@ -80,34 +80,31 @@ const LoadExpenseCalculator = ({ route }) => {
 
   useEffect(() => {
 
-    const getInitialBalance = async () => {
-      try {
-        const getCashFlowParamter = {
-          load_trip_id: item.load_trip_id,
-        };
-        const response = await axiosInstance.post(
-          "/initial_cash_in_out",
-          getCashFlowParamter
-        );
-
-        if (response.data.error_code === 0) {
-          setInitialCash({
-            cashIn: response.data.data[0].available_cash,
-            cashOut: response.data.data[0].spend_amount
-          })
-          setLoadPrice(response.data.data[0].load_price)
-        }
-      } catch (error) {
-        console.log(error)
-      }
-    }
-
     getInitialBalance();
-
-
-
     getFlowCashTrip();
   }, [updateCashFlowStatus]);
+
+  const getInitialBalance = async () => {
+    try {
+      const getCashFlowParamter = {
+        load_trip_id: item.load_trip_id,
+      };
+      const response = await axiosInstance.post(
+        "/initial_cash_in_out",
+        getCashFlowParamter
+      );
+
+      if (response.data.error_code === 0) {
+        setInitialCash({
+          cashIn: response.data.data[0].available_cash,
+          cashOut: response.data.data[0].spend_amount
+        })
+        setLoadPrice(response.data.data[0].load_price)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   const getFlowCashTrip = async () => {
     try {
@@ -168,6 +165,7 @@ const LoadExpenseCalculator = ({ route }) => {
       if (response.data.error_code === 0) {
         setEditModalVisible(false)
         getFlowCashTrip()
+        setUpdateCashFlowStatus(!updateCashFlowStatus)
       } else {
         console.log(response.data.message)
       }
@@ -197,6 +195,8 @@ const LoadExpenseCalculator = ({ route }) => {
 
               if (response.data.error_code === 0) {
                 getFlowCashTrip();
+                setUpdateCashFlowStatus(!updateCashFlowStatus)
+
               } else {
                 console.log(response.data.message);
               }

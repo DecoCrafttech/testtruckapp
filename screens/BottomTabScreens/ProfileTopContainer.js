@@ -95,6 +95,8 @@ const ProfileTopContainer = () => {
         { label: 'Load booking agent', value: 'load_booking_agent' },
         { label: 'Driver', value: 'driver' },
         { label: 'Lorry Buy & Sell dealers / Owners', value: 'Lorry Buy &Sell dealers / Owners' },
+        { label: 'Petrol bunk Owner', value: 'Petrol bunk Owner' },
+
     ]
 
 

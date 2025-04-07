@@ -82,11 +82,11 @@ const LoadDetails = ({
             dataLimit={dataLimit}
             setDataLimit={setDataLimit}
             getAllData={getAllData}
-            showingData={showingData?.reverse()}
+            showingData={showingData}
             setShowingData={setShowingData}
             showingDataLoading={showingDataLoading}
             setShowingDataLoading={setShowingDataLoading}
-            data1={filteredTrucks?.reverse()} handlePagination={handlePagination} totalRecords={totalRecords}
+            data1={filteredTrucks} handlePagination={handlePagination} totalRecords={totalRecords}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             isFiltered={isFiltered}
@@ -103,7 +103,7 @@ const LoadDetails = ({
 
       {isMyPost === true &&
           filteredTrucks.length > 0 ? (
-            filteredTrucks.reverse().map((truck, index) => (
+            filteredTrucks.map((truck, index) => (
               <View key={index}
               >
                 <TruckCard

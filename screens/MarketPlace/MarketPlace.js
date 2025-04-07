@@ -327,19 +327,19 @@ const MarketPlace = ({ navigation }) => {
       "kms_driven": modalValues.kmsDriven !== "" && modalValues.kmsDriven !== undefined && modalValues.kmsDriven !== null ? modalValues.kmsDriven : "",
       "brand": modalValues.brand !== "" && modalValues.brand !== undefined && modalValues.brand !== null ? [`${modalValues.brand}`] : [],
       "model": modalValues.model !== "" && modalValues.model !== undefined && modalValues.model !== null ? `${modalValues.model}` : "",
-      "location": modalValues.location !== "" && modalValues.location !== undefined && modalValues.location !== null ? modalValues.location : "",
+      "location": modalValues.location !== "" && modalValues.location !== undefined && modalValues.location !== null ? [`${modalValues.location}`] : "",
       "price": modalValues.price !== "" && modalValues.price !== undefined && modalValues.price !== null ? modalValues.price : "",
-      "tonnage": modalValues.ton !== "" && modalValues.ton !== undefined && modalValues.ton !== null ? modalValues.ton : "",
+      "tonnage": modalValues.ton !== "" && modalValues.ton !== undefined && modalValues.ton !== null ?  modalValues.ton : "",
       "truck_body_type": modalValues.truckBodyType !== "" && modalValues.truckBodyType !== undefined && modalValues.truckBodyType !== null ? modalValues.truckBodyType : "",
       "no_of_tyres": modalValues.noOfTyres !== "" && modalValues.noOfTyres !== undefined && modalValues.noOfTyres !== null ? modalValues.noOfTyres : "",
-      "statelist": statelist,
+      "statelist": modalValues.location !== "" && modalValues.location !== undefined && modalValues.location !== null ? [`${modalValues.location}`] : "",
       "company_name": "",
       "search_val": "",
       page_no: pageNo, // Reset to first page when filtering
       data_limit: limit
-
     }
 
+    console.log("filterParams",filterParams)
 
 
     try {
@@ -364,6 +364,7 @@ const MarketPlace = ({ navigation }) => {
         setApplyFilterPagination(true)
         const totalCount = response.data.data.all_record_count || 0;
 
+        console.log("totalCount",totalCount)
         setTotalRecords(Number(totalCount)); // ✅ Update totalRecords correctly
 
         setAllBuyAndSellData(response.data.data.result_data)
@@ -451,7 +452,7 @@ const MarketPlace = ({ navigation }) => {
 
     try {
       // Fetch default loads
-      await getAllLoads("", 1, 10);
+      await getAllBuyAndSellData("", 1, 10);
 
       // Reset UI state after clearing filters
       setSelectedFilterStates([]);
@@ -558,12 +559,11 @@ const MarketPlace = ({ navigation }) => {
   ]
 
   const tonsData = [
-    { label: "1 Ton - 2.5 Ton", value: "1 Ton - 2.5 Ton" },
-    { label: "2.5 Ton - 5 Ton", value: "2.5 Ton - 5 Ton" },
-    { label: "5 Ton - 10 Ton", value: "5 Ton - 10 Ton" },
-    { label: "10 Ton - 20 Ton", value: "10 Ton - 20 Ton" },
-    { label: "20 Ton - 40 Ton", value: "20 Ton - 40 Ton" },
-    { label: "Above 40 Ton", value: "Above 40 Ton" },
+    { label: "1 Ton - 5 Ton", value: "1 Ton - 5 Ton" },
+    { label: "6 Ton - 10 Ton", value: "6 Ton - 10 Ton" },
+    { label: "11 Ton - 15 Ton", value: "11 Ton - 15 Ton" },
+    { label: "16 Ton - 20 Ton", value: "16 Ton - 20 Ton" },
+    { label: "Above 20 Ton", value: "Above 20 Ton" },
   ]
 
 
@@ -627,7 +627,7 @@ const MarketPlace = ({ navigation }) => {
             <MarketPlaceProducts
               navigation={navigation}
               onPressCategory={onPressCategory}
-              filteredProducts={showingData?.reverse()}
+              filteredProducts={showingData}
               loading={loading}
               isMyPost={false}
               getAllData={getAllBuyAndSellData}

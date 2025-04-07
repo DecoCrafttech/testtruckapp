@@ -279,6 +279,8 @@ const EditModal = ({
                   setEditedDetails({ ...editedDetails, contactNumber: text })
                 }
                 placeholder="Contact Number"
+                keyboardType="number-pad"
+                maxLength={10}
               />
 
               <TextInput
@@ -396,7 +398,7 @@ const EditModal = ({
                 }
                 placeholder="Contact Number"
                 keyboardType="number-pad"
-
+                maxLength={10}
               />
 
               <TextInput
@@ -548,7 +550,7 @@ const EditModal = ({
                 }
                 placeholder="Contact Number"
                 keyboardType="number-pad"
-
+                maxLength={10}
               />
 
               <TextInput
@@ -641,12 +643,13 @@ const EditModal = ({
               </View>
 
 
-
               <TextInput
                 style={styles.input}
                 placeholder="Truck size"
                 value={editedDetails.truckSize}
-                onPress={() => setToLocationModal(true)}
+                onChangeText={(text) =>
+                  setEditedDetails({ ...editedDetails, truckSize: text })
+                }
               />
 
 
@@ -707,6 +710,8 @@ const EditModal = ({
                   setEditedDetails({ ...editedDetails, contactNumber: text })
                 }
                 placeholder="Contact Number"
+                keyboardType="number-pad"
+                maxLength={10}
               />
 
               <TextInput

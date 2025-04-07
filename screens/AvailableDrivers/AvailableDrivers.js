@@ -221,7 +221,7 @@ const AvailableDrivers = ({ navigation }) => {
           toLocation: item.to_location,
           isAadhaarVerified: item.aadhaar_verified,
           labels: [
-            { icon: "directions-bus", text: item.vehicle_number },
+            { icon: "layers", text: item.vehicle_number },
             { icon: "attractions", text: `${item.no_of_tyres} wheels` },
             { icon: "local-shipping", text: item.truck_body_type },
             { icon: "person", text: item.driver_name },
@@ -442,7 +442,7 @@ const AvailableDrivers = ({ navigation }) => {
           toLocation: item.to_location,
           isAadhaarVerified: item.aadhaar_verified,
           labels: [
-            { icon: "directions-bus", text: item.vehicle_number },
+            { icon: "layers", text: item.vehicle_number },
             { icon: "attractions", text: `${item.no_of_tyres} wheels` },
             { icon: "local-shipping", text: item.truck_body_type },
             { icon: "person", text: item.driver_name },

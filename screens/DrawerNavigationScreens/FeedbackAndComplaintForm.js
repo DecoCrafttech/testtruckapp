@@ -21,6 +21,8 @@ import RNPickerSelect from 'react-native-picker-select';
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import Constants from 'expo-constants'
 import { BackHandler } from "react-native";
+import { Dropdown } from 'react-native-element-dropdown';
+
 
 
 const FeedbackAndComplaintForm = () => {
@@ -60,6 +62,16 @@ const FeedbackAndComplaintForm = () => {
     { label: "Feedback", value: "Feedback" },
   ]
 
+  // Dropdown data
+  const categoryData = [
+    { label: 'Lorry owners', category: 'Lorry owners' },
+    { label: 'Logistics', category: 'Logistics' },
+    { label: 'Lorry contractors', category: 'Lorry contractors' },
+    { label: 'Load booking agent', category: 'Load booking agent' },
+    { label: 'Driver', category: 'Driver' },
+    { label: 'Lorry Buy & Sell dealers / Owners', category: 'Lorry Buy &Sell dealers / Owners' },
+    { label: 'Petrol bunk Owner', category: 'Petrol bunk Owner' },
+  ];
 
   useFocusEffect(
     useCallback(() => {
@@ -168,17 +180,31 @@ const FeedbackAndComplaintForm = () => {
               value={customerName}
             />
 
+            <View style={styles.inputField}>
+              <View>
+                <Text style={styles.label}>Category</Text>
+              </View>
+              <View style={styles.categoryInputBox}>
+                <Dropdown
+                  style={styles.dropdown}
+                  placeholderStyle={styles.placeholderStyle}
+                  selectedTextStyle={styles.selectedTextStyle}
+                  inputSearchStyle={styles.inputSearchStyle}
+                  iconStyle={styles.iconStyle}
+                  itemTextStyle={styles.itemTextStyle}
+                  itemContainerStyle={styles.itemContainerStyle}
+                  data={categoryData}
+                  maxHeight={300}
+                  labelField="label"
+                  valueField="category"
+                  placeholder="Select category"
+                  searchPlaceholder="Search..."
+                  value={category}
+                  onChange={item => setCategory(item.category)}
+                />
+              </View>
+            </View>
 
-            <Text style={styles.label}>Category</Text>
-            <TextInput
-              style={[
-                styles.textInput,
-                !categoryValid && { borderColor: "red" },
-              ]}
-              placeholder="Enter category"
-              onChangeText={setCategory}
-              value={category}
-            />
 
             <Text style={styles.label}>Contact Number</Text>
             <TextInput
@@ -354,6 +380,33 @@ const styles = StyleSheet.create({
     color: "white",
     textAlign: "center",
     fontWeight: "bold",
+  },
+  categoryInputBox: {
+    width: "100%",
+    height: 55,
+    backgroundColor: "#fff",
+    borderRadius: 5,
+    borderColor: 'grey',
+    borderWidth: 1,
+    flexDirection: 'row',
+    fontSize: 14,
+    marginBottom:10
+  },
+  placeholderStyle: {
+    color: '#aaa',
+    fontSize: 14,
+  },
+  itemTextStyle: {
+    fontSize: 14,
+  },
+  selectedTextStyle: {
+    fontSize: 14,
+  },
+  dropdown: {
+    fontSize: 14,
+    width: "100%",
+    borderBottomColor: 'gray',
+    paddingLeft: 12,
   },
 });
 

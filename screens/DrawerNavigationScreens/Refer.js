@@ -227,6 +227,9 @@ const Refer = () => {
 
         if (response.data.error_code === 0) {
           fetchData(selectedValue);
+          // setSelectedToLocationModalStates([])
+          // setSelectAllToLocationModalStates(false)
+          
         }
       } catch (error) {
         console.error("Error:", error);
@@ -376,10 +379,10 @@ const Refer = () => {
               labels: [
                 { icon: "table-view", text: item.material },
                 { icon: "attractions", text: `${item.no_of_tyres} wheels` },
-                { icon: "monitor-weight", text: `${item.tone} tons` },
+                { icon: "weight", text: `${item.tone} tons` },
                 { icon: "local-shipping", text: item.truck_body_type },
                 { icon: "fire-truck",text: `${item.truck_size} ft` },
-                { icon: "person", text: item.profile_name },
+                // { icon: "person", text: item.profile_name },
               ],
               description: item.description,
               onButton1Press: () => handleEdit(item),
@@ -424,11 +427,11 @@ const Refer = () => {
               transportName: item.name_of_the_transport,
               truckSize: item.truck_size,
               labels: [
-                { icon: "line-weight", text: `${item.tone} tons` },
+                { icon: "weight", text: `${item.tone} tons` },
                 { icon: "local-shipping", text: item.truck_body_type },
                 { icon: "attractions", text: `${item.no_of_tyres} wheels` },
                 { icon: "directions-bus", text: item.truck_brand_name },
-                { icon: "fire-truck", text: item.vehicle_number },
+                { icon: "layers", text: item.vehicle_number },
                 { icon: "table-view", text: `${item.truck_size} ft` },
               ],
               description: item.description,
@@ -440,10 +443,10 @@ const Refer = () => {
             break;
 
           case "user_buy_sell_details":
-            setAllLoadData(response.data.data.reverse());
+            setAllLoadData(response.data.data);
             break;
           case "petrol_bunks":
-            setAllLoadData(response.data.data.reverse());
+            setAllLoadData(response.data.data);
             break;
           default:
             break;

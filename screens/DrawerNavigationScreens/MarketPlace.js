@@ -332,7 +332,7 @@ const MarketPlace = ({ allData, fetchData }) => {
       });
 
       // Append new images (newImages) to FormData
-      newImages.forEach((image, index) => {
+     newImages.forEach((image, index) => {
         const newIndex = editedData.images.length + index + 1; // Avoid duplicate indexes
         formData.append(`truck_image${newIndex}`, {
           uri: image.uri,
@@ -357,11 +357,19 @@ const MarketPlace = ({ allData, fetchData }) => {
       formData.append("truck_body_type", editedData.bodyType)
       formData.append("no_of_tyres", editedData.noOfTyres)
 
+
+      console.log("FormData content:", formData._parts);
+
+      console.log("newImages",newImages.length)
+
       const response = await axiosInstance.post("/truck_buy_sell", formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       })
+
+
+      console.log("response",response.data)
 
       setSaveChangesLoading(false)
 
@@ -392,6 +400,10 @@ const MarketPlace = ({ allData, fetchData }) => {
             <View style={styles.tableRow}>
               <Text style={styles.tableLabel}>Model:</Text>
               <Text style={styles.tableValue}>{item.model}</Text>
+            </View>
+            <View style={styles.tableRow}>
+              <Text style={styles.tableLabel}>Price:</Text>
+              <Text style={styles.tableValue}>{item.price}</Text>
             </View>
             <View style={styles.tableRow}>
               <Text style={styles.tableLabel}>Body type:</Text>
@@ -446,14 +458,12 @@ const MarketPlace = ({ allData, fetchData }) => {
   );
 
 
-
   const tonsData = [
-    { label: "1 Ton - 2.5 Ton", value: "1 Ton - 2.5 Ton" },
-    { label: "2.5 Ton - 5 Ton", value: "2.5 Ton - 5 Ton" },
-    { label: "5 Ton - 10 Ton", value: "5 Ton - 10 Ton" },
-    { label: "10 Ton - 20 Ton", value: "10 Ton - 20 Ton" },
-    { label: "20 Ton - 40 Ton", value: "20 Ton - 40 Ton" },
-    { label: "Above 40 ton", value: "Above 40 ton" },
+    { label: "1 Ton - 5 Ton", value: "1 Ton - 5 Ton" },
+    { label: "6 Ton - 10 Ton", value: "6 Ton - 10 Ton" },
+    { label: "11 Ton - 15 Ton", value: "11 Ton - 15 Ton" },
+    { label: "16 Ton - 20 Ton", value: "16 Ton - 20 Ton" },
+    { label: "Above 20 Ton", value: "Above 20 Ton" },
   ]
 
 
@@ -536,6 +546,13 @@ const MarketPlace = ({ allData, fetchData }) => {
                 />
               </View>
 
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your price"
+                value={editedData.price}
+                onChangeText={(text) => setEditedData({ ...editedData, price: text })}
+              />
+
               <View style={{ borderColor: "#ccc", borderWidth: 1, padding: 0, borderRadius: 5, marginBottom: 10 }}>
                 <RNPickerSelect
                   onValueChange={(value) => setEditedData({ ...editedData, bodyType: value })}
@@ -586,12 +603,12 @@ const MarketPlace = ({ allData, fetchData }) => {
                       <View key={index} style={styles.selectedImageDeleteBtnContainer}>
                         <Image
                           source={{ uri: `${image}` }}
-                          style={styles.image}
-                          width={40}
-                          height={40}
+                          style={[styles.image,{borderColor : '#ddd',borderWidth:1,borderRadius:5}]}
+                          width={80}
+                          height={80}
                         />
                         <TouchableOpacity style={styles.selectedImageDeleteBtn} onPress={() => handleDeleteOldImage(image)}>
-                          <AntDesign name="close" size={15} color="white" />
+                          <AntDesign name="close" size={12} color="white" />
                         </TouchableOpacity>
                       </View>
                     )
@@ -938,7 +955,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     padding: 2,
     top: 0,
-    right: 10,
+    right: 0,
     backgroundColor: 'red',
     borderRadius: 5,
     borderTopRightRadius: 0

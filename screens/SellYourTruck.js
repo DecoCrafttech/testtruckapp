@@ -296,7 +296,7 @@ const SellYourTruck = () => {
                 styles.textInput,
                 !ownerNameValid && { borderColor: "red" },
               ]}
-              placeholder="Name of the Dealer"
+              placeholder="Name of the owner"
               onChangeText={setOwnerName}
               value={ownerName}
             />

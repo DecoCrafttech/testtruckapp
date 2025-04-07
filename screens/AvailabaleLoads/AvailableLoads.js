@@ -203,7 +203,7 @@ const AvailableLoads = ({ navigation }) => {
 
       const response = await axiosInstance.post("/all_load_details", payload);
 
-      console.log("response.data.data",response.data.data.load_data[0])
+      console.log("response.data.data", response.data.data.load_data[0])
 
       if (response.data.error_code === 0) {
         const totalCount = response.data.data.all_record_count;
@@ -224,7 +224,7 @@ const AvailableLoads = ({ navigation }) => {
           labels: [
             { icon: "table-view", text: item.material },
             { icon: "attractions", text: `${item.no_of_tyres} wheels` },
-            { icon: "monitor-weight", text: `${item.tone} tons` },
+            { icon: "weight", text: `${item.tone} tons` },
             { icon: "local-shipping", text: item.truck_body_type },
             { icon: "fire-truck", text: `${item.truck_size} ft` },
           ],
@@ -451,7 +451,7 @@ const AvailableLoads = ({ navigation }) => {
           labels: [
             { icon: "table-view", text: item.material },
             { icon: "attractions", text: `${item.no_of_tyres} wheels` },
-            { icon: "monitor-weight", text: `${item.tone} tons` },
+            { icon: "weight", text: `${item.tone} tons` },
             { icon: "local-shipping", text: item.truck_body_type },
             { icon: "fire-truck", text: `${item.truck_size} ft` },
           ],
@@ -464,7 +464,7 @@ const AvailableLoads = ({ navigation }) => {
         }));
 
         if (value === "findLoadsModal") {
-          setModalValues({toLocation : ""})
+          setModalValues({ toLocation: "" })
           setSelectedToLocationModalStates([])
           setSelectAllToLocationModalStates(false)
         }
@@ -577,12 +577,11 @@ const AvailableLoads = ({ navigation }) => {
   ];
 
   const tonsData = [
-    { label: "1 Ton - 2.5 Ton", value: "1 Ton - 2.5 Ton" },
-    { label: "2.5 Ton - 5 Ton", value: "2.5 Ton - 5 Ton" },
-    { label: "5 Ton - 10 Ton", value: "5 Ton - 10 Ton" },
-    { label: "10 Ton - 20 Ton", value: "10 Ton - 20 Ton" },
-    { label: "20 Ton - 40 Ton", value: "20 Ton - 40 Ton" },
-    { label: "Above 40 Ton", value: "Above 40 Ton" },
+    { label: "1 Ton - 5 Ton", value: "1 Ton - 5 Ton" },
+    { label: "6 Ton - 10 Ton", value: "6 Ton - 10 Ton" },
+    { label: "11 Ton - 15 Ton", value: "11 Ton - 15 Ton" },
+    { label: "16 Ton - 20 Ton", value: "16 Ton - 20 Ton" },
+    { label: "Above 20 Ton", value: "Above 20 Ton" },
   ]
 
 
@@ -1016,7 +1015,7 @@ const AvailableLoads = ({ navigation }) => {
         </View>
       </Modal>
 
-    
+
 
 
       {/* Send Message Modal */}

@@ -67,7 +67,7 @@ const ExpenseHistory = ({ cashFlowExpenseHistory, handleEdit, handleDelete }) =>
       </View>
 
       {filteredData.length === 0 ? (
-        <View style={[styles.centeredView,{flex:1,justifyContent:'center',alignItems:'center'}]}>
+        <View style={[styles.centeredView, { flex: 1, justifyContent: 'center', alignItems: 'center' }]}>
           <Text style={styles.centeredText}>No Transaction History found</Text>
         </View>
       ) : (
@@ -126,6 +126,13 @@ const ExpenseHistory = ({ cashFlowExpenseHistory, handleEdit, handleDelete }) =>
                   keyboardType="numeric"
                   value={filterAmount}
                   onChangeText={setFilterAmount}
+                />
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter Description"
+                  value={filterDescription}
+                  onChangeText={setFilterDescription}
                 />
 
                 <TouchableOpacity onPress={() => setShowFromDatePicker(true)} style={styles.datePicker}>
@@ -188,17 +195,17 @@ const ExpenseHistory = ({ cashFlowExpenseHistory, handleEdit, handleDelete }) =>
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  root: { backgroundColor: "#ffffff",  paddingHorizontal: 15 },
-  header: { flexDirection: "row", justifyContent: "space-between", borderBottomColor:'#000',borderBottomWidth:0.5,paddingHorizontal: 25,paddingVertical:15,paddingTop:20 },
+  root: { backgroundColor: "#ffffff", paddingHorizontal: 15 },
+  header: { flexDirection: "row", justifyContent: "space-between", borderBottomColor: '#000', borderBottomWidth: 0.5, paddingHorizontal: 25, paddingVertical: 15, paddingTop: 20 },
   headerText: { fontSize: 18, fontWeight: "bold", },
-  content: { paddingHorizontal: 0,  },
+  content: { paddingHorizontal: 0, },
   separator: { height: 1, backgroundColor: "#CCCCCC" },
   time: { fontSize: 11, color: "#808080" },
   addMoney: { fontSize: 14, color: "green" },
   outMoney: { fontSize: 14, color: "red" },
   category: { fontSize: 16, fontWeight: "bold", color: COLORS.primary },
   closingBlancetext: { color: "#0080FF" },
-  centeredView: { flex: 1, justifyContent: "center", alignItems: "center",marginTop:100 },
+  centeredView: { flex: 1, justifyContent: "center", alignItems: "center", marginTop: 100 },
   centeredText: { fontSize: 18, color: "#808080" },
   modalContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "rgba(0,0,0,0.5)" },
   modalContent: { width: "80%", padding: 20, backgroundColor: "white", borderRadius: 10 },
@@ -216,10 +223,10 @@ const styles = StyleSheet.create({
     width: "100%",
   }, datePicker: { padding: 12, backgroundColor: "#f0f0f0", borderRadius: 5, marginVertical: 5 },
   dateText: { textAlign: "center" },
-  buttonContainer: { flexDirection: "row", justifyContent: "space-between",marginTop: 10 },
-  buttonReset: { backgroundColor: "red", padding: 10, borderRadius: 5,width:'45%', },
-  buttonApply: { backgroundColor: "green", padding: 10, borderRadius: 5,width:'45%', },
-  buttonText: { color: "white", fontWeight: "bold",textAlign:'center' },
+  buttonContainer: { flexDirection: "row", justifyContent: "space-between", marginTop: 10 },
+  buttonReset: { backgroundColor: "red", padding: 10, borderRadius: 5, width: '45%', },
+  buttonApply: { backgroundColor: "green", padding: 10, borderRadius: 5, width: '45%', },
+  buttonText: { color: "white", fontWeight: "bold", textAlign: 'center' },
   input: {
     height: 40,
     borderColor: "#ccc",

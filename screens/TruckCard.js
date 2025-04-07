@@ -127,11 +127,11 @@ const TruckCard = ({
                         labels[5].text || nameOfTheTransport :
                         companyName
                     }
-                    {
+                    {/* {
                       availableLoadsPage === 'true' ?
                         labels[4]?.text || nameOfTheTransport :
                         companyName
-                    }
+                    } */}
                   </Text>
                 </View>
               </>
@@ -190,7 +190,7 @@ const TruckCard = ({
 
         {/* MY post labels */}
         <View style={styles.labelsContainer}>
-          {labels?.slice(0, 6).map((label, index) =>
+          {labels?.slice(0, 7).map((label, index) =>
           (
             <View key={index} style={styles.labelRow}>
               {label.icon !== "weight" ?
@@ -199,7 +199,7 @@ const TruckCard = ({
                 <Icon2 name={label.icon} size={20} color={COLORS.black} />
               }
               <Text style={styles.label}>
-                {label.text}
+                {label.text || `${truckSize} ft`}
               </Text>
             </View>
           )
